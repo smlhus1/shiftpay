@@ -1,12 +1,20 @@
 # ShiftPay OCR backend — Render Web Service (Docker)
 # Deploy: koble repo i Render Dashboard, eller push til GitHub og "New → Web Service" fra repo.
 # Sett env vars i Render: SECRET_SALT, OPENAI_API_KEY (valgfri), ALLOWED_ORIGINS
+#
+# Verify Settings (hvis UI forlanger stier fra repo-root):
+#   Root Directory:                backend
+#   Dockerfile Path:               backend/Dockerfile
+#   Docker Build Context Directory: backend
+#   Docker Command:                (tom)
 
 services:
   - type: web
     runtime: docker
     name: shiftpay-ocr
     rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     healthCheckPath: /health
     envVars:
       - key: ENVIRONMENT
