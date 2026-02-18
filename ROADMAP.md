@@ -20,12 +20,12 @@
 ## Fase 2 — Kjerneflyt: Import og beregning
 *Mål: Bruker kan ta bilde av timeliste, se skift, og få beregnet lønn*
 
-- [ ] Skjerm: Tariff-oppsett (grunnlønn + tillegg, lagres i Supabase)
-- [ ] Skjerm: Importer timeliste — kamera → send til backend → OCR
-- [ ] Korreksjonssteg: bruker kan redigere OCR-resultat før lagring
-- [ ] Lønnsberegningslogikk (timer × sats per skifttype)
-- [ ] Skjerm: Beregningsresultat — "Du bør ha fått: X"
-- [ ] Lagre timeliste og beregning i Supabase
+- [x] Skjerm: Tariff-oppsett (grunnlønn + tillegg, lagres lokalt i expo-sqlite)
+- [x] Skjerm: Importer timeliste — kamera → send til backend → OCR
+- [x] Korreksjonssteg: bruker kan redigere OCR-resultat før lagring
+- [x] Lønnsberegningslogikk (timer × sats per skifttype)
+- [x] Skjerm: Beregningsresultat — "Du bør ha fått: X"
+- [x] Lagre timeliste og beregning lokalt (expo-sqlite)
 - [ ] Verifiser: full flyt fra bilde til lønnsberegning på emulator
 
 ---
