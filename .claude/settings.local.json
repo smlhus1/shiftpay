@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "WebSearch",
+      "WebFetch(domain:www.thevibecodinggames.com)",
+      "WebFetch(domain:maven.com)",
+      "WebFetch(domain:www.createwith.com)",
+      "WebFetch(domain:thevibecodinggames.com)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_close",
+      "WebFetch(domain:pmc.ncbi.nlm.nih.gov)",
+      "WebFetch(domain:nam.edu)",
+      "WebFetch(domain:www.frontiersin.org)",
+      "WebFetch(domain:journals.plos.org)",
+      "Bash(Get-ChildItem -Recurse -Force)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "mcp__supabase__get_organization",
+      "mcp__supabase__search_docs",
+      "Bash(if not exist \"C:\\\\projects\\\\vibe_games\\\\research\" mkdir \"C:\\\\projects\\\\vibe_games\\\\research\")"
+    ]
+  }
+}

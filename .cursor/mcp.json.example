@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "url": "https://mcp.supabase.com/mcp",
+      "type": "streamableHttp",
+      "headers": {
+        "Authorization": "Bearer <din-personal-access-token>"
+      }
+    },
+    "render": {
+      "url": "https://mcp.render.com/mcp",
+      "type": "streamableHttp",
+      "headers": {
+        "Authorization": "Bearer <YOUR_API_KEY>"
+      }
+    }
+  }
+}

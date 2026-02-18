@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+/Scripts/
+/Lib/
+
+# Build
+dist/
+build/
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment
+.env
+.env.local
+.env.production
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+# MCP config med tokens (bruk .cursor/mcp.json.example som mal)
+.cursor/mcp.json
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Playwright MCP
+.playwright-mcp/
+
+# Turbo
+.turbo/
+
+# Vercel
+.vercel/
