@@ -1,4 +1,5 @@
 import { Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabsLayout() {
   return (
@@ -13,6 +14,9 @@ export default function TabsLayout() {
         options={{
           title: "History",
           tabBarLabel: "History",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="time-outline" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -20,6 +24,9 @@ export default function TabsLayout() {
         options={{
           title: "Import",
           tabBarLabel: "Import",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle-outline" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -27,6 +34,9 @@ export default function TabsLayout() {
         options={{
           title: "Settings",
           tabBarLabel: "Settings",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="settings-outline" size={size} color={color} />
+          ),
         }}
       />
     </Tabs>

@@ -126,7 +126,8 @@ export default function SettingsScreen() {
         <TouchableOpacity
           onPress={handleSave}
           disabled={saving}
-          className="mt-6 rounded-lg bg-blue-600 py-3 active:bg-blue-700 disabled:opacity-60"
+          style={saving ? { opacity: 0.6 } : undefined}
+          className="mt-6 rounded-lg bg-blue-600 py-3"
         >
           {saving ? (
             <ActivityIndicator color="white" />

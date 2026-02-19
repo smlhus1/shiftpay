@@ -9,10 +9,10 @@
 *Mål: Expo-app kjører på emulator, lokal DB fungerer, backend er oppe*
 
 - [x] Scaffold Expo-app (TypeScript, Expo Router, NativeWind)
-- [x] Sett opp expo-sqlite med skjema (tariff_rates, timesheets)
+- [x] Sett opp expo-sqlite med skjema (tariff_rates, schedules, shifts — migrering fra timesheets)
 - [x] Konfigurer EAS Build
 - [x] Fork backend fra ShiftSync, fjern unødvendig kode (Stripe, Azure, Supabase, analytics)
-- [ ] Deploy OCR-backend: **Render** (Docker, `render.yaml` + `backend/Dockerfile`), **Supabase Edge Function** (kun Vision), eller Railway/Fly.io
+- [x] Deploy OCR-backend: **Supabase Edge Function** (Claude Haiku Vision). Deploy: `supabase functions deploy ocr --no-verify-jwt` + `ANTHROPIC_API_KEY` (se `supabase/README.md`).
 - [x] Verifiser: appen starter (Metro på 8081), TypeScript OK, DB-init i kode. Backend: lokalt Python eller Supabase Edge Function (se `supabase/README.md`).
 
 ---
@@ -25,30 +25,33 @@
 - [x] Korreksjonssteg: bruker kan redigere OCR-resultat før lagring
 - [x] Lønnsberegningslogikk (timer × sats per skifttype)
 - [x] Skjerm: Beregningsresultat — "Du bør ha fått: X"
-- [x] Lagre timeliste og beregning lokalt (expo-sqlite)
+- [x] Lagre timeliste og beregning lokalt (schedules + shifts; expo-notifications for påminnelser)
 - [ ] Verifiser: full flyt fra bilde til lønnsberegning på emulator
 
 ---
 
-## Fase 3 — Historikk og oversikt
-*Mål: Bruker kan se alle perioder samlet, ikke bare siste måned*
+## Fase 3 — Historikk og oversikt (vaktsporer)
+*Mål: Bruker kan se alle perioder, bekrefte vakter, og se månedsoppsummering*
 
-- [ ] Dashboard: liste over alle importerte perioder
-- [ ] Detaljvisning per periode (skift + beregning)
-- [ ] Lokal caching (expo-sqlite) for offline-tilgang
-- [ ] Manuell registrering av skift (alternativ til OCR)
-- [ ] Verifiser: historikk vises korrekt på emulator
+- [x] Dashboard: neste vakt, ubekreftede vakter, månedsoppsummering, ukens vakter
+- [x] Detaljvisning per periode (skift + status + «Bekreft» for planlagte)
+- [x] Skjerm for å bekrefte vakt (ja/nei/overtid) — `confirm/[shiftId]`, deep link fra varsel
+- [x] Månedsoppsummering — planlagt vs. faktisk timer, forventet lønn
+- [x] Lokale påminnelser ved vakt-slutt (expo-notifications)
+- [x] Manuell registrering av skift (alternativ til OCR)
+- [ ] Verifiser: historikk og vaktsporer vises korrekt på emulator
 
 ---
 
-## Fase 4 — CSV-import og polish
-*Mål: Alternativ importmetode, pen UI, klar for testing*
+## Fase 4 — CSV-import, bildeopplasting og polish
+*Mål: Alternativ importmetode, bilde fra galleri, pen UI, klar for testing*
 
-- [ ] CSV-import (parse og map til skiftstruktur)
-- [ ] Ansvarsfraskrivelse innbakt i appen (OCR-feil, egne satser)
-- [ ] UI-polish: typografi, spacing, farger, tomme states
-- [ ] Feilhåndtering og loading states overalt
-- [ ] Onboarding-flyt for nye brukere
+- [x] Bildeopplasting fra galleri (expo-image-picker → OCR)
+- [x] CSV-import (parse og map til skiftstruktur, expo-document-picker)
+- [x] Ansvarsfraskrivelse innbakt i appen (OCR-feil, egne satser)
+- [x] UI-polish: tab-ikoner (Ionicons), spacing, tomme states, norsk tekst
+- [x] Feilhåndtering og loading states overalt (timeout OCR 30s, Error Boundary)
+- [x] Onboarding-flyt for nye brukere (satser ikke satt → modal til Innstillinger)
 - [ ] Verifiser: appen ser bra ut og flyter godt på emulator
 
 ---

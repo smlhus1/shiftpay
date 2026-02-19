@@ -10,7 +10,15 @@ Shift workers (healthcare etc.) can't easily verify their pay. Systems are close
 
 ShiftPay lets you import timesheets (photo OCR / CSV / manual), set your own tariff rates, and get a calculated expected pay — so you can compare against your actual payslip.
 
+**Vaktsporer-flyt:** Etter import planlegges lokale påminnelser (expo-notifications) ved slutten av hver vakt. Bruker får varsel: «Fullførte du vakten?» og kan bekrefte (ja/nei/overtid) fra varsel eller skjermen `confirm/[shiftId]`. Månedsoppsummering (`summary/[yearMonth]`) viser planlagt vs. faktisk tid og forventet lønn.
+
 **First user:** Wife works in healthcare — validated, real problem.
+
+## Arbeidsregler
+
+- **Alltid produksjonsklart.** Aldri foreslå lokale workarounds. Sikt mot deploy-klar løsning i alt du gjør.
+- **Plan først.** Ikke start implementasjon uten godkjent plan med todos.
+- **Beslutningsdilemmaer FØR endring.** Ved veivalg: presenter alternativene til brukeren før du gjør noe.
 
 ## Beslutninger
 
@@ -21,7 +29,7 @@ ShiftPay lets you import timesheets (photo OCR / CSV / manual), set your own tar
 | Auth | Ingen — ingen konto nødvendig | Lavere friksjon, enklere |
 | Lagring | Lokal (expo-sqlite) | Personvern by design, GDPR-trivielt |
 | Sky-sync | Ikke i MVP — opt-in i v2 | Brukeren eier sine data |
-| OCR | Foto → stateless FastAPI backend | Lagrer ingenting, prosesserer og returnerer |
+| OCR | Foto → Supabase Edge Function (Claude Haiku Vision) | Stateless, lagrer ingenting |
 | Testing | Google Play Console (intern spor) + Google Groups | Rask distribusjon |
 | Play Console | ✅ Konto finnes | |
 
@@ -35,36 +43,41 @@ ShiftPay lets you import timesheets (photo OCR / CSV / manual), set your own tar
 - **Expo** (React Native + TypeScript)
 - **Expo Router** (filbasert routing)
 - **NativeWind** (Tailwind for React Native)
-- **expo-sqlite** (all lokal lagring — satser, historikk, skift)
+- **expo-sqlite** (all lokal lagring — satser, schedules, shifts)
+- **expo-notifications** (lokale påminnelser ved vakt-slutt, deep link til bekrefte)
 - **Expo Camera** (bilde av timeliste)
 - **EAS Build** (bygg til Play Store)
 
 ### Backend (stateless OCR-prosessor)
-- **Alternativ 1: Render** (Docker) — `render.yaml` + `backend/Dockerfile`. Tesseract + Vision. Koble repo i Render, sett env vars (SECRET_SALT, valgfri OPENAI_API_KEY, ALLOWED_ORIGINS).
-- **Alternativ 2: Supabase Edge Function** — `supabase/functions/ocr/` (Deno, kun OpenAI Vision). Deploy: `supabase functions deploy ocr` + secret `OPENAI_API_KEY`.
-- **Alternativ 3:** **FastAPI** i `backend/` — Railway, Fly.io eller egen server med Dockerfile.
+- **Anbefalt: Supabase Edge Function** — `supabase/functions/ocr/` (Deno, Claude Haiku 4.5 Vision). Deploy: `supabase functions deploy ocr --no-verify-jwt` + secret `ANTHROPIC_API_KEY`. Appen resizer bilder client-side (max 2048px, JPEG 85%) før upload.
+- **Arkiv: FastAPI** i `backend/` — Tesseract + Claude Vision; kan brukes lokalt eller på Railway/Fly.io/Render hvis ønsket.
 - **Ingen database** i backend — prosesserer og returnerer, lagrer ingenting.
 
 ## Prosjektstruktur
 
 ```
-app/                      # Expo Router pages
-  (tabs)/
-    index.tsx             # Dashboard / historikk
-    import.tsx            # OCR / CSV / manuell import
-    settings.tsx          # Tilleggssatser oppsett
-components/
-  ShiftTable.tsx          # Redigerbart skiftoversikt
-  PaySummary.tsx          # Lønnsberegning
-  RateSetup.tsx           # Sats-konfigurasjon
-lib/
-  db.ts                   # expo-sqlite oppsett og queries
-  calculations.ts         # Lønnsberegningslogikk
-  api.ts                  # OCR backend-klient
-backend/                  # FastAPI (forket fra ShiftSync)
+shiftpay/
   app/
-    ocr/                  # Kopiert fra ShiftSync
-    api/
+    (tabs)/
+      index.tsx           # Dashboard (neste vakt, ubekreftede, måned, uke)
+      import.tsx          # OCR / CSV / manuell import
+      settings.tsx        # Tilleggssatser
+    period/[id].tsx       # Periodedetaljer (skift + bekrefte)
+    confirm/[shiftId].tsx # Bekreft vakt (ja/nei/overtid)
+    summary/[yearMonth].tsx # Månedsoppsummering
+  components/
+    ShiftTable.tsx        # Redigerbart skiftoversikt
+    PaySummary.tsx        # Lønnsberegning
+    RateSetup.tsx        # Sats-konfigurasjon
+    ErrorBoundary.tsx     # Feilgrense for krasj
+  lib/
+    db.ts                 # expo-sqlite: schedules, shifts, tariff_rates
+    calculations.ts       # Lønnsberegning
+    api.ts                # OCR backend-klient
+    notifications.ts      # Lokale påminnelser (expo-notifications)
+    csv.ts                # CSV-parsing (fleksibel format)
+backend/                  # FastAPI (arkiv, OCR kan kjøre lokalt)
+  app/ocr/                # Tesseract + Claude Vision
 ```
 
 ## Database
@@ -75,28 +88,36 @@ backend/                  # FastAPI (forket fra ShiftSync)
 
 ## Lokal database (expo-sqlite)
 
+**All brukerdata ligger kun lokalt.** Supabase brukes kun til OCR (stateless); ingen vakter/skift lagres i skyen.
+
 ### tariff_rates
 - `id` INTEGER PK
 - `base_rate` REAL — grunnlønn per time
-- `evening_supplement` REAL
-- `night_supplement` REAL
-- `weekend_supplement` REAL
-- `holiday_supplement` REAL
+- `evening_supplement`, `night_supplement`, `weekend_supplement`, `holiday_supplement` REAL
 - `updated_at` TEXT
 
-### timesheets
+### schedules
 - `id` TEXT PK (uuid)
-- `period_start` TEXT (ISO date)
-- `period_end` TEXT (ISO date)
-- `shifts` TEXT (JSON)
-- `expected_pay` REAL
+- `period_start` TEXT, `period_end` TEXT (f.eks. ISO eller dd.MM.yyyy)
 - `source` TEXT (ocr / csv / manual)
 - `created_at` TEXT
 
-## Fra ShiftSync gjenbrukes
+### shifts
+- `id` TEXT PK (uuid)
+- `schedule_id` TEXT FK → schedules.id
+- `date` TEXT, `start_time` TEXT, `end_time` TEXT
+- `shift_type` TEXT (tidlig / mellom / kveld / natt)
+- `status` TEXT: `planned` | `completed` | `missed` | `overtime`
+- `actual_start`, `actual_end` TEXT (valgfritt)
+- `overtime_minutes` INTEGER, `confirmed_at` TEXT
+- `created_at` TEXT
+
+Migrering: eksisterende `timesheets` (JSON-skift) migreres én gang ved DB-init til `schedules` + `shifts`; deretter droppes `timesheets`.
+
+## Fra ShiftSync gjenbrukes (backend/ arkiv)
 
 - `ocr/processor.py` — Tesseract OCR for norsk vaktplan
-- `ocr/vision_processor.py` — GPT-4o Vision
+- `ocr/vision_processor.py` — Claude Haiku Vision (produksjon bruker Supabase Edge Function)
 - `ocr/confidence_scorer.py` — Confidence scoring
 - Skiftklassifisering: tidlig (06-12), mellom (12-16), kveld (16-22), natt (22-06)
 - Norsk måneds- og ukedagsparsing
@@ -104,11 +125,10 @@ backend/                  # FastAPI (forket fra ShiftSync)
 ## Env vars
 
 ### App
-- `EXPO_PUBLIC_API_URL` — OCR-endepunkt: Supabase `https://<project-ref>.supabase.co/functions/v1/ocr` eller Python-backend `http://...:8000/api/ocr`
+- `EXPO_PUBLIC_API_URL` — OCR-endepunkt: Supabase `https://<project-ref>.supabase.co/functions/v1/ocr` (sett i `shiftpay/.env`)
 
-### Backend
-- `OPENAI_API_KEY` — for GPT-4o Vision
-- `SECRET_SALT` — rate limiting / request signing
+### Supabase Edge Function (OCR)
+- `ANTHROPIC_API_KEY` — for Claude Haiku 4.5 Vision (`supabase secrets set ANTHROPIC_API_KEY=...`)
 
 ## Kjøre lokalt
 
@@ -118,9 +138,8 @@ backend/                  # FastAPI (forket fra ShiftSync)
 # App
 cd shiftpay && npm install && npx expo start
 
-# OCR: enten Supabase Edge Function (anbefalt) eller Python
-# Supabase: supabase functions serve ocr --env-file supabase/.env.local
-# Python: fra prosjektrot: py -m pip install -r backend/requirements.txt, deretter
+# OCR: Supabase Edge Function (anbefalt). Lokal: supabase functions serve ocr --env-file supabase/.env.local
+# Python-backend (valgfritt): py -m pip install -r backend/requirements.txt, deretter
 #   $env:PYTHONPATH = "backend"; py -m uvicorn app.main:app --reload --port 8000 --host 127.0.0.1
 ```
 

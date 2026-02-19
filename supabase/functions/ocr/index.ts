@@ -1,11 +1,13 @@
-// ShiftPay OCR — Supabase Edge Function (OpenAI Vision only, no Tesseract)
-// Deploy: supabase functions deploy ocr && supabase secrets set OPENAI_API_KEY=...
+// ShiftPay OCR — Supabase Edge Function (Claude Haiku 4.5 Vision only, no Tesseract)
+// Model ID from https://docs.anthropic.com/en/docs/models-overview (Claude Haiku 4.5)
+// Deploy: supabase functions deploy ocr --no-verify-jwt && supabase secrets set ANTHROPIC_API_KEY=...
 
 import { encodeBase64 } from "jsr:@std/encoding/base64";
-import OpenAI from "https://deno.land/x/openai@v4.24.0/mod.ts";
+import Anthropic from "npm:@anthropic-ai/sdk@0.39.0";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
-const ALLOWED_TYPES = ["image/jpeg", "image/png"];
+const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+const ANTHROPIC_MODEL = "claude-haiku-4-5-20251001";
 
 const SYSTEM_MESSAGE =
   "Du er en presis OCR-assistent spesialisert på norske vaktplaner. " +
@@ -60,9 +62,9 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ detail: "Method not allowed" }, 405);
   }
 
-  const apiKey = Deno.env.get("OPENAI_API_KEY");
+  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) {
-    return jsonResponse({ detail: "OPENAI_API_KEY not configured" }, 503);
+    return jsonResponse({ detail: "ANTHROPIC_API_KEY not configured" }, 503);
   }
 
   let file: File;
@@ -80,41 +82,69 @@ Deno.serve(async (req: Request) => {
   if (file.size > MAX_FILE_BYTES) {
     return jsonResponse({ detail: "File too large (max 5MB)" }, 400);
   }
-  const mime = file.type?.toLowerCase() || "";
+  let mime = (file.type?.toLowerCase() || "").trim();
+  if (!mime || !mime.startsWith("image/")) mime = "image/jpeg";
+  if (mime === "image/jpg") mime = "image/jpeg";
   if (!ALLOWED_TYPES.includes(mime)) {
     return jsonResponse({ detail: "Only image/jpeg and image/png allowed" }, 400);
   }
 
   const buf = await file.arrayBuffer();
   const base64 = encodeBase64(new Uint8Array(buf));
-  const dataUrl = `data:${mime};base64,${base64}`;
 
-  const openai = new OpenAI({ apiKey });
+  const anthropic = new Anthropic({ apiKey });
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+    const response = await anthropic.messages.create({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 4000,
+      system: SYSTEM_MESSAGE,
       messages: [
-        { role: "system", content: SYSTEM_MESSAGE },
         {
           role: "user",
           content: [
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: mime,
+                data: base64,
+              },
+            },
             { type: "text", text: USER_PROMPT },
-            { type: "image_url", image_url: { url: dataUrl, detail: "high" } },
           ],
         },
       ],
-      max_tokens: 4000,
-      temperature: 0.1,
-      response_format: { type: "json_object" },
     });
 
-    const raw = completion.choices[0]?.message?.content?.trim();
+    const textBlock = response.content?.find((b) => b.type === "text");
+    const raw = textBlock?.type === "text" ? textBlock.text?.trim() : null;
     if (!raw) {
-      return jsonResponse({ detail: "Empty response from Vision API" }, 502);
+      return jsonResponse({ detail: "Empty response from Claude" }, 502);
     }
 
-    const data = JSON.parse(raw) as { shifts?: Array<{ date: string; start_time: string; end_time: string; shift_type: string; confidence?: number }>; notes?: string };
+    // Claude may wrap JSON in markdown (e.g. ```json ... ```); extract raw JSON before parsing
+    let jsonStr = raw;
+    const codeBlockMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (codeBlockMatch) {
+      jsonStr = codeBlockMatch[1].trim();
+    } else {
+      const braceMatch = raw.match(/\{[\s\S]*\}/);
+      if (braceMatch) {
+        jsonStr = braceMatch[0];
+      }
+    }
+
+    const data = JSON.parse(jsonStr) as {
+      shifts?: Array<{
+        date: string;
+        start_time: string;
+        end_time: string;
+        shift_type: string;
+        confidence?: number;
+      }>;
+      notes?: string;
+    };
     const shifts = (data.shifts ?? []).map((s) => ({
       date: s.date,
       start_time: s.start_time,
@@ -130,11 +160,11 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({
       shifts,
       confidence,
-      method: "vision",
+      method: "claude-vision",
     });
   } catch (e) {
     console.error("OCR error:", e);
-    const message = e instanceof Error ? e.message : "Vision API error";
+    const message = e instanceof Error ? e.message : "Claude Vision API error";
     return jsonResponse({ detail: message }, 502);
   }
 });
