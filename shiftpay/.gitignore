@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# React Native crash dumps
+com.facebook.react.*
+*.hprof
+*.crash

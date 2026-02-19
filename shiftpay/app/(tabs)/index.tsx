@@ -100,6 +100,7 @@ export default function DashboardScreen() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -137,7 +138,9 @@ export default function DashboardScreen() {
         actualHours: sum.actualHours,
         expectedPay: Math.round(pay * 100) / 100,
       });
-    } catch {
+      setLoadError(null);
+    } catch (e) {
+      setLoadError(e instanceof Error ? e.message : "Kunne ikke laste data");
       setSchedules([]);
       setNextShift(null);
       setWeekShifts([]);
@@ -186,6 +189,24 @@ export default function DashboardScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-gray-50">
         <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View className="flex-1 items-center justify-center bg-gray-50 p-6">
+        <Text className="text-center text-gray-600">{loadError}</Text>
+        <TouchableOpacity
+          onPress={() => {
+            setLoadError(null);
+            setLoading(true);
+            load();
+          }}
+          className="mt-6 rounded-lg bg-blue-600 px-6 py-3"
+        >
+          <Text className="font-medium text-white">Prøv igjen</Text>
+        </TouchableOpacity>
       </View>
     );
   }

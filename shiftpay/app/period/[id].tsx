@@ -175,31 +175,37 @@ export default function PeriodDetailScreen() {
       </View>
 
       <Text className="mb-2 font-medium text-gray-900">Vakter</Text>
-      {shifts.map((shift) => (
-        <View
-          key={shift.id}
-          className="mb-2 flex-row flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-white p-3"
-        >
-          <Text className="font-medium text-gray-900">{shift.date}</Text>
-          <Text className="text-gray-600">
-            {shift.start_time} – {shift.end_time}
-          </Text>
-          <View className="rounded bg-gray-200 px-2 py-0.5">
-            <Text className="text-sm text-gray-700">{shift.shift_type}</Text>
-          </View>
-          <View className={`rounded px-2 py-0.5 ${statusColor(shift.status)}`}>
-            <Text className="text-sm">{statusLabel(shift.status)}</Text>
-          </View>
-          {shift.status === "planned" && (
-            <TouchableOpacity
-              onPress={() => router.push(`/confirm/${shift.id}` as any)}
-              className="rounded bg-blue-600 px-3 py-1"
-            >
-              <Text className="text-sm font-medium text-white">Bekreft</Text>
-            </TouchableOpacity>
-          )}
+      {shifts.length === 0 ? (
+        <View className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <Text className="text-center text-gray-600">Ingen vakter i denne perioden.</Text>
         </View>
-      ))}
+      ) : (
+        shifts.map((shift) => (
+          <View
+            key={shift.id}
+            className="mb-2 flex-row flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-white p-3"
+          >
+            <Text className="font-medium text-gray-900">{shift.date}</Text>
+            <Text className="text-gray-600">
+              {shift.start_time} – {shift.end_time}
+            </Text>
+            <View className="rounded bg-gray-200 px-2 py-0.5">
+              <Text className="text-sm text-gray-700">{shift.shift_type}</Text>
+            </View>
+            <View className={`rounded px-2 py-0.5 ${statusColor(shift.status)}`}>
+              <Text className="text-sm">{statusLabel(shift.status)}</Text>
+            </View>
+            {shift.status === "planned" && (
+              <TouchableOpacity
+                onPress={() => router.push(`/confirm/${shift.id}` as any)}
+                className="rounded bg-blue-600 px-3 py-1"
+              >
+                <Text className="text-sm font-medium text-white">Bekreft</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ))
+      )}
 
       <TouchableOpacity
         onPress={handleDelete}

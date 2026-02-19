@@ -34,14 +34,25 @@ export function normalizeShiftType(s: string): ShiftType {
   return match ?? "tidlig";
 }
 
-/** DD.MM.YYYY — simple regex, allows 01-31, 01-12, 4-digit year. */
+/** DD.MM.YYYY — format and realistic bounds (day 1–31, month 1–12, year 2000–2100). */
 export function isValidDate(s: string): boolean {
-  return /^\d{1,2}\.\d{1,2}\.\d{4}$/.test(s.trim());
+  if (!/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(s.trim())) return false;
+  const [day, month, year] = s.trim().split(".").map(Number);
+  return (
+    day >= 1 &&
+    day <= 31 &&
+    month >= 1 &&
+    month <= 12 &&
+    year >= 2000 &&
+    year <= 2100
+  );
 }
 
-/** HH:MM or H:MM */
+/** HH:MM or H:MM — format and realistic bounds (hour 0–23, minute 0–59). */
 export function isValidTime(s: string): boolean {
-  return /^\d{1,2}:\d{2}$/.test(s.trim());
+  if (!/^\d{1,2}:\d{2}$/.test(s.trim())) return false;
+  const [hour, min] = s.trim().split(":").map(Number);
+  return hour >= 0 && hour <= 23 && min >= 0 && min <= 59;
 }
 
 

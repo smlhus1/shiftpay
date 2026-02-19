@@ -1,6 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { parseDateTimeSafe } from "./dates";
 
 const STORAGE_KEY = "shiftpay_schedule_notifs";
 
@@ -26,10 +27,9 @@ export async function requestNotificationPermission(): Promise<boolean> {
   return status === "granted";
 }
 
-function parseShiftEndDate(dateStr: string, endTimeStr: string): Date {
-  const [d, m, y] = dateStr.split(".").map(Number);
-  const [h, min] = endTimeStr.split(":").map(Number);
-  const date = new Date(y ?? 0, (m ?? 1) - 1, d ?? 1, h ?? 0, min ?? 0);
+function parseShiftEndDate(dateStr: string, endTimeStr: string): Date | null {
+  const date = parseDateTimeSafe(dateStr, endTimeStr);
+  if (!date) return null;
   date.setMinutes(date.getMinutes() + 15);
   return date;
 }
@@ -49,7 +49,7 @@ async function ensureChannel(): Promise<void> {
 export async function scheduleShiftReminder(shift: ShiftForReminder): Promise<string | null> {
   if (Platform.OS === "web") return null;
   const fireDate = parseShiftEndDate(shift.date, shift.end_time);
-  if (fireDate.getTime() <= Date.now()) return null;
+  if (!fireDate || fireDate.getTime() <= Date.now()) return null;
   try {
     await ensureChannel();
     const id = await Notifications.scheduleNotificationAsync({

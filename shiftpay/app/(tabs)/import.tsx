@@ -21,7 +21,7 @@ import {
   isValidTime,
   normalizeShiftType,
 } from "../../lib/csv";
-import { getTariffRates, insertSchedule, insertShift, getShiftsBySchedule } from "../../lib/db";
+import { getTariffRates, insertScheduleWithShifts } from "../../lib/db";
 import {
   scheduleShiftReminder,
   storeScheduledNotificationId,
@@ -270,29 +270,47 @@ export default function ImportScreen() {
       return;
     }
     const dates = validShifts.map((s) => s.date);
-    const periodStart = dates.reduce((a, b) => (a < b ? a : b));
-    const periodEnd = dates.reduce((a, b) => (a > b ? a : b));
+    const toComparable = (d: string) => {
+      const [day, month, year] = d.split(".").map(Number);
+      return `${year}-${String(month ?? 1).padStart(2, "0")}-${String(day ?? 1).padStart(2, "0")}`;
+    };
+    const periodStart = dates.reduce((a, b) => (toComparable(a) <= toComparable(b) ? a : b));
+    const periodEnd = dates.reduce((a, b) => (toComparable(a) >= toComparable(b) ? a : b));
     const sourceStr = source === "gallery" ? "gallery" : source === "csv" ? "csv" : source === "ocr" ? "ocr" : "manual";
     setSaving(true);
     try {
       await requestNotificationPermission();
-      const scheduleId = await insertSchedule(periodStart, periodEnd, sourceStr);
-      for (const s of validShifts) {
-        await insertShift(scheduleId, {
+      if (__DEV__) {
+        console.log("[ShiftPay] saveTimesheet: period", periodStart, "–", periodEnd, "shifts:", validShifts.length);
+      }
+      const { scheduleId, shifts: inserted } = await insertScheduleWithShifts(
+        periodStart,
+        periodEnd,
+        sourceStr,
+        validShifts.map((s) => ({
           date: s.date,
           start_time: s.start_time,
           end_time: s.end_time,
           shift_type: s.shift_type,
-        });
+        }))
+      );
+      if (__DEV__) {
+        console.log("[ShiftPay] saveTimesheet: saved schedule", scheduleId, "with", inserted.length, "shifts");
       }
-      const inserted = await getShiftsBySchedule(scheduleId);
-      for (const shift of inserted) {
-        const notifId = await scheduleShiftReminder({
-          id: shift.id,
-          date: shift.date,
-          end_time: shift.end_time,
-        });
-        if (notifId) await storeScheduledNotificationId(scheduleId, notifId);
+      try {
+        for (const shift of inserted) {
+          const notifId = await scheduleShiftReminder({
+            id: shift.id,
+            date: shift.date,
+            end_time: shift.end_time,
+          });
+          if (notifId) await storeScheduledNotificationId(scheduleId, notifId);
+        }
+      } catch (notifErr) {
+        if (__DEV__) {
+          console.warn("[ShiftPay] saveTimesheet: notification scheduling failed", notifErr);
+        }
+        // Shift data is already saved; do not fail the whole save
       }
       setSaved(true);
       setRows([]);

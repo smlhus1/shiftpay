@@ -42,11 +42,13 @@ CREATE INDEX IF NOT EXISTS idx_shifts_status ON shifts(status);
 `;
 
 let db: SQLite.SQLiteDatabase | null = null;
+let dbInitPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
 function isDbGoneError(e: unknown): boolean {
   const msg = e instanceof Error ? e.message : String(e);
   return (
     msg.includes("prepareAsync") ||
+    msg.includes("execAsync") ||
     msg.includes("NullPointerException") ||
     msg.includes("has been rejected")
   );
@@ -87,13 +89,42 @@ async function migrateTimesheetsToSchedules(database: SQLite.SQLiteDatabase): Pr
 
 export async function initDb(): Promise<SQLite.SQLiteDatabase> {
   if (db) return db;
-  db = await SQLite.openDatabaseAsync(DB_NAME);
-  await db.execAsync(SCHEMA);
-  await migrateTimesheetsToSchedules(db);
-  if (__DEV__) {
-    console.log("[ShiftPay] SQLite initialized, tables ready");
+  if (dbInitPromise) return dbInitPromise;
+  const openAndPrepare = async (): Promise<SQLite.SQLiteDatabase> => {
+    const database = await SQLite.openDatabaseAsync(DB_NAME);
+    await database.execAsync(SCHEMA);
+    await migrateTimesheetsToSchedules(database);
+    return database;
+  };
+  dbInitPromise = openAndPrepare()
+    .then((database) => {
+      db = database;
+      if (__DEV__) {
+        console.log("[ShiftPay] SQLite initialized, tables ready");
+      }
+      return database;
+    })
+    .catch((e) => {
+      dbInitPromise = null;
+      throw e;
+    });
+  try {
+    return await dbInitPromise;
+  } catch (e) {
+    if (isDbGoneError(e)) {
+      db = null;
+      dbInitPromise = null;
+      return openAndPrepare().then((database) => {
+        db = database;
+        dbInitPromise = null;
+        if (__DEV__) {
+          console.log("[ShiftPay] SQLite initialized, tables ready");
+        }
+        return database;
+      });
+    }
+    throw e;
   }
-  return db;
 }
 
 /** Run a DB operation; if native connection is stale (NullPointerException), re-open and retry once. */
@@ -106,6 +137,7 @@ async function withDb<T>(
   } catch (e) {
     if (!isDbGoneError(e)) throw e;
     db = null;
+    dbInitPromise = null;
     database = await initDb();
     return await fn(database);
   }
@@ -269,6 +301,40 @@ export async function insertShift(scheduleId: string, shift: ShiftInsert): Promi
   return id;
 }
 
+/** Insert schedule and all shifts in one transaction. Returns schedule id and inserted shifts (e.g. for notifications). */
+export async function insertScheduleWithShifts(
+  periodStart: string,
+  periodEnd: string,
+  source: string,
+  shifts: ShiftInsert[]
+): Promise<{ scheduleId: string; shifts: ShiftRow[] }> {
+  return withDb(async (database) => {
+    const scheduleId = generateId();
+    const createdAt = new Date().toISOString();
+    await database.withTransactionAsync(async () => {
+      await database.runAsync(
+        "INSERT INTO schedules (id, period_start, period_end, source, created_at) VALUES (?, ?, ?, ?, ?)",
+        [scheduleId, periodStart, periodEnd, source, createdAt]
+      );
+      for (const s of shifts) {
+        const id = generateId();
+        await database.runAsync(
+          "INSERT INTO shifts (id, schedule_id, date, start_time, end_time, shift_type, status, overtime_minutes, created_at) VALUES (?, ?, ?, ?, ?, ?, 'planned', 0, ?)",
+          [id, scheduleId, s.date, s.start_time, s.end_time, s.shift_type, createdAt]
+        );
+      }
+    });
+    const rows = await database.getAllAsync<ShiftRow>(
+      "SELECT * FROM shifts WHERE schedule_id = ? ORDER BY date ASC, start_time ASC",
+      [scheduleId]
+    );
+    if (__DEV__) {
+      console.log("[ShiftPay] insertScheduleWithShifts: scheduleId=", scheduleId, "shifts=", rows.length);
+    }
+    return { scheduleId, shifts: rows };
+  });
+}
+
 export async function getShiftsBySchedule(scheduleId: string): Promise<ShiftRow[]> {
   return withDb(async (database) => {
     const rows = await database.getAllAsync<ShiftRow>(
@@ -392,7 +458,7 @@ export async function getMonthSummary(year: number, month: number): Promise<Mont
         overtimeHours += (s.overtime_minutes ?? 0) / 60;
       }
     }
-    actualHours += overtimeHours;
+    // Do not add overtimeHours to actualHours — actual duration already includes overtime when actual_end is set
     const completedShifts = shifts.filter((s) => s.status === "completed").length;
     const missedShifts = shifts.filter((s) => s.status === "missed").length;
     const overtimeShifts = shifts.filter((s) => s.status === "overtime").length;

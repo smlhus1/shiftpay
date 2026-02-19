@@ -2,6 +2,8 @@
  * Pay calculation logic — used in Phase 2.
  */
 
+import { parseDateSafe } from "./dates";
+
 export type ShiftType = "tidlig" | "mellom" | "kveld" | "natt";
 
 export interface Shift {
@@ -36,11 +38,10 @@ export function shiftDurationHours(startTime: string, endTime: string): number {
   return (end - start) / 60;
 }
 
-/** DD.MM.YYYY → day of week 0–6 (0 = Sunday). */
+/** DD.MM.YYYY → day of week 0–6 (0 = Sunday). Returns 0 if invalid. */
 function dayOfWeek(dateStr: string): number {
-  const [d, m, y] = dateStr.split(".").map(Number);
-  const date = new Date(y ?? 0, (m ?? 1) - 1, d ?? 1);
-  return date.getDay();
+  const date = parseDateSafe(dateStr);
+  return date ? date.getDay() : 0;
 }
 
 function isWeekend(dateStr: string): boolean {

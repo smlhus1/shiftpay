@@ -54,8 +54,8 @@ export default function ConfirmShiftScreen() {
       if (!shiftId) return;
       if (status === "overtime") {
         const mins = parseInt(overtimeMinutes, 10);
-        if (Number.isNaN(mins) || mins < 0) {
-          Alert.alert("Ugyldig verdi", "Skriv inn antall overtidsminutter (0 eller mer).");
+        if (Number.isNaN(mins) || mins <= 0) {
+          Alert.alert("Ugyldig verdi", "Skriv inn antall overtidsminutter (større enn 0).");
           return;
         }
         setSubmitting(true);
@@ -104,7 +104,19 @@ export default function ConfirmShiftScreen() {
     );
   }
 
-  if (!shift) return null;
+  if (!shift) {
+    return (
+      <View className="flex-1 items-center justify-center bg-gray-50 p-6">
+        <Text className="text-center text-gray-600">Kunne ikke laste vakten.</Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="mt-4 rounded-lg bg-blue-600 px-6 py-2"
+        >
+          <Text className="text-white">Tilbake</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const alreadyConfirmed = shift.status !== "planned";
   if (alreadyConfirmed) {

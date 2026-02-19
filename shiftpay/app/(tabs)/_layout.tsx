@@ -12,8 +12,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "History",
-          tabBarLabel: "History",
+          title: "Historikk",
+          tabBarLabel: "Historikk",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="time-outline" size={size} color={color} />
           ),
@@ -22,8 +22,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="import"
         options={{
-          title: "Import",
-          tabBarLabel: "Import",
+          title: "Importer",
+          tabBarLabel: "Importer",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="add-circle-outline" size={size} color={color} />
           ),
@@ -32,8 +32,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
-          tabBarLabel: "Settings",
+          title: "Innstillinger",
+          tabBarLabel: "Innstillinger",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings-outline" size={size} color={color} />
           ),
