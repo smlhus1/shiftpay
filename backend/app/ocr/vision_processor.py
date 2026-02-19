@@ -1,6 +1,6 @@
 """
-GPT-4 Vision-based OCR processor for shift schedules.
-From ShiftSync.
+Claude Vision-based OCR processor for shift schedules.
+Uses Anthropic Messages API (Haiku 4.5).
 """
 import base64
 import io
@@ -9,9 +9,8 @@ import logging
 from pathlib import Path
 from typing import List, Tuple
 
-from openai import APIConnectionError, APITimeoutError, OpenAI, RateLimitError
+from anthropic import Anthropic, APIError, RateLimitError
 from pydantic import ValidationError
-import httpx
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 from PIL import Image
 
@@ -67,8 +66,8 @@ class VisionProcessor:
 
     def __init__(self, api_key: str):
         if not api_key:
-            raise ValueError("OpenAI API key is required for Vision processing")
-        self.client = OpenAI(api_key=api_key, http_client=httpx.Client(timeout=60.0))
+            raise ValueError("Anthropic API key is required for Vision processing")
+        self.client = Anthropic(api_key=api_key)
 
     def process_image(self, image_path: str, debug: bool = False) -> Tuple[List[Shift], float]:
         image_data, mime_type = self._encode_image(image_path)
@@ -92,33 +91,40 @@ class VisionProcessor:
             return shifts, overall
         except json.JSONDecodeError as e:
             raise ValueError(f"Vision API returned invalid JSON: {e}") from e
-        except (RateLimitError, APITimeoutError, APIConnectionError) as e:
+        except (RateLimitError, APIError) as e:
             raise ValueError(f"Vision API unavailable after retries: {e}") from e
 
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=30),
-        retry=retry_if_exception_type((RateLimitError, APITimeoutError, APIConnectionError)),
+        retry=retry_if_exception_type((RateLimitError, APIError)),
         reraise=True,
     )
     def _call_vision_api(self, image_data: str, mime_type: str, debug: bool) -> dict:
-        response = self.client.chat.completions.create(
-            model=settings.openai_model,
+        response = self.client.messages.create(
+            model=settings.anthropic_model,
+            max_tokens=4000,
+            system=SYSTEM_MESSAGE,
             messages=[
-                {"role": "system", "content": SYSTEM_MESSAGE},
                 {
                     "role": "user",
                     "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": mime_type,
+                                "data": image_data,
+                            },
+                        },
                         {"type": "text", "text": USER_PROMPT},
-                        {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{image_data}", "detail": "high"}},
                     ],
                 },
             ],
-            max_tokens=4000,
-            temperature=0.1,
-            response_format={"type": "json_object"},
         )
-        content = response.choices[0].message.content
+        if not response.content or response.content[0].type != "text":
+            raise ValueError("Vision API returned empty or non-text response")
+        content = response.content[0].text
         if not content or not content.strip():
             raise ValueError("Vision API returned empty response")
         return json.loads(content)

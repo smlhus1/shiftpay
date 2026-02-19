@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     secret_salt: str = "change-me-min-32-chars-required-for-security"
     tesseract_path: str = "/usr/bin/tesseract"
     ocr_language: str = "nor"
-    openai_api_key: Optional[str] = None
-    openai_model: str = "gpt-4o"
+    anthropic_api_key: Optional[str] = None
+    anthropic_model: str = "claude-haiku-4-5-20241022"
     max_file_size_mb: int = 10
     allowed_origins: str = "http://localhost:8081"
 

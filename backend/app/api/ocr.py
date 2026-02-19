@@ -45,16 +45,16 @@ async def post_ocr(request: Request, file: UploadFile = File(...)):
         tmp_path = tmp.name
 
     try:
-        # Try Vision first if key is set
-        if settings.openai_api_key:
+        # Try Claude Vision first if key is set
+        if settings.anthropic_api_key:
             try:
-                proc = VisionProcessor(api_key=settings.openai_api_key)
+                proc = VisionProcessor(api_key=settings.anthropic_api_key)
                 shifts, confidence = await asyncio.to_thread(
                     proc.process_image, tmp_path, settings.environment == "development"
                 )
-                return OcrResponse(shifts=shifts, confidence=confidence, method="vision")
+                return OcrResponse(shifts=shifts, confidence=confidence, method="claude-vision")
             except Exception as e:
-                logger.warning("Vision failed, falling back to Tesseract: %s", e)
+                logger.warning("Claude Vision failed, falling back to Tesseract: %s", e)
 
         # Tesseract
         processor = VaktplanProcessor(
