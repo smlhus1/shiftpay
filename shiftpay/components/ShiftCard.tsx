@@ -7,7 +7,7 @@ interface ShiftCardProps {
   shift: ShiftRow;
   /** If provided, shows a "Confirm" button when shift.status === "planned". */
   onConfirm?: (id: string) => void;
-  /** If provided, shows an "Edit" button for all non-planned statuses. */
+  /** If provided, makes the whole card tappable for non-planned shifts. */
   onEdit?: (id: string) => void;
   /** Show "+X min overtime" label for overtime shifts. */
   showOvertimeLabel?: boolean;
@@ -37,8 +37,10 @@ export function ShiftCard({
     ? "mt-2 flex-row flex-wrap items-center gap-2 rounded-xl border border-stone-100 bg-stone-50 p-2"
     : "mb-2 flex-row flex-wrap items-center gap-2 rounded-xl border border-stone-200 bg-white p-3";
 
-  return (
-    <View className={containerClass}>
+  const tappable = onEdit && shift.status !== "planned";
+
+  const content = (
+    <>
       {compact ? (
         <Text className="text-slate-900">
           {shift.date} {shift.start_time}–{shift.end_time}
@@ -73,22 +75,26 @@ export function ShiftCard({
           </Text>
         </TouchableOpacity>
       )}
-      {onEdit && shift.status !== "planned" && (
-        <TouchableOpacity
-          onPress={() => onEdit(shift.id)}
-          accessibilityRole="button"
-          className="rounded-xl border border-stone-300 bg-white px-3 py-2"
-        >
-          <Text className={compact ? "text-xs font-medium text-slate-600" : "text-sm font-medium text-slate-600"}>
-            {t("components.shiftCard.edit")}
-          </Text>
-        </TouchableOpacity>
-      )}
       {showOvertimeLabel && shift.status === "overtime" && (shift.overtime_minutes ?? 0) > 0 && (
         <Text className="text-sm text-teal-700">
           {t("components.shiftCard.overtime", { minutes: shift.overtime_minutes })}
         </Text>
       )}
-    </View>
+    </>
   );
+
+  if (tappable) {
+    return (
+      <TouchableOpacity
+        onPress={() => onEdit!(shift.id)}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        className={containerClass}
+      >
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return <View className={containerClass}>{content}</View>;
 }

@@ -263,7 +263,6 @@ export default function DashboardScreen() {
           <Text className="mt-2 text-lg font-bold text-slate-900">
             {t("dashboard.month.expectedPay", { amount: monthSummary.expectedPay.toFixed(0) })}
           </Text>
-          <Text className="mt-1 text-sm text-teal-700">{t("dashboard.month.viewSummary")}</Text>
         </TouchableOpacity>
       ) : null}
 
