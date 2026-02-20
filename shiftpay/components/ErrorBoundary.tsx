@@ -20,14 +20,14 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError && this.state.error) {
       return (
-        <View className="flex-1 items-center justify-center bg-gray-50 p-6">
-          <Text className="text-lg font-medium text-gray-900">Noe gikk galt</Text>
-          <Text className="mt-2 text-center text-sm text-gray-600">
+        <View className="flex-1 items-center justify-center bg-stone-50 p-6">
+          <Text className="text-lg font-medium text-slate-900">Noe gikk galt</Text>
+          <Text className="mt-2 text-center text-sm text-slate-500">
             {this.state.error.message}
           </Text>
           <TouchableOpacity
             onPress={() => this.setState({ hasError: false, error: null })}
-            className="mt-6 rounded-lg bg-blue-600 px-6 py-3"
+            className="mt-6 rounded-xl bg-teal-700 px-6 py-3"
           >
             <Text className="font-medium text-white">Prøv igjen</Text>
           </TouchableOpacity>

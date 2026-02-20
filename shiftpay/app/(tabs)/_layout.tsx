@@ -7,7 +7,15 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#2563eb",
+        tabBarActiveTintColor: '#0f766e',
+        tabBarInactiveTintColor: '#94a3b8',
+        headerStyle: { backgroundColor: '#ffffff' },
+        headerTitleStyle: { color: '#0f172a', fontWeight: '600' },
+        headerShadowVisible: false,
+        tabBarStyle: {
+          borderTopColor: '#e7e5e3',
+          backgroundColor: '#ffffff',
+        },
         headerTitle: "ShiftPay",
       }}
     >

@@ -21,10 +21,10 @@ export function CameraCapture({ cameraRef, onCancel, onCapture }: CameraCaptureP
         </Text>
       </View>
       <View className="absolute bottom-8 left-0 right-0 flex-row justify-center gap-4">
-        <TouchableOpacity onPress={onCancel} className="rounded-lg bg-gray-600 px-6 py-3">
+        <TouchableOpacity onPress={onCancel} className="rounded-xl bg-stone-700 px-6 py-3">
           <Text className="text-white">{t("components.camera.cancel")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={onCapture} className="rounded-lg bg-blue-600 px-6 py-3">
+        <TouchableOpacity onPress={onCapture} className="rounded-xl bg-teal-700 px-6 py-3">
           <Text className="text-white">{t("components.camera.capture")}</Text>
         </TouchableOpacity>
       </View>
