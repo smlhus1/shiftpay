@@ -32,7 +32,7 @@ const en: TranslationShape = {
       title: "This month",
       planned: "Planned: %{hours} h",
       actual: "Actual: %{hours} h",
-      expectedPay: "Expected pay: %{amount} kr",
+      expectedPay: "Expected pay: %{amount}",
       viewSummary: "View summary",
     },
     week: {
@@ -106,6 +106,42 @@ const en: TranslationShape = {
       sv: "🇸🇪 Svenska",
       da: "🇩🇰 Dansk",
     },
+    about: {
+      title: "About ShiftPay",
+      description: "ShiftPay helps shift workers check if they've been paid correctly. Take a photo of your timesheet, enter your rates, and compare with your payslip.",
+      privacy: "All data is stored locally on your device. No accounts, no cloud storage, no tracking.",
+    },
+  },
+  notifications: {
+    title: "Shift completed?",
+    body: "Did you complete the shift at %{time}?",
+    channel: "Shift reminders",
+  },
+  api: {
+    ocrError: "OCR failed: %{status}",
+    ocrTimeout: "OCR took too long. Try again or check your connection.",
+    ocrNotConfigured: "OCR endpoint is not configured.",
+  },
+  errorBoundary: {
+    title: "Something went wrong",
+    retry: "Try again",
+  },
+  csvErrors: {
+    missingDate: "missing date",
+    missingStart: "missing start time",
+    missingEnd: "missing end time",
+    invalidDate: "Invalid date (use DD.MM.YYYY).",
+    invalidStart: "Invalid start time (use HH:MM).",
+    invalidEnd: "Invalid end time (use HH:MM).",
+    invalidRow: "Could not parse the row.",
+    noHeader: "CSV must have a header row and at least one data row.",
+    missingColumns: "CSV must have columns: date, start_time, end_time (and optionally shift_type).",
+  },
+  shiftTypes: {
+    tidlig: "Early",
+    mellom: "Mid-day",
+    kveld: "Evening",
+    natt: "Night",
   },
   confirm: {
     question: "Did you complete the shift?",
@@ -130,6 +166,13 @@ const en: TranslationShape = {
       saveError: "Could not save",
     },
     backBtnLabel: "Back",
+    editFields: {
+      title: "Edit shift",
+      date: "Date",
+      start: "Start time",
+      end: "End time",
+      save: "Save changes",
+    },
   },
   summary: {
     invalid: "Invalid month or no data.",
@@ -149,6 +192,13 @@ const en: TranslationShape = {
     list: {
       title: "Shifts this month",
       empty: "No shifts recorded.",
+    },
+    export: "Export CSV",
+    deleteShift: {
+      title: "Delete shift",
+      message: "Are you sure you want to delete this shift?",
+      confirm: "Delete",
+      error: "Could not delete the shift.",
     },
     back: "Back",
   },
@@ -185,7 +235,7 @@ const en: TranslationShape = {
       },
       addShift: "+ Add new shift",
       calculate: "Calculate pay",
-      result: "You should have received: %{amount} kr",
+      result: "You should have received: %{amount}",
       disclaimer:
         "This calculation is indicative and based on your own rates. Verify against original timesheet.",
       save: "Save timesheet",
@@ -195,6 +245,7 @@ const en: TranslationShape = {
     shiftCard: {
       confirm: "Confirm",
       confirmA11y: "Confirm shift %{date}",
+      deleteA11y: "Delete shift %{date}",
       edit: "Edit",
       overtime: "+%{minutes} min overtime",
     },

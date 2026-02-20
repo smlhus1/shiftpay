@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import type { CsvRowResult } from "../lib/csv";
 import type { Shift, ShiftType } from "../lib/calculations";
 import { useTranslation } from "../lib/i18n";
+import { formatCurrency } from "../lib/format";
 
 export type ImportSource = "ocr" | "manual" | "gallery" | "csv";
 
@@ -37,7 +38,7 @@ export function ShiftEditor({
   onSave,
   onReset,
 }: ShiftEditorProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const sourceKey = `components.shiftEditor.sources.${source}` as const;
   const sourceTag = t(sourceKey);
 
@@ -94,13 +95,14 @@ export function ShiftEditor({
                     onPress={() => onUpdateRow(index, "shift_type", type)}
                     accessibilityRole="radio"
                     accessibilityState={{ checked: displayType === type }}
-                    accessibilityLabel={`Shift type ${type}`}
+                    accessibilityLabel={t(`shiftTypes.${type}`)}
                     className={`rounded-full px-2 py-1 ${
                       displayType === type ? "bg-teal-700" : "bg-stone-200"
                     }`}
+                    style={{ minHeight: 44, justifyContent: "center" }}
                   >
                     <Text className={displayType === type ? "text-white" : "text-slate-700"}>
-                      {type}
+                      {t(`shiftTypes.${type}`)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -142,7 +144,7 @@ export function ShiftEditor({
       {expectedPay !== null && (
         <View className="mt-4 rounded-xl border border-stone-200 bg-white p-4">
           <Text className="text-lg font-medium text-slate-900">
-            {t("components.shiftEditor.result", { amount: expectedPay.toFixed(2) })}
+            {t("components.shiftEditor.result", { amount: formatCurrency(expectedPay, locale) })}
           </Text>
           <View className="mt-2 rounded-lg bg-stone-100 p-2">
             <Text className="text-xs text-slate-500">

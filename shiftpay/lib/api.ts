@@ -5,11 +5,12 @@
  * EXPO_PUBLIC_OCR_API_KEY = shared secret for OCR endpoint authentication.
  */
 
+import { getTranslation } from "./i18n";
+
 const getOcrUrl = (): string => {
   const url = process.env.EXPO_PUBLIC_API_URL;
-  if (url) return url;
-  if (__DEV__) return "http://localhost:8000/api/ocr";
-  throw new Error("EXPO_PUBLIC_API_URL is not configured");
+  if (!url) throw new Error(getTranslation("api.ocrNotConfigured"));
+  return url;
 };
 
 const getOcrApiKey = (): string | undefined => {
@@ -102,7 +103,7 @@ export async function postOcr(imageUri: string): Promise<OcrResponse> {
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      let detail = `OCR feilet: ${res.status}`;
+      let detail = getTranslation("api.ocrError", { status: res.status });
       try {
         const body = await res.json();
         if (body.detail) detail = body.detail;
@@ -118,7 +119,7 @@ export async function postOcr(imageUri: string): Promise<OcrResponse> {
     clearTimeout(timeoutId);
     if (e instanceof Error) {
       if (e.name === "AbortError") {
-        throw new Error("OCR tok for lang tid. Prøv igjen eller sjekk tilkoblingen.");
+        throw new Error(getTranslation("api.ocrTimeout"));
       }
       throw e;
     }

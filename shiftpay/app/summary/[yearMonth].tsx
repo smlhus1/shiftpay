@@ -5,14 +5,16 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { Href } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { getMonthSummary, getTariffRates, getDistinctMonthsWithShifts } from "../../lib/db";
+import { getMonthSummary, getTariffRates, getDistinctMonthsWithShifts, deleteShift } from "../../lib/db";
 import type { ShiftRow } from "../../lib/db";
 import { calculateExpectedPay, calculateOvertimePay, type Shift } from "../../lib/calculations";
-import { shiftRowToShift, MONTH_KEYS, toYearMonthKey } from "../../lib/format";
+import { shiftRowToShift, MONTH_KEYS, toYearMonthKey, formatCurrency } from "../../lib/format";
+import { exportShiftsAsCSV } from "../../lib/csv";
 import { ShiftCard } from "../../components/ShiftCard";
 import { useTranslation } from "../../lib/i18n";
 
@@ -28,7 +30,7 @@ function StatBox({ value, label }: { value: string; label: string }) {
 export default function SummaryScreen() {
   const { yearMonth } = useLocalSearchParams<{ yearMonth: string }>();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<Awaited<ReturnType<typeof getMonthSummary>> | null>(null);
   const [expectedPay, setExpectedPay] = useState(0);
@@ -82,6 +84,28 @@ export default function SummaryScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const handleDeleteShift = useCallback((shiftId: string) => {
+    Alert.alert(
+      t("summary.deleteShift.title"),
+      t("summary.deleteShift.message"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("summary.deleteShift.confirm"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteShift(shiftId);
+              load();
+            } catch {
+              Alert.alert(t("common.error"), t("summary.deleteShift.error"));
+            }
+          },
+        },
+      ]
+    );
+  }, [t, load]);
 
   if (loading) {
     return (
@@ -147,7 +171,7 @@ export default function SummaryScreen() {
         ) : <View />}
       </View>
 
-      <Text className="mb-4 text-xl font-semibold text-slate-900">
+      <Text className="mb-4 text-xl font-semibold text-slate-900" accessibilityRole="header">
         {monthName} {y}
       </Text>
 
@@ -155,7 +179,7 @@ export default function SummaryScreen() {
       <View className="mb-4 rounded-xl bg-teal-700 p-5">
         <Text className="text-sm font-medium text-teal-100">{t("summary.expectedPay.title")}</Text>
         <Text className="mt-1 text-3xl font-bold text-white">
-          {Math.round(expectedPay).toLocaleString("nb-NO")} kr
+          {formatCurrency(expectedPay, locale)}
         </Text>
         <Text className="mt-1 text-xs text-teal-200">{t("summary.expectedPay.subtitle")}</Text>
       </View>
@@ -205,13 +229,34 @@ export default function SummaryScreen() {
             showShiftType
             showOvertimeLabel
             onEdit={(id) => router.push(`/confirm/${id}` as Href)}
+            onDelete={handleDeleteShift}
           />
         ))
       )}
 
+      {summary.shifts.length > 0 && (
+        <TouchableOpacity
+          onPress={async () => {
+            try {
+              await exportShiftsAsCSV(summary.shifts, yearMonth!);
+            } catch (e) {
+              Alert.alert(t("common.error"), e instanceof Error ? e.message : t("summary.export"));
+            }
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={t("summary.export")}
+          className="mt-4 flex-row items-center justify-center gap-2 rounded-xl border border-teal-200 bg-teal-50 py-3"
+        >
+          <Ionicons name="download-outline" size={18} color="#0f766e" />
+          <Text className="font-medium text-teal-700">{t("summary.export")}</Text>
+        </TouchableOpacity>
+      )}
+
       <TouchableOpacity
         onPress={() => router.back()}
-        className="mt-6 rounded-xl border border-stone-300 bg-white py-3"
+        accessibilityRole="button"
+        accessibilityLabel={t("summary.back")}
+        className="mt-3 rounded-xl border border-stone-300 bg-white py-3"
       >
         <Text className="text-center font-medium text-slate-700">{t("summary.back")}</Text>
       </TouchableOpacity>
