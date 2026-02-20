@@ -1,4 +1,6 @@
 import * as SQLite from "expo-sqlite";
+import { shiftDurationHours } from "./calculations";
+import { dateToComparable } from "./dates";
 
 const DB_NAME = "shiftpay.db";
 
@@ -356,7 +358,7 @@ export async function getUpcomingShifts(limit = 10): Promise<ShiftRow[]> {
       [limit * 2]
     );
     const filtered = rows.filter((r) => {
-      const d = dateToCompare(r.date);
+      const d = dateToComparable(r.date);
       const [h, m] = r.start_time.split(":").map(Number);
       const shiftMinutes = (h ?? 0) * 60 + (m ?? 0);
       return d > today || (d === today && shiftMinutes >= nowMinutes);
@@ -370,13 +372,6 @@ function formatDateForCompare(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
-}
-
-function dateToCompare(dateStr: string): string {
-  const [d, m, y] = dateStr.split(".").map(Number);
-  const month = String(m ?? 1).padStart(2, "0");
-  const day = String(d ?? 1).padStart(2, "0");
-  return `${y ?? 0}-${month}-${day}`;
 }
 
 /** Vakter der end_time har passert og status fortsatt er planned. */
@@ -451,10 +446,10 @@ export async function getMonthSummary(year: number, month: number): Promise<Mont
     let actualHours = 0;
     let overtimeHours = 0;
     for (const s of shifts) {
-      const planned = durationHours(s.start_time, s.end_time);
+      const planned = shiftDurationHours(s.start_time, s.end_time);
       plannedHours += planned;
       if (s.status === "completed" || s.status === "overtime") {
-        actualHours += s.actual_start && s.actual_end ? durationHours(s.actual_start, s.actual_end) : planned;
+        actualHours += s.actual_start && s.actual_end ? shiftDurationHours(s.actual_start, s.actual_end) : planned;
         overtimeHours += (s.overtime_minutes ?? 0) / 60;
       }
     }
@@ -476,15 +471,6 @@ export async function getMonthSummary(year: number, month: number): Promise<Mont
       shifts,
     };
   });
-}
-
-function durationHours(start: string, end: string): number {
-  const [sh, sm] = start.split(":").map(Number);
-  const [eh, em] = end.split(":").map(Number);
-  let s = (sh ?? 0) * 60 + (sm ?? 0);
-  let e = (eh ?? 0) * 60 + (em ?? 0);
-  if (e <= s) e += 24 * 60;
-  return (e - s) / 60;
 }
 
 export async function getAllSchedules(): Promise<ScheduleRow[]> {
@@ -523,9 +509,9 @@ export async function getShiftsInDateRange(fromDate: string, toDate: string): Pr
     database.getAllAsync<ShiftRow>("SELECT * FROM shifts ORDER BY date ASC, start_time ASC")
   );
   return rows.filter((r) => {
-    const c = dateToCompare(r.date);
-    const from = dateToCompare(fromDate);
-    const to = dateToCompare(toDate);
+    const c = dateToComparable(r.date);
+    const from = dateToComparable(fromDate);
+    const to = dateToComparable(toDate);
     return c >= from && c <= to;
   });
 }

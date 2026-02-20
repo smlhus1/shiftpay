@@ -13,6 +13,12 @@ export function parseDateSafe(dateStr: string): Date | null {
   return date;
 }
 
+/** DD.MM.YYYY → "YYYY-MM-DD" for string comparison. */
+export function dateToComparable(dateStr: string): string {
+  const [d, m, y] = dateStr.split(".").map(Number);
+  return `${y ?? 0}-${String(m ?? 1).padStart(2, "0")}-${String(d ?? 1).padStart(2, "0")}`;
+}
+
 /** DD.MM.YYYY + HH:MM → Date with time, or null. */
 export function parseDateTimeSafe(dateStr: string, timeStr: string): Date | null {
   const date = parseDateSafe(dateStr);

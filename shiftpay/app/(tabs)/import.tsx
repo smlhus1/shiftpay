@@ -5,13 +5,11 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  TextInput,
   Alert,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
+import { useCameraPermissions } from "expo-camera";
 import { postOcr } from "../../lib/api";
 import type { OcrShift } from "../../lib/api";
 import {
@@ -22,18 +20,15 @@ import {
   normalizeShiftType,
 } from "../../lib/csv";
 import { getTariffRates, insertScheduleWithShifts } from "../../lib/db";
+import { dateToComparable } from "../../lib/dates";
 import {
   scheduleShiftReminder,
   storeScheduledNotificationId,
   requestNotificationPermission,
 } from "../../lib/notifications";
-import {
-  calculateExpectedPay,
-  type Shift,
-  type ShiftType,
-} from "../../lib/calculations";
-
-const SHIFT_TYPES: ShiftType[] = ["tidlig", "mellom", "kveld", "natt"];
+import { calculateExpectedPay, type Shift, type ShiftType } from "../../lib/calculations";
+import { CameraCapture } from "../../components/CameraCapture";
+import { ShiftEditor } from "../../components/ShiftEditor";
 
 function ocrShiftToShift(s: OcrShift): Shift {
   return {
@@ -256,11 +251,6 @@ export default function ImportScreen() {
     setExpectedPay(null);
   };
 
-  const addAnotherShift = () => {
-    setRows((prev) => [...prev, { ok: true as const, shift: emptyShift() }]);
-    setExpectedPay(null);
-  };
-
   const saveTimesheet = async () => {
     if (validShifts.length === 0) {
       Alert.alert(
@@ -270,12 +260,8 @@ export default function ImportScreen() {
       return;
     }
     const dates = validShifts.map((s) => s.date);
-    const toComparable = (d: string) => {
-      const [day, month, year] = d.split(".").map(Number);
-      return `${year}-${String(month ?? 1).padStart(2, "0")}-${String(day ?? 1).padStart(2, "0")}`;
-    };
-    const periodStart = dates.reduce((a, b) => (toComparable(a) <= toComparable(b) ? a : b));
-    const periodEnd = dates.reduce((a, b) => (toComparable(a) >= toComparable(b) ? a : b));
+    const periodStart = dates.reduce((a, b) => (dateToComparable(a) <= dateToComparable(b) ? a : b));
+    const periodEnd = dates.reduce((a, b) => (dateToComparable(a) >= dateToComparable(b) ? a : b));
     const sourceStr = source === "gallery" ? "gallery" : source === "csv" ? "csv" : source === "ocr" ? "ocr" : "manual";
     setSaving(true);
     try {
@@ -343,27 +329,11 @@ export default function ImportScreen() {
 
   if (showCamera) {
     return (
-      <View className="flex-1 bg-black">
-        <CameraView
-          ref={cameraRef as any}
-          style={{ flex: 1 }}
-          facing="back"
-        />
-        <View className="absolute bottom-8 left-0 right-0 flex-row justify-center gap-4">
-          <TouchableOpacity
-            onPress={() => setShowCamera(false)}
-            className="rounded-lg bg-gray-600 px-6 py-3"
-          >
-            <Text className="text-white">Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={takePhoto}
-            className="rounded-lg bg-blue-600 px-6 py-3"
-          >
-            <Text className="text-white">Take photo</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <CameraCapture
+        cameraRef={cameraRef}
+        onCancel={() => setShowCamera(false)}
+        onCapture={takePhoto}
+      />
     );
   }
 
@@ -382,10 +352,7 @@ export default function ImportScreen() {
               Beregningen er veiledende og basert på dine egne satser. OCR kan inneholde feil — kontroller alltid mot original timeliste.
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={openCamera}
-            className="rounded-lg bg-blue-600 py-3"
-          >
+          <TouchableOpacity onPress={openCamera} className="rounded-lg bg-blue-600 py-3">
             <Text className="text-center font-medium text-white">Ta bilde av timeliste</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -398,9 +365,7 @@ export default function ImportScreen() {
             onPress={pickImageFromFiles}
             className="mt-3 rounded-lg border border-gray-300 bg-white py-3"
           >
-            <Text className="text-center font-medium text-gray-700">
-              Velg bilder fra filer
-            </Text>
+            <Text className="text-center font-medium text-gray-700">Velg bilder fra filer</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={pickCSV}
@@ -427,143 +392,24 @@ export default function ImportScreen() {
       )}
 
       {rows.length > 0 && !loading && (
-        <>
-          <Text className="mb-2 font-medium text-gray-900">
-            Skift (rediger om nødvendig)
-            {source === "manual"
-              ? " · Manuell"
-              : source === "csv"
-                ? " · CSV"
-                : source === "gallery"
-                  ? " · Galleri"
-                  : " · OCR"}
-          </Text>
-          {rows.map((row, index) => {
-            const isError = !row.ok;
-            const date = row.ok ? row.shift.date : row.date;
-            const start_time = row.ok ? row.shift.start_time : row.start_time;
-            const end_time = row.ok ? row.shift.end_time : row.end_time;
-            const displayType = row.ok ? row.shift.shift_type : (row.shift_type || "tidlig");
-            return (
-              <View
-                key={`row-${index}`}
-                className={`mb-3 rounded-lg border bg-white p-3 ${
-                  isError ? "border-l-4 border-l-amber-500 border-gray-200" : "border-gray-200"
-                }`}
-              >
-                {isError && (
-                  <Text className="mb-2 text-sm text-amber-800">Sjekk dato og tid: {row.reason}</Text>
-                )}
-                <View className="flex-row flex-wrap items-center gap-2">
-                  <TextInput
-                    value={date}
-                    onChangeText={(s) => updateRow(index, "date", s)}
-                    placeholder="DD.MM.YYYY"
-                    className="min-w-[100px] rounded border border-gray-200 px-2 py-1 text-gray-900"
-                  />
-                  <TextInput
-                    value={start_time}
-                    onChangeText={(s) => updateRow(index, "start_time", s)}
-                    placeholder="HH:MM"
-                    className="w-16 rounded border border-gray-200 px-2 py-1 text-gray-900"
-                  />
-                  <Text className="self-center text-gray-500">–</Text>
-                  <TextInput
-                    value={end_time}
-                    onChangeText={(s) => updateRow(index, "end_time", s)}
-                    placeholder="HH:MM"
-                    className="w-16 rounded border border-gray-200 px-2 py-1 text-gray-900"
-                  />
-                  <View className="flex-row gap-1">
-                    {SHIFT_TYPES.map((type) => (
-                      <TouchableOpacity
-                        key={type}
-                        onPress={() => updateRow(index, "shift_type", type)}
-                        className={`rounded px-2 py-1 ${
-                          displayType === type ? "bg-blue-600" : "bg-gray-200"
-                        }`}
-                      >
-                        <Text
-                          className={displayType === type ? "text-white" : "text-gray-700"}
-                        >
-                          {type}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => removeRow(index)}
-                    className="ml-auto rounded p-2"
-                    accessibilityLabel="Fjern rad"
-                  >
-                    <Ionicons name="trash-outline" size={22} color="#b91c1c" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            );
-          })}
-          {source === "manual" && (
-            <TouchableOpacity
-              onPress={addAnotherShift}
-              className="mb-3 rounded-lg border border-dashed border-gray-300 bg-gray-50 py-3"
-            >
-              <Text className="text-center text-gray-600">+ Add another shift</Text>
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity
-            onPress={calculate}
-            disabled={calculating}
-            style={calculating ? { opacity: 0.6 } : undefined}
-            className="mt-2 rounded-lg bg-green-600 py-3"
-          >
-            {calculating ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text className="text-center font-medium text-white">Beregn lønn</Text>
-            )}
-          </TouchableOpacity>
-
-          {expectedPay !== null && (
-            <View className="mt-4 rounded-lg border border-gray-200 bg-white p-4">
-              <Text className="text-lg font-medium text-gray-900">
-                Du bør ha fått: {expectedPay.toFixed(2)} kr
-              </Text>
-              <View className="mt-2 rounded bg-gray-100 p-2">
-                <Text className="text-xs text-gray-600">
-                  Beregningen er veiledende og basert på dine egne satser. Kontroller mot original timeliste.
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={saveTimesheet}
-                disabled={saving}
-                style={saving ? { opacity: 0.6 } : undefined}
-                className="mt-3 rounded-lg bg-blue-600 py-2"
-              >
-                {saving ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text className="text-center text-white">Lagre timeliste</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {saved && (
-            <Text className="mt-3 text-center text-green-600">Saved. You can import another.</Text>
-          )}
-
-          <TouchableOpacity
-            onPress={() => {
-              setRows([]);
-              setExpectedPay(null);
-              setError(null);
-            }}
-            className="mt-4 rounded-lg border border-gray-300 py-2"
-          >
-            <Text className="text-center text-gray-700">Start på nytt</Text>
-          </TouchableOpacity>
-        </>
+        <ShiftEditor
+          rows={rows}
+          source={source}
+          expectedPay={expectedPay}
+          saving={saving}
+          calculating={calculating}
+          saved={saved}
+          onUpdateRow={updateRow}
+          onRemoveRow={removeRow}
+          onAddRow={() => setRows((prev) => [...prev, { ok: true as const, shift: emptyShift() }])}
+          onCalculate={calculate}
+          onSave={saveTimesheet}
+          onReset={() => {
+            setRows([]);
+            setExpectedPay(null);
+            setError(null);
+          }}
+        />
       )}
     </ScrollView>
   );

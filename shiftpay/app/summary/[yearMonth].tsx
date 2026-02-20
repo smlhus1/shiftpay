@@ -8,33 +8,10 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getMonthSummary, getTariffRates } from "../../lib/db";
-import type { ShiftRow, ShiftStatus } from "../../lib/db";
-import { calculateExpectedPay, shiftDurationHours, type Shift } from "../../lib/calculations";
-
-function statusLabel(s: ShiftStatus): string {
-  if (s === "planned") return "Planlagt";
-  if (s === "completed") return "Fullført";
-  if (s === "missed") return "Ikke møtt";
-  return "Overtid";
-}
-
-function statusColor(s: ShiftStatus): string {
-  if (s === "planned") return "bg-amber-100 text-amber-800";
-  if (s === "completed") return "bg-green-100 text-green-800";
-  if (s === "missed") return "bg-red-100 text-red-800";
-  return "bg-blue-100 text-blue-800";
-}
-
-function shiftRowToShift(s: ShiftRow): Shift {
-  const start = s.actual_start ?? s.start_time;
-  const end = s.actual_end ?? s.end_time;
-  return {
-    date: s.date,
-    start_time: start,
-    end_time: end,
-    shift_type: s.shift_type as Shift["shift_type"],
-  };
-}
+import type { ShiftRow } from "../../lib/db";
+import { calculateExpectedPay, calculateOvertimePay, type Shift } from "../../lib/calculations";
+import { shiftRowToShift } from "../../lib/format";
+import { ShiftCard } from "../../components/ShiftCard";
 
 function monthName(month: number): string {
   const names = [
@@ -74,12 +51,8 @@ export default function SummaryScreen() {
         (sh) => sh.status === "completed" || sh.status === "overtime"
       );
       const shiftsForPay: Shift[] = paidShifts.map(shiftRowToShift);
-      let pay = calculateExpectedPay(shiftsForPay, rates);
-      const overtimePay = paidShifts.reduce(
-        (sum, sh) => sum + ((sh.overtime_minutes ?? 0) / 60) * rates.base_rate,
-        0
-      );
-      setExpectedPay(pay + overtimePay);
+      const pay = calculateExpectedPay(shiftsForPay, rates);
+      setExpectedPay(pay + calculateOvertimePay(paidShifts, rates.base_rate));
     } catch {
       setInvalid(true);
     } finally {
@@ -162,26 +135,12 @@ export default function SummaryScreen() {
         </Text>
       ) : (
         summary.shifts.map((shift) => (
-          <View
+          <ShiftCard
             key={shift.id}
-            className="mb-2 flex-row flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-white p-3"
-          >
-            <Text className="font-medium text-gray-900">{shift.date}</Text>
-            <Text className="text-gray-600">
-              {shift.start_time}–{shift.end_time}
-            </Text>
-            <View className="rounded bg-gray-200 px-2 py-0.5">
-              <Text className="text-sm text-gray-700">{shift.shift_type}</Text>
-            </View>
-            <View className={`rounded px-2 py-0.5 ${statusColor(shift.status)}`}>
-              <Text className="text-sm">{statusLabel(shift.status)}</Text>
-            </View>
-            {shift.status === "overtime" && (shift.overtime_minutes ?? 0) > 0 && (
-              <Text className="text-sm text-blue-700">
-                +{shift.overtime_minutes} min overtid
-              </Text>
-            )}
-          </View>
+            shift={shift}
+            showShiftType
+            showOvertimeLabel
+          />
         ))
       )}
 

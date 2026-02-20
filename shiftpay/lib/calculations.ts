@@ -69,6 +69,11 @@ function hourlyRateForShift(shift: Shift, rates: TariffRates): number {
   return rate;
 }
 
+/** Calculate extra pay from overtime minutes at base_rate per hour. */
+export function calculateOvertimePay(shifts: { overtime_minutes: number }[], baseRate: number): number {
+  return shifts.reduce((sum, s) => sum + (s.overtime_minutes / 60) * baseRate, 0);
+}
+
 export function calculateExpectedPay(shifts: Shift[], rates: TariffRates): number {
   let total = 0;
   for (const shift of shifts) {

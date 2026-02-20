@@ -1,0 +1,178 @@
+import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import type { CsvRowResult } from "../lib/csv";
+import type { Shift, ShiftType } from "../lib/calculations";
+
+export type ImportSource = "ocr" | "manual" | "gallery" | "csv";
+
+const SHIFT_TYPES: ShiftType[] = ["tidlig", "mellom", "kveld", "natt"];
+
+interface ShiftEditorProps {
+  rows: CsvRowResult[];
+  source: ImportSource;
+  expectedPay: number | null;
+  saving: boolean;
+  calculating: boolean;
+  saved: boolean;
+  onUpdateRow: (index: number, field: keyof Shift, value: string) => void;
+  onRemoveRow: (index: number) => void;
+  onAddRow: () => void;
+  onCalculate: () => void;
+  onSave: () => void;
+  onReset: () => void;
+}
+
+export function ShiftEditor({
+  rows,
+  source,
+  expectedPay,
+  saving,
+  calculating,
+  saved,
+  onUpdateRow,
+  onRemoveRow,
+  onAddRow,
+  onCalculate,
+  onSave,
+  onReset,
+}: ShiftEditorProps) {
+  const sourceTag =
+    source === "manual"
+      ? "Manuell"
+      : source === "csv"
+        ? "CSV"
+        : source === "gallery"
+          ? "Galleri"
+          : "OCR";
+
+  return (
+    <>
+      <Text className="mb-2 font-medium text-gray-900">
+        Skift (rediger om nødvendig) · {sourceTag}
+      </Text>
+      {rows.map((row, index) => {
+        const isError = !row.ok;
+        const date = row.ok ? row.shift.date : row.date;
+        const start_time = row.ok ? row.shift.start_time : row.start_time;
+        const end_time = row.ok ? row.shift.end_time : row.end_time;
+        const displayType = row.ok ? row.shift.shift_type : row.shift_type || "tidlig";
+        return (
+          <View
+            key={`row-${index}`}
+            className={`mb-3 rounded-lg border bg-white p-3 ${
+              isError ? "border-l-4 border-l-amber-500 border-gray-200" : "border-gray-200"
+            }`}
+          >
+            {isError && (
+              <Text className="mb-2 text-sm text-amber-800">
+                Sjekk dato og tid: {row.reason}
+              </Text>
+            )}
+            <View className="flex-row flex-wrap items-center gap-2">
+              <TextInput
+                value={date}
+                onChangeText={(s) => onUpdateRow(index, "date", s)}
+                placeholder="DD.MM.YYYY"
+                className="min-w-[100px] rounded border border-gray-200 px-2 py-1 text-gray-900"
+              />
+              <TextInput
+                value={start_time}
+                onChangeText={(s) => onUpdateRow(index, "start_time", s)}
+                placeholder="HH:MM"
+                className="w-16 rounded border border-gray-200 px-2 py-1 text-gray-900"
+              />
+              <Text className="self-center text-gray-500">–</Text>
+              <TextInput
+                value={end_time}
+                onChangeText={(s) => onUpdateRow(index, "end_time", s)}
+                placeholder="HH:MM"
+                className="w-16 rounded border border-gray-200 px-2 py-1 text-gray-900"
+              />
+              <View className="flex-row gap-1">
+                {SHIFT_TYPES.map((type) => (
+                  <TouchableOpacity
+                    key={type}
+                    onPress={() => onUpdateRow(index, "shift_type", type)}
+                    className={`rounded px-2 py-1 ${
+                      displayType === type ? "bg-blue-600" : "bg-gray-200"
+                    }`}
+                  >
+                    <Text className={displayType === type ? "text-white" : "text-gray-700"}>
+                      {type}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TouchableOpacity
+                onPress={() => onRemoveRow(index)}
+                className="ml-auto rounded p-2"
+                accessibilityLabel="Fjern rad"
+              >
+                <Ionicons name="trash-outline" size={22} color="#b91c1c" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        );
+      })}
+
+      {source === "manual" && (
+        <TouchableOpacity
+          onPress={onAddRow}
+          className="mb-3 rounded-lg border border-dashed border-gray-300 bg-gray-50 py-3"
+        >
+          <Text className="text-center text-gray-600">+ Add another shift</Text>
+        </TouchableOpacity>
+      )}
+
+      <TouchableOpacity
+        onPress={onCalculate}
+        disabled={calculating}
+        style={calculating ? { opacity: 0.6 } : undefined}
+        className="mt-2 rounded-lg bg-green-600 py-3"
+      >
+        {calculating ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text className="text-center font-medium text-white">Beregn lønn</Text>
+        )}
+      </TouchableOpacity>
+
+      {expectedPay !== null && (
+        <View className="mt-4 rounded-lg border border-gray-200 bg-white p-4">
+          <Text className="text-lg font-medium text-gray-900">
+            Du bør ha fått: {expectedPay.toFixed(2)} kr
+          </Text>
+          <View className="mt-2 rounded bg-gray-100 p-2">
+            <Text className="text-xs text-gray-600">
+              Beregningen er veiledende og basert på dine egne satser. Kontroller mot original
+              timeliste.
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={onSave}
+            disabled={saving}
+            style={saving ? { opacity: 0.6 } : undefined}
+            className="mt-3 rounded-lg bg-blue-600 py-2"
+          >
+            {saving ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text className="text-center text-white">Lagre timeliste</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {saved && (
+        <Text className="mt-3 text-center text-green-600">Saved. You can import another.</Text>
+      )}
+
+      <TouchableOpacity
+        onPress={onReset}
+        className="mt-4 rounded-lg border border-gray-300 py-2"
+      >
+        <Text className="text-center text-gray-700">Start på nytt</Text>
+      </TouchableOpacity>
+    </>
+  );
+}

@@ -19,33 +19,13 @@ import {
   getTariffRates,
   type ScheduleRow,
   type ShiftRow,
-  type ShiftStatus,
 } from "../../lib/db";
-import { calculateExpectedPay, shiftDurationHours, type Shift } from "../../lib/calculations";
+import { calculateExpectedPay, calculateOvertimePay, type Shift } from "../../lib/calculations";
+import { sourceLabel, shiftRowToShift } from "../../lib/format";
+import { ShiftCard } from "../../components/ShiftCard";
 
 function formatPeriod(start: string, end: string): string {
   return `${start} – ${end}`;
-}
-
-function sourceLabel(source: string): string {
-  if (source === "ocr") return "OCR";
-  if (source === "gallery") return "Galleri";
-  if (source === "csv") return "CSV";
-  return "Manuell";
-}
-
-function statusLabel(s: ShiftStatus): string {
-  if (s === "planned") return "Planlagt";
-  if (s === "completed") return "Fullført";
-  if (s === "missed") return "Ikke møtt";
-  return "Overtid";
-}
-
-function statusColor(s: ShiftStatus): string {
-  if (s === "planned") return "bg-amber-100 text-amber-800";
-  if (s === "completed") return "bg-green-100 text-green-800";
-  if (s === "missed") return "bg-red-100 text-red-800";
-  return "bg-blue-100 text-blue-800";
 }
 
 function getWeekRange(): { from: string; to: string } {
@@ -74,17 +54,6 @@ function countdownToShift(shift: ShiftRow): string {
   if (hours > 0) return `Om ${hours} time${hours === 1 ? "" : "r"}`;
   const mins = Math.floor(diffMs / (1000 * 60));
   return `Om ${mins} min`;
-}
-
-function shiftRowToShift(s: ShiftRow): Shift {
-  const start = s.actual_start ?? s.start_time;
-  const end = s.actual_end ?? s.end_time;
-  return {
-    date: s.date,
-    start_time: start,
-    end_time: end,
-    shift_type: s.shift_type as Shift["shift_type"],
-  };
 }
 
 export default function DashboardScreen() {
@@ -131,8 +100,7 @@ export default function DashboardScreen() {
         weekend_supplement: rates.weekend_supplement,
         holiday_supplement: rates.holiday_supplement,
       });
-      const overtimeHours = completedForPay.reduce((a, s) => a + (s.overtime_minutes ?? 0) / 60, 0);
-      pay += overtimeHours * rates.base_rate;
+      pay += calculateOvertimePay(completedForPay, rates.base_rate);
       setMonthSummary({
         plannedHours: sum.plannedHours,
         actualHours: sum.actualHours,
@@ -302,25 +270,12 @@ export default function DashboardScreen() {
         <View className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
           <Text className="font-medium text-gray-900">Ukens vakter</Text>
           {weekShifts.slice(0, 7).map((s) => (
-            <View
+            <ShiftCard
               key={s.id}
-              className="mt-2 flex-row flex-wrap items-center gap-2 rounded border border-gray-100 bg-gray-50 p-2"
-            >
-              <Text className="text-gray-900">
-                {s.date} {s.start_time}–{s.end_time}
-              </Text>
-              <View className={`rounded px-2 py-0.5 ${statusColor(s.status)}`}>
-                <Text className="text-xs font-medium">{statusLabel(s.status)}</Text>
-              </View>
-              {s.status === "planned" && (
-                <TouchableOpacity
-                  onPress={() => onPressConfirm(s.id)}
-                  className="rounded bg-blue-600 px-2 py-1"
-                >
-                  <Text className="text-xs font-medium text-white">Bekreft</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+              shift={s}
+              onConfirm={onPressConfirm}
+              compact
+            />
           ))}
         </View>
       )}

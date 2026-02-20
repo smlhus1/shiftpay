@@ -14,16 +14,10 @@ import {
   deleteSchedule,
   type ScheduleRow,
   type ShiftRow,
-  type ShiftStatus,
 } from "../../lib/db";
 import { cancelScheduleReminders } from "../../lib/notifications";
-
-function sourceLabel(source: string): string {
-  if (source === "ocr") return "OCR";
-  if (source === "gallery") return "Galleri";
-  if (source === "csv") return "CSV";
-  return "Manuell";
-}
+import { sourceLabel } from "../../lib/format";
+import { ShiftCard } from "../../components/ShiftCard";
 
 function formatCreated(createdAt: string): string {
   try {
@@ -36,20 +30,6 @@ function formatCreated(createdAt: string): string {
   } catch {
     return createdAt;
   }
-}
-
-function statusLabel(s: ShiftStatus): string {
-  if (s === "planned") return "Planlagt";
-  if (s === "completed") return "Fullført";
-  if (s === "missed") return "Ikke møtt";
-  return "Overtid";
-}
-
-function statusColor(s: ShiftStatus): string {
-  if (s === "planned") return "bg-amber-100 text-amber-800";
-  if (s === "completed") return "bg-green-100 text-green-800";
-  if (s === "missed") return "bg-red-100 text-red-800";
-  return "bg-blue-100 text-blue-800";
 }
 
 /** "DD.MM.YYYY" -> "YYYY-MM" */
@@ -181,29 +161,12 @@ export default function PeriodDetailScreen() {
         </View>
       ) : (
         shifts.map((shift) => (
-          <View
+          <ShiftCard
             key={shift.id}
-            className="mb-2 flex-row flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-white p-3"
-          >
-            <Text className="font-medium text-gray-900">{shift.date}</Text>
-            <Text className="text-gray-600">
-              {shift.start_time} – {shift.end_time}
-            </Text>
-            <View className="rounded bg-gray-200 px-2 py-0.5">
-              <Text className="text-sm text-gray-700">{shift.shift_type}</Text>
-            </View>
-            <View className={`rounded px-2 py-0.5 ${statusColor(shift.status)}`}>
-              <Text className="text-sm">{statusLabel(shift.status)}</Text>
-            </View>
-            {shift.status === "planned" && (
-              <TouchableOpacity
-                onPress={() => router.push(`/confirm/${shift.id}` as any)}
-                className="rounded bg-blue-600 px-3 py-1"
-              >
-                <Text className="text-sm font-medium text-white">Bekreft</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+            shift={shift}
+            showShiftType
+            onConfirm={(id) => router.push(`/confirm/${id}` as any)}
+          />
         ))
       )}
 
