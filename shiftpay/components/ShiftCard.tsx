@@ -34,7 +34,7 @@ export function ShiftCard({
   showShiftType,
 }: ShiftCardProps) {
   const { t } = useTranslation();
-  const tappable = !!(onEdit && shift.status !== "planned");
+  const tappable = !!onEdit;
 
   const compactClass = "mt-2 flex-row flex-wrap items-center gap-2 rounded-xl border border-stone-100 bg-stone-50 p-2";
   const normalClass = "mb-2 rounded-xl border bg-white p-3";
