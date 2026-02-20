@@ -4,7 +4,7 @@ import type { RefObject } from "react";
 import { useTranslation } from "../lib/i18n";
 
 interface CameraCaptureProps {
-  cameraRef: RefObject<{ takePicture: (opts?: object) => Promise<{ uri: string }> } | null>;
+  cameraRef: RefObject<{ takePictureAsync: (opts?: object) => Promise<{ uri: string }> } | null>;
   onCancel: () => void;
   onCapture: () => void;
 }

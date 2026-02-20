@@ -92,7 +92,7 @@ export default function ImportScreen() {
   const [ocrProgress, setOcrProgress] = useState<string | null>(null);
   const [showMore, setShowMore] = useState(false);
   const [baseRateZero, setBaseRateZero] = useState(false);
-  const cameraRef = useRef<{ takePicture: (opts?: object) => Promise<{ uri: string }> } | null>(null);
+  const cameraRef = useRef<{ takePictureAsync: (opts?: object) => Promise<{ uri: string }> } | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
 
   useEffect(() => {
@@ -209,7 +209,7 @@ export default function ImportScreen() {
   const takePhoto = async () => {
     if (!cameraRef.current) return;
     try {
-      const photo = await cameraRef.current.takePicture({});
+      const photo = await cameraRef.current.takePictureAsync({});
       setShowCamera(false);
       setLoading(true);
       setError(null);
