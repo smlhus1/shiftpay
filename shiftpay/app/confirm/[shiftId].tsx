@@ -29,7 +29,8 @@ export default function ConfirmShiftScreen() {
   const [shift, setShift] = useState<ShiftRow | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [showOvertime, setShowOvertime] = useState(false);
-  const [overtimeMinutes, setOvertimeMinutes] = useState("");
+  const [overtimeHours, setOvertimeHours] = useState("");
+  const [overtimeMins, setOvertimeMins] = useState("");
   const [confirmed, setConfirmed] = useState(false);
 
   const load = useCallback(async () => {
@@ -57,8 +58,10 @@ export default function ConfirmShiftScreen() {
     async (status: "completed" | "missed" | "overtime") => {
       if (!shiftId) return;
       if (status === "overtime") {
-        const mins = parseInt(overtimeMinutes, 10);
-        if (Number.isNaN(mins) || mins <= 0) {
+        const h = parseInt(overtimeHours, 10) || 0;
+        const m = parseInt(overtimeMins, 10) || 0;
+        const mins = h * 60 + m;
+        if (mins <= 0) {
           Alert.alert(t("confirm.overtimeError.title"), t("confirm.overtimeError.message"));
           return;
         }
@@ -85,7 +88,7 @@ export default function ConfirmShiftScreen() {
         setSubmitting(false);
       }
     },
-    [shiftId, overtimeMinutes, router, t]
+    [shiftId, overtimeHours, overtimeMins, router, t]
   );
 
   if (loading) {
@@ -184,13 +187,28 @@ export default function ConfirmShiftScreen() {
         ) : (
           <>
             <Text className="mb-2 font-medium text-slate-900">{t("confirm.overtimeLabel")}</Text>
-            <TextInput
-              value={overtimeMinutes}
-              onChangeText={setOvertimeMinutes}
-              placeholder={t("confirm.overtimePlaceholder")}
-              keyboardType="number-pad"
-              className="mb-4 rounded-xl border border-stone-300 bg-white px-4 py-3 text-slate-900"
-            />
+            <View className="mb-4 flex-row gap-3">
+              <View className="flex-1">
+                <Text className="mb-1 text-xs text-slate-500">{t("confirm.overtimeHoursLabel")}</Text>
+                <TextInput
+                  value={overtimeHours}
+                  onChangeText={setOvertimeHours}
+                  placeholder="0"
+                  keyboardType="number-pad"
+                  className="rounded-xl border border-stone-300 bg-white px-4 py-3 text-slate-900"
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="mb-1 text-xs text-slate-500">{t("confirm.overtimeMinsLabel")}</Text>
+                <TextInput
+                  value={overtimeMins}
+                  onChangeText={setOvertimeMins}
+                  placeholder="0"
+                  keyboardType="number-pad"
+                  className="rounded-xl border border-stone-300 bg-white px-4 py-3 text-slate-900"
+                />
+              </View>
+            </View>
             <TouchableOpacity
               onPress={() => handleConfirm("overtime")}
               disabled={submitting}
