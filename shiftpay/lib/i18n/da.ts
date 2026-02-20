@@ -109,6 +109,7 @@ const da: TranslationShape = {
   },
   confirm: {
     question: "Fuldførte du vagten?",
+    editQuestion: "Rediger vagtens status",
     completed: "Ja, fuldført",
     missed: "Nej, ikke fuldført",
     overtime: "Overarbejde",
@@ -193,6 +194,7 @@ const da: TranslationShape = {
     shiftCard: {
       confirm: "Bekræft",
       confirmA11y: "Bekræft vagt %{date}",
+      edit: "Rediger",
       overtime: "+%{minutes} min overarbejde",
     },
     camera: {

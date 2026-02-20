@@ -205,6 +205,7 @@ export default function SummaryScreen() {
             shift={shift}
             showShiftType
             showOvertimeLabel
+            onEdit={(id) => router.push(`/confirm/${id}` as any)}
           />
         ))
       )}

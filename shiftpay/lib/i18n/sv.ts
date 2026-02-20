@@ -109,6 +109,7 @@ const sv: TranslationShape = {
   },
   confirm: {
     question: "Slutförde du skiftet?",
+    editQuestion: "Ändra skiftets status",
     completed: "Ja, slutfört",
     missed: "Nej, inte slutfört",
     overtime: "Övertid",
@@ -193,6 +194,7 @@ const sv: TranslationShape = {
     shiftCard: {
       confirm: "Bekräfta",
       confirmA11y: "Bekräfta skift %{date}",
+      edit: "Ändra",
       overtime: "+%{minutes} min övertid",
     },
     camera: {

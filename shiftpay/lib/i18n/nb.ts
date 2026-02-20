@@ -107,6 +107,7 @@ const nb = {
   },
   confirm: {
     question: "Fullførte du vakten?",
+    editQuestion: "Endre status på vakten",
     completed: "Ja, fullført",
     missed: "Nei, ikke fullført",
     overtime: "Overtid",
@@ -191,6 +192,7 @@ const nb = {
     shiftCard: {
       confirm: "Bekreft",
       confirmA11y: "Bekreft vakt %{date}",
+      edit: "Endre",
       overtime: "+%{minutes} min overtid",
     },
     camera: {

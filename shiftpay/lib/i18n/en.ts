@@ -109,6 +109,7 @@ const en: TranslationShape = {
   },
   confirm: {
     question: "Did you complete the shift?",
+    editQuestion: "Change shift status",
     completed: "Yes, completed",
     missed: "No, not completed",
     overtime: "Overtime",
@@ -193,6 +194,7 @@ const en: TranslationShape = {
     shiftCard: {
       confirm: "Confirm",
       confirmA11y: "Confirm shift %{date}",
+      edit: "Edit",
       overtime: "+%{minutes} min overtime",
     },
     camera: {

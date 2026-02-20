@@ -90,19 +90,19 @@ export default function ConfirmShiftScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color="#2563eb" />
+      <View className="flex-1 items-center justify-center bg-stone-50">
+        <ActivityIndicator size="large" color="#0f766e" />
       </View>
     );
   }
 
   if (notFound || !shiftId) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50 p-6">
-        <Text className="text-center text-gray-600">{t("confirm.errors.notFound")}</Text>
+      <View className="flex-1 items-center justify-center bg-stone-50 p-6">
+        <Text className="text-center text-slate-500">{t("confirm.errors.notFound")}</Text>
         <TouchableOpacity
           onPress={() => router.back()}
-          className="mt-4 rounded-lg bg-blue-600 px-6 py-2"
+          className="mt-4 rounded-xl bg-teal-700 px-6 py-2"
         >
           <Text className="text-white">{t("confirm.backBtnLabel")}</Text>
         </TouchableOpacity>
@@ -112,11 +112,11 @@ export default function ConfirmShiftScreen() {
 
   if (!shift) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50 p-6">
-        <Text className="text-center text-gray-600">{t("confirm.errors.loadError")}</Text>
+      <View className="flex-1 items-center justify-center bg-stone-50 p-6">
+        <Text className="text-center text-slate-500">{t("confirm.errors.loadError")}</Text>
         <TouchableOpacity
           onPress={() => router.back()}
-          className="mt-4 rounded-lg bg-blue-600 px-6 py-2"
+          className="mt-4 rounded-xl bg-teal-700 px-6 py-2"
         >
           <Text className="text-white">{t("confirm.backBtnLabel")}</Text>
         </TouchableOpacity>
@@ -131,40 +131,27 @@ export default function ConfirmShiftScreen() {
           <Ionicons name="checkmark-circle" size={40} color="#16a34a" />
         </View>
         <Text className="text-xl font-semibold text-green-900">{t("confirm.success")}</Text>
-        <Text className="mt-2 text-center text-gray-600">{formatShiftLabel(shift)}</Text>
+        <Text className="mt-2 text-center text-slate-500">{formatShiftLabel(shift)}</Text>
       </View>
     );
   }
 
-  const alreadyConfirmed = shift.status !== "planned";
-  if (alreadyConfirmed) {
-    return (
-      <View className="flex-1 bg-gray-50 p-6">
-        <Text className="text-center text-gray-600">
-          {t("confirm.alreadyConfirmed", { status: shift.status })}
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="mt-6 rounded-lg bg-blue-600 py-3"
-        >
-          <Text className="text-center font-medium text-white">{t("confirm.backBtn")}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  const isEdit = shift.status !== "planned";
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className="flex-1 bg-gray-50"
+      className="flex-1 bg-stone-50"
     >
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
-          <Text className="text-lg font-medium text-gray-900">{t("confirm.question")}</Text>
-          <Text className="mt-2 text-gray-600">{formatShiftLabel(shift)}</Text>
+        <View className="mb-6 rounded-xl border border-stone-200 bg-white p-4">
+          <Text className="text-lg font-medium text-slate-900">
+            {isEdit ? t("confirm.editQuestion") : t("confirm.question")}
+          </Text>
+          <Text className="mt-2 text-slate-500">{formatShiftLabel(shift)}</Text>
         </View>
 
         {!showOvertime ? (
@@ -172,7 +159,7 @@ export default function ConfirmShiftScreen() {
             <TouchableOpacity
               onPress={() => handleConfirm("completed")}
               disabled={submitting}
-              className="mb-3 rounded-lg bg-green-600 py-3"
+              className="mb-3 rounded-xl bg-green-600 py-4"
               style={submitting ? { opacity: 0.6 } : undefined}
             >
               <Text className="text-center font-medium text-white">{t("confirm.completed")}</Text>
@@ -180,34 +167,34 @@ export default function ConfirmShiftScreen() {
             <TouchableOpacity
               onPress={() => handleConfirm("missed")}
               disabled={submitting}
-              className="mb-3 rounded-lg border border-gray-300 bg-white py-3"
+              className="mb-3 rounded-xl border border-stone-300 bg-white py-4"
               style={submitting ? { opacity: 0.6 } : undefined}
             >
-              <Text className="text-center font-medium text-gray-700">{t("confirm.missed")}</Text>
+              <Text className="text-center font-medium text-slate-700">{t("confirm.missed")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setShowOvertime(true)}
               disabled={submitting}
-              className="mb-3 rounded-lg border border-blue-300 bg-blue-50 py-3"
+              className="mb-3 rounded-xl border border-teal-200 bg-teal-50 py-4"
               style={submitting ? { opacity: 0.6 } : undefined}
             >
-              <Text className="text-center font-medium text-blue-700">{t("confirm.overtime")}</Text>
+              <Text className="text-center font-medium text-teal-700">{t("confirm.overtime")}</Text>
             </TouchableOpacity>
           </>
         ) : (
           <>
-            <Text className="mb-2 font-medium text-gray-900">{t("confirm.overtimeLabel")}</Text>
+            <Text className="mb-2 font-medium text-slate-900">{t("confirm.overtimeLabel")}</Text>
             <TextInput
               value={overtimeMinutes}
               onChangeText={setOvertimeMinutes}
               placeholder={t("confirm.overtimePlaceholder")}
               keyboardType="number-pad"
-              className="mb-4 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900"
+              className="mb-4 rounded-xl border border-stone-300 bg-white px-4 py-3 text-slate-900"
             />
             <TouchableOpacity
               onPress={() => handleConfirm("overtime")}
               disabled={submitting}
-              className="mb-3 rounded-lg bg-blue-600 py-3"
+              className="mb-3 rounded-xl bg-teal-700 py-4"
               style={submitting ? { opacity: 0.6 } : undefined}
             >
               {submitting ? (
@@ -219,9 +206,9 @@ export default function ConfirmShiftScreen() {
             <TouchableOpacity
               onPress={() => setShowOvertime(false)}
               disabled={submitting}
-              className="rounded-lg border border-gray-300 bg-white py-3"
+              className="rounded-xl border border-stone-300 bg-white py-3"
             >
-              <Text className="text-center font-medium text-gray-600">{t("confirm.backBtn")}</Text>
+              <Text className="text-center font-medium text-slate-500">{t("confirm.backBtn")}</Text>
             </TouchableOpacity>
           </>
         )}
