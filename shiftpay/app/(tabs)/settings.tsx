@@ -19,6 +19,7 @@ const defaultRates: TariffRatesInput = {
   night_supplement: 0,
   weekend_supplement: 0,
   holiday_supplement: 0,
+  overtime_supplement: 40,
 };
 
 function toStr(n: number): string {
@@ -55,6 +56,7 @@ export default function SettingsScreen() {
             night_supplement: row.night_supplement,
             weekend_supplement: row.weekend_supplement,
             holiday_supplement: row.holiday_supplement,
+            overtime_supplement: row.overtime_supplement,
           });
         }
       })
@@ -83,8 +85,8 @@ export default function SettingsScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color="#2563eb" />
+      <View className="flex-1 items-center justify-center bg-stone-50">
+        <ActivityIndicator size="large" color="#0f766e" />
       </View>
     );
   }
@@ -92,10 +94,10 @@ export default function SettingsScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className="flex-1 bg-gray-50"
+      className="flex-1 bg-stone-50"
     >
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
-        <Text className="mb-4 text-sm text-gray-600">
+        <Text className="mb-4 text-sm text-slate-500">
           {t("settings.description")}
         </Text>
 
@@ -132,12 +134,19 @@ export default function SettingsScreen() {
             setRates((r) => ({ ...r, holiday_supplement: toNum(s) }))
           }
         />
+        <RateField
+          label={t("settings.labels.overtime")}
+          value={toStr(rates.overtime_supplement)}
+          onChangeText={(s) =>
+            setRates((r) => ({ ...r, overtime_supplement: toNum(s) }))
+          }
+        />
 
         <TouchableOpacity
           onPress={handleSave}
           disabled={saving}
           style={saving ? { opacity: 0.6 } : undefined}
-          className="mt-6 rounded-lg bg-blue-600 py-3"
+          className="mt-6 rounded-xl bg-teal-700 py-4"
         >
           {saving ? (
             <ActivityIndicator color="white" />
@@ -157,18 +166,18 @@ export default function SettingsScreen() {
 
         {/* Language picker */}
         <View className="mt-8">
-          <Text className="mb-3 text-sm font-medium text-gray-700">{t("settings.language.title")}</Text>
+          <Text className="mb-3 text-sm font-medium text-slate-700">{t("settings.language.title")}</Text>
           {LOCALE_OPTIONS.map((opt) => (
             <TouchableOpacity
               key={opt.code}
               onPress={() => setLocale(opt.code)}
               accessibilityRole="radio"
               accessibilityState={{ checked: locale === opt.code }}
-              className="mb-2 flex-row items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3"
+              className="mb-2 flex-row items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3"
             >
-              <Text className="text-gray-900">{opt.label}</Text>
+              <Text className="text-slate-900">{opt.label}</Text>
               {locale === opt.code && (
-                <Ionicons name="checkmark" size={20} color="#2563eb" />
+                <Ionicons name="checkmark" size={20} color="#0f766e" />
               )}
             </TouchableOpacity>
           ))}
@@ -189,13 +198,13 @@ function RateField({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-1 text-sm font-medium text-gray-700">{label}</Text>
+      <Text className="mb-1.5 text-sm font-medium text-slate-700">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         keyboardType="decimal-pad"
         placeholder="0"
-        className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900"
+        className="min-h-[48px] rounded-xl border border-stone-300 bg-white px-4 py-3 text-slate-900"
       />
     </View>
   );

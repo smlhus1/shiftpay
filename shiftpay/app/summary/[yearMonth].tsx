@@ -62,7 +62,7 @@ export default function SummaryScreen() {
       );
       const shiftsForPay: Shift[] = paidShifts.map(shiftRowToShift);
       const pay = calculateExpectedPay(shiftsForPay, rates);
-      setExpectedPay(pay + calculateOvertimePay(paidShifts, rates.base_rate));
+      setExpectedPay(pay + calculateOvertimePay(paidShifts, rates));
 
       const allMonths = await getDistinctMonthsWithShifts();
       const currentKey = `${year}-${String(month).padStart(2, "0")}`;

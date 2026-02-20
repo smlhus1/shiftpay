@@ -95,6 +95,7 @@ const da: TranslationShape = {
       night: "Nattillæg",
       weekend: "Weekendtillæg",
       holiday: "Helligdagstillæg",
+      overtime: "Overarbejdstillæg (%)",
     },
     save: "Gem",
     saved: "Gemt.",

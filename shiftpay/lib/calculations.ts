@@ -20,6 +20,7 @@ export interface TariffRates {
   night_supplement: number;
   weekend_supplement: number;
   holiday_supplement: number;
+  overtime_supplement: number;
 }
 
 /** Parse "HH:MM" to minutes since midnight. */
@@ -69,9 +70,13 @@ function hourlyRateForShift(shift: Shift, rates: TariffRates): number {
   return rate;
 }
 
-/** Calculate extra pay from overtime minutes at base_rate per hour. */
-export function calculateOvertimePay(shifts: { overtime_minutes: number }[], baseRate: number): number {
-  return shifts.reduce((sum, s) => sum + (s.overtime_minutes / 60) * baseRate, 0);
+/** Calculate extra pay from overtime minutes: base_rate × (1 + overtime_supplement/100). */
+export function calculateOvertimePay(
+  shifts: { overtime_minutes: number }[],
+  rates: Pick<TariffRates, "base_rate" | "overtime_supplement">
+): number {
+  const hourlyRate = rates.base_rate * (1 + rates.overtime_supplement / 100);
+  return shifts.reduce((sum, s) => sum + (s.overtime_minutes / 60) * hourlyRate, 0);
 }
 
 export function calculateExpectedPay(shifts: Shift[], rates: TariffRates): number {

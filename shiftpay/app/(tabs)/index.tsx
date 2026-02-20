@@ -106,7 +106,7 @@ export default function DashboardScreen() {
         weekend_supplement: rates.weekend_supplement,
         holiday_supplement: rates.holiday_supplement,
       });
-      pay += calculateOvertimePay(completedForPay, rates.base_rate);
+      pay += calculateOvertimePay(completedForPay, rates);
       setMonthSummary({
         plannedHours: sum.plannedHours,
         actualHours: sum.actualHours,

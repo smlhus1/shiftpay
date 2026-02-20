@@ -95,6 +95,7 @@ const en: TranslationShape = {
       night: "Night supplement",
       weekend: "Weekend supplement",
       holiday: "Holiday supplement",
+      overtime: "Overtime supplement (%)",
     },
     save: "Save",
     saved: "Saved.",

@@ -93,6 +93,7 @@ const nb = {
       night: "Nattillegg",
       weekend: "Helgetillegg",
       holiday: "Helligdagstillegg",
+      overtime: "Overtidstillegg (%)",
     },
     save: "Lagre",
     saved: "Lagret.",

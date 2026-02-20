@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS tariff_rates (
   night_supplement REAL NOT NULL DEFAULT 0,
   weekend_supplement REAL NOT NULL DEFAULT 0,
   holiday_supplement REAL NOT NULL DEFAULT 0,
+  overtime_supplement REAL NOT NULL DEFAULT 40,
   updated_at TEXT NOT NULL
 );
 
@@ -56,6 +57,19 @@ function isDbGoneError(e: unknown): boolean {
   );
 }
 
+async function migrateAddOvertimeSupplement(database: SQLite.SQLiteDatabase): Promise<void> {
+  const cols = await database.getAllAsync<{ name: string }>("PRAGMA table_info(tariff_rates)");
+  const hasCol = cols.some((c) => c.name === "overtime_supplement");
+  if (!hasCol) {
+    await database.execAsync(
+      "ALTER TABLE tariff_rates ADD COLUMN overtime_supplement REAL NOT NULL DEFAULT 40"
+    );
+    if (__DEV__) {
+      console.log("[ShiftPay] Migrated: added overtime_supplement to tariff_rates");
+    }
+  }
+}
+
 async function migrateTimesheetsToSchedules(database: SQLite.SQLiteDatabase): Promise<void> {
   const tables = await database.getAllAsync<{ name: string }>(
     "SELECT name FROM sqlite_master WHERE type='table' AND name='timesheets'"
@@ -95,6 +109,7 @@ export async function initDb(): Promise<SQLite.SQLiteDatabase> {
   const openAndPrepare = async (): Promise<SQLite.SQLiteDatabase> => {
     const database = await SQLite.openDatabaseAsync(DB_NAME);
     await database.execAsync(SCHEMA);
+    await migrateAddOvertimeSupplement(database);
     await migrateTimesheetsToSchedules(database);
     return database;
   };
@@ -156,6 +171,7 @@ export interface TariffRatesRow {
   night_supplement: number;
   weekend_supplement: number;
   holiday_supplement: number;
+  overtime_supplement: number;
   updated_at: string;
 }
 
@@ -224,10 +240,11 @@ export async function getTariffRates(): Promise<TariffRatesRow> {
       night_supplement: 0,
       weekend_supplement: 0,
       holiday_supplement: 0,
+      overtime_supplement: 40,
       updated_at: now,
     };
     await database.runAsync(
-      "INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, overtime_supplement, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
       [
         defaultRates.id,
         defaultRates.base_rate,
@@ -235,6 +252,7 @@ export async function getTariffRates(): Promise<TariffRatesRow> {
         defaultRates.night_supplement,
         defaultRates.weekend_supplement,
         defaultRates.holiday_supplement,
+        defaultRates.overtime_supplement,
         defaultRates.updated_at,
       ]
     );
@@ -246,14 +264,15 @@ export async function setTariffRates(rates: TariffRatesInput): Promise<void> {
   await withDb(async (database) => {
     const now = new Date().toISOString();
     await database.runAsync(
-      `INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, overtime_supplement, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          base_rate = excluded.base_rate,
          evening_supplement = excluded.evening_supplement,
          night_supplement = excluded.night_supplement,
          weekend_supplement = excluded.weekend_supplement,
          holiday_supplement = excluded.holiday_supplement,
+         overtime_supplement = excluded.overtime_supplement,
          updated_at = excluded.updated_at`,
       [
         TARIFF_ID,
@@ -262,6 +281,7 @@ export async function setTariffRates(rates: TariffRatesInput): Promise<void> {
         rates.night_supplement,
         rates.weekend_supplement,
         rates.holiday_supplement,
+        rates.overtime_supplement,
         now,
       ]
     );
@@ -374,20 +394,26 @@ function formatDateForCompare(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-/** Vakter der end_time har passert og status fortsatt er planned. */
+/** Vakter der end_time har passert og status fortsatt er planned. Sortert eldst→nyest. */
 export async function getShiftsDueForConfirmation(): Promise<ShiftRow[]> {
   return withDb(async (database) => {
     const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE status = 'planned' ORDER BY date ASC, end_time ASC"
+      "SELECT * FROM shifts WHERE status = 'planned'"
     );
     const now = new Date();
-    const todayStr = `${String(now.getDate()).padStart(2, "0")}.${String(now.getMonth() + 1).padStart(2, "0")}.${now.getFullYear()}`;
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    return rows.filter((r) => {
+    const filtered = rows.filter((r) => {
+      const c = dateToComparable(r.date);
+      const today = formatDateForCompare(now);
       const [eh, em] = r.end_time.split(":").map(Number);
       const endMinutes = (eh ?? 0) * 60 + (em ?? 0);
-      const isPast = r.date < todayStr || (r.date === todayStr && endMinutes + 15 <= nowMinutes);
-      return isPast;
+      return c < today || (c === today && endMinutes + 15 <= nowMinutes);
+    });
+    return filtered.sort((a, b) => {
+      const ca = dateToComparable(a.date);
+      const cb = dateToComparable(b.date);
+      if (ca !== cb) return ca < cb ? -1 : 1;
+      return a.end_time < b.end_time ? -1 : a.end_time > b.end_time ? 1 : 0;
     });
   });
 }

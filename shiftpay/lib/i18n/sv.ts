@@ -95,6 +95,7 @@ const sv: TranslationShape = {
       night: "Natttillägg",
       weekend: "Helgtillägg",
       holiday: "Helgdagstillägg",
+      overtime: "Övertidstillägg (%)",
     },
     save: "Spara",
     saved: "Sparat.",
