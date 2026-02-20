@@ -429,6 +429,27 @@ export interface MonthSummary {
   shifts: ShiftRow[];
 }
 
+export async function getDistinctMonthsWithShifts(): Promise<Array<{ year: number; month: number }>> {
+  return withDb(async (database) => {
+    const rows = await database.getAllAsync<{ date: string }>(
+      "SELECT DISTINCT date FROM shifts"
+    );
+    const seen = new Set<string>();
+    for (const r of rows) {
+      const parts = r.date.split(".");
+      const m = parts[1];
+      const y = parts[2];
+      if (m && y) seen.add(`${y}-${m.padStart(2, "0")}`);
+    }
+    return Array.from(seen)
+      .map((k) => {
+        const [y, m] = k.split("-").map(Number);
+        return { year: y ?? 0, month: m ?? 0 };
+      })
+      .sort((a, b) => b.year - a.year || b.month - a.month);
+  });
+}
+
 export async function getMonthSummary(year: number, month: number): Promise<MonthSummary> {
   const monthStr = String(month).padStart(2, "0");
   return withDb(async (database) => {

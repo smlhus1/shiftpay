@@ -11,23 +11,20 @@ import { useRouter } from "expo-router";
 import { useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import {
-  getAllSchedules,
+  getDistinctMonthsWithShifts,
   getUpcomingShifts,
   getShiftsDueForConfirmation,
   getMonthSummary,
   getShiftsInDateRange,
   getTariffRates,
-  type ScheduleRow,
   type ShiftRow,
 } from "../../lib/db";
 import { calculateExpectedPay, calculateOvertimePay, type Shift } from "../../lib/calculations";
-import { sourceLabel, shiftRowToShift } from "../../lib/format";
+import { shiftRowToShift } from "../../lib/format";
 import { ShiftCard } from "../../components/ShiftCard";
 import { useTranslation } from "../../lib/i18n";
 
-function formatPeriod(start: string, end: string): string {
-  return `${start} – ${end}`;
-}
+const MONTH_KEYS = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"] as const;
 
 function getWeekRange(): { from: string; to: string } {
   const now = new Date();
@@ -67,7 +64,7 @@ function countdownToShift(shift: ShiftRow, t: (key: string, opts?: object) => st
 export default function DashboardScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const [schedules, setSchedules] = useState<ScheduleRow[]>([]);
+  const [monthsList, setMonthsList] = useState<Array<{ year: number; month: number }>>([]);
   const [nextShift, setNextShift] = useState<ShiftRow | null>(null);
   const [weekShifts, setWeekShifts] = useState<ShiftRow[]>([]);
   const [dueConfirmation, setDueConfirmation] = useState<ShiftRow[]>([]);
@@ -82,13 +79,13 @@ export default function DashboardScreen() {
 
   const load = useCallback(async () => {
     try {
-      const [scheds, upcoming, due, weekRange] = await Promise.all([
-        getAllSchedules(),
+      const [months, upcoming, due, weekRange] = await Promise.all([
+        getDistinctMonthsWithShifts(),
         getUpcomingShifts(1),
         getShiftsDueForConfirmation(),
         Promise.resolve(getWeekRange()),
       ]);
-      setSchedules(scheds);
+      setMonthsList(months);
       setNextShift(upcoming.length > 0 ? upcoming[0] : null);
       setDueConfirmation(due);
 
@@ -118,7 +115,7 @@ export default function DashboardScreen() {
       setLoadError(null);
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t("dashboard.error.message"));
-      setSchedules([]);
+      setMonthsList([]);
       setNextShift(null);
       setWeekShifts([]);
       setDueConfirmation([]);
@@ -141,13 +138,6 @@ export default function DashboardScreen() {
     load();
   }, [load]);
 
-  const onPressSchedule = useCallback(
-    (id: string) => {
-      router.push(`/period/${id}` as any);
-    },
-    [router]
-  );
-
   const onPressConfirm = useCallback(
     (shiftId: string) => {
       router.push(`/confirm/${shiftId}` as any);
@@ -162,25 +152,25 @@ export default function DashboardScreen() {
     router.push(`/summary/${y}-${m}` as any);
   }, [router]);
 
-  if (loading && schedules.length === 0 && !nextShift && dueConfirmation.length === 0) {
+  if (loading && monthsList.length === 0 && !nextShift && dueConfirmation.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color="#2563eb" />
+      <View className="flex-1 items-center justify-center bg-stone-50">
+        <ActivityIndicator size="large" color="#0f766e" />
       </View>
     );
   }
 
   if (loadError) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50 p-6">
-        <Text className="text-center text-gray-600">{loadError}</Text>
+      <View className="flex-1 items-center justify-center bg-stone-50 p-6">
+        <Text className="text-center text-slate-500">{loadError}</Text>
         <TouchableOpacity
           onPress={() => {
             setLoadError(null);
             setLoading(true);
             load();
           }}
-          className="mt-6 rounded-lg bg-blue-600 px-6 py-3"
+          className="mt-6 rounded-xl bg-teal-700 px-6 py-4"
         >
           <Text className="font-medium text-white">{t("dashboard.error.retry")}</Text>
         </TouchableOpacity>
@@ -188,25 +178,25 @@ export default function DashboardScreen() {
     );
   }
 
-  const empty = schedules.length === 0 && !nextShift && dueConfirmation.length === 0;
+  const empty = monthsList.length === 0 && !nextShift && dueConfirmation.length === 0;
 
   return (
     <ScrollView
-      className="flex-1 bg-gray-50"
+      className="flex-1 bg-stone-50"
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#2563eb"]} />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#0f766e"]} />
       }
     >
       {empty && (
         <View className="flex-1 items-center justify-center py-12">
-          <Text className="text-lg font-medium text-gray-900">{t("dashboard.empty.title")}</Text>
-          <Text className="mt-2 text-center text-gray-600">
+          <Text className="text-lg font-medium text-slate-900">{t("dashboard.empty.title")}</Text>
+          <Text className="mt-2 text-center text-slate-500">
             {t("dashboard.empty.description")}
           </Text>
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/import")}
-            className="mt-6 rounded-lg bg-blue-600 px-6 py-3"
+            className="mt-6 rounded-xl bg-teal-700 px-6 py-4"
           >
             <Text className="font-medium text-white">{t("dashboard.empty.cta")}</Text>
           </TouchableOpacity>
@@ -214,25 +204,25 @@ export default function DashboardScreen() {
       )}
 
       {nextShift && (
-        <View className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
-          <Text className="text-sm font-medium text-blue-900">{t("dashboard.nextShift.title")}</Text>
-          <Text className="mt-1 text-lg font-semibold text-gray-900">
+        <View className="mb-4 rounded-xl bg-teal-700 p-5">
+          <Text className="text-sm font-medium text-teal-100">{t("dashboard.nextShift.title")}</Text>
+          <Text className="mt-1 text-xl font-semibold text-white">
             {nextShift.date} · {nextShift.start_time}–{nextShift.end_time}
           </Text>
-          <Text className="mt-1 text-sm text-gray-600">{countdownToShift(nextShift, t)}</Text>
+          <Text className="mt-1 text-sm text-teal-200">{countdownToShift(nextShift, t)}</Text>
           {isShiftEndPassed(nextShift) && (
             <TouchableOpacity
               onPress={() => onPressConfirm(nextShift.id)}
-              className="mt-3 self-start rounded-lg bg-blue-600 px-4 py-2"
+              className="mt-3 self-start rounded-xl bg-white px-4 py-2"
             >
-              <Text className="text-sm font-medium text-white">{t("dashboard.nextShift.confirm")}</Text>
+              <Text className="text-sm font-semibold text-teal-700">{t("dashboard.nextShift.confirm")}</Text>
             </TouchableOpacity>
           )}
         </View>
       )}
 
       {dueConfirmation.length > 0 && (
-        <View className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <View className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
           <Text className="font-medium text-amber-900">
             {t("dashboard.pending.title")} ({dueConfirmation.length})
           </Text>
@@ -240,12 +230,12 @@ export default function DashboardScreen() {
             <TouchableOpacity
               key={s.id}
               onPress={() => onPressConfirm(s.id)}
-              className="mt-2 flex-row items-center justify-between rounded border border-amber-200 bg-white p-3"
+              className="mt-2 flex-row items-center justify-between rounded-xl border border-amber-200 bg-white p-3"
             >
-              <Text className="text-gray-900">
+              <Text className="text-slate-900">
                 {s.date} {s.start_time}–{s.end_time}
               </Text>
-              <Text className="text-sm font-medium text-blue-600">{t("dashboard.pending.confirmBtn")}</Text>
+              <Text className="text-sm font-medium text-teal-700">{t("dashboard.pending.confirmBtn")}</Text>
             </TouchableOpacity>
           ))}
           {dueConfirmation.length > 3 && (
@@ -259,27 +249,27 @@ export default function DashboardScreen() {
       {monthSummary && (monthSummary.plannedHours > 0 || monthSummary.actualHours > 0) ? (
         <TouchableOpacity
           onPress={onPressSummary}
-          className="mb-4 rounded-lg border border-gray-200 bg-white p-4"
+          className="mb-4 rounded-xl border border-stone-200 bg-white p-4"
         >
-          <Text className="font-medium text-gray-900">{t("dashboard.month.title")}</Text>
+          <Text className="font-medium text-slate-900">{t("dashboard.month.title")}</Text>
           <View className="mt-2 flex-row gap-4">
-            <Text className="text-sm text-gray-600">
+            <Text className="text-sm text-slate-500">
               {t("dashboard.month.planned", { hours: monthSummary.plannedHours.toFixed(1) })}
             </Text>
-            <Text className="text-sm text-gray-600">
+            <Text className="text-sm text-slate-500">
               {t("dashboard.month.actual", { hours: monthSummary.actualHours.toFixed(1) })}
             </Text>
           </View>
-          <Text className="mt-2 text-lg font-semibold text-gray-900">
+          <Text className="mt-2 text-lg font-bold text-slate-900">
             {t("dashboard.month.expectedPay", { amount: monthSummary.expectedPay.toFixed(0) })}
           </Text>
-          <Text className="mt-1 text-sm text-blue-600">{t("dashboard.month.viewSummary")}</Text>
+          <Text className="mt-1 text-sm text-teal-700">{t("dashboard.month.viewSummary")}</Text>
         </TouchableOpacity>
       ) : null}
 
       {weekShifts.length > 0 && (
-        <View className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
-          <Text className="font-medium text-gray-900">{t("dashboard.week.title")}</Text>
+        <View className="mb-4 rounded-xl border border-stone-200 bg-white p-4">
+          <Text className="font-medium text-slate-900">{t("dashboard.week.title")}</Text>
           {weekShifts.slice(0, 7).map((s) => (
             <ShiftCard
               key={s.id}
@@ -291,29 +281,28 @@ export default function DashboardScreen() {
         </View>
       )}
 
-      {schedules.length > 0 && (
+      {monthsList.length > 0 && (
         <>
-          <Text className="mb-2 font-medium text-gray-900">{t("dashboard.schedules.title")}</Text>
-          {schedules.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              onPress={() => onPressSchedule(item.id)}
-              activeOpacity={0.7}
-              className="mb-3 rounded-lg border border-gray-200 bg-white p-4"
-            >
-              <View className="flex-row items-center justify-between">
-                <View className="flex-1">
-                  <Text className="font-medium text-gray-900">
-                    {formatPeriod(item.period_start, item.period_end)}
+          <Text className="mb-2 font-medium text-slate-900">{t("dashboard.history.title")}</Text>
+          {monthsList.map(({ year, month }) => {
+            const key = `${year}-${String(month).padStart(2, "0")}`;
+            const monthKey = MONTH_KEYS[month - 1] ?? "jan";
+            return (
+              <TouchableOpacity
+                key={key}
+                onPress={() => router.push(`/summary/${key}` as any)}
+                activeOpacity={0.7}
+                className="mb-3 rounded-xl border border-stone-200 bg-white p-4"
+              >
+                <View className="flex-row items-center justify-between">
+                  <Text className="font-medium text-slate-900">
+                    {t(`months.${monthKey}`)} {year}
                   </Text>
-                  <Text className="mt-1 text-sm text-gray-600">
-                    {sourceLabel(item.source, t)}
-                  </Text>
+                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            );
+          })}
         </>
       )}
     </ScrollView>

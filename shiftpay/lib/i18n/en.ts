@@ -41,6 +41,9 @@ const en: TranslationShape = {
     schedules: {
       title: "Your schedules",
     },
+    history: {
+      title: "History",
+    },
     countdown: {
       now: "Now",
       days: { one: "In 1 day", other: "In %{count} days" },

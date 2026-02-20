@@ -39,6 +39,9 @@ const nb = {
     schedules: {
       title: "Dine vaktplaner",
     },
+    history: {
+      title: "Historikk",
+    },
     countdown: {
       now: "Nå",
       days: { one: "Om 1 dag", other: "Om %{count} dager" },

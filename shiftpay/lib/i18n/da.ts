@@ -41,6 +41,9 @@ const da: TranslationShape = {
     schedules: {
       title: "Dine vagtplaner",
     },
+    history: {
+      title: "Historik",
+    },
     countdown: {
       now: "Nu",
       days: { one: "Om 1 dag", other: "Om %{count} dage" },

@@ -41,6 +41,9 @@ const sv: TranslationShape = {
     schedules: {
       title: "Dina scheman",
     },
+    history: {
+      title: "Historik",
+    },
     countdown: {
       now: "Nu",
       days: { one: "Om 1 dag", other: "Om %{count} dagar" },
