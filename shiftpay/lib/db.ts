@@ -221,6 +221,17 @@ function generateId(): string {
   });
 }
 
+const MAX_SHIFT_HOURS = 16;
+
+function sortShiftsByDate(shifts: ShiftRow[]): ShiftRow[] {
+  return shifts.sort((a, b) => {
+    const da = dateToComparable(a.date);
+    const db = dateToComparable(b.date);
+    if (da !== db) return da < db ? -1 : 1;
+    return a.start_time < b.start_time ? -1 : a.start_time > b.start_time ? 1 : 0;
+  });
+}
+
 export type TariffRatesInput = Omit<TariffRatesRow, "id" | "updated_at">;
 
 export async function getTariffRates(): Promise<TariffRatesRow> {
@@ -333,12 +344,22 @@ export async function insertScheduleWithShifts(
   return withDb(async (database) => {
     const scheduleId = generateId();
     const createdAt = new Date().toISOString();
+    const validShifts = shifts.filter((s) => {
+      const hours = shiftDurationHours(s.start_time, s.end_time);
+      if (hours <= 0 || hours > MAX_SHIFT_HOURS) {
+        if (__DEV__) {
+          console.warn(`[ShiftPay] Filtered out invalid shift: ${s.date} ${s.start_time}-${s.end_time} (${hours.toFixed(1)}h)`);
+        }
+        return false;
+      }
+      return true;
+    });
     await database.withTransactionAsync(async () => {
       await database.runAsync(
         "INSERT INTO schedules (id, period_start, period_end, source, created_at) VALUES (?, ?, ?, ?, ?)",
         [scheduleId, periodStart, periodEnd, source, createdAt]
       );
-      for (const s of shifts) {
+      for (const s of validShifts) {
         const id = generateId();
         await database.runAsync(
           "INSERT INTO shifts (id, schedule_id, date, start_time, end_time, shift_type, status, overtime_minutes, created_at) VALUES (?, ?, ?, ?, ?, ?, 'planned', 0, ?)",
@@ -347,23 +368,23 @@ export async function insertScheduleWithShifts(
       }
     });
     const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE schedule_id = ? ORDER BY date ASC, start_time ASC",
+      "SELECT * FROM shifts WHERE schedule_id = ?",
       [scheduleId]
     );
     if (__DEV__) {
       console.log("[ShiftPay] insertScheduleWithShifts: scheduleId=", scheduleId, "shifts=", rows.length);
     }
-    return { scheduleId, shifts: rows };
+    return { scheduleId, shifts: sortShiftsByDate(rows) };
   });
 }
 
 export async function getShiftsBySchedule(scheduleId: string): Promise<ShiftRow[]> {
   return withDb(async (database) => {
     const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE schedule_id = ? ORDER BY date ASC, start_time ASC",
+      "SELECT * FROM shifts WHERE schedule_id = ?",
       [scheduleId]
     );
-    return rows;
+    return sortShiftsByDate(rows);
   });
 }
 
@@ -374,8 +395,7 @@ export async function getUpcomingShifts(limit = 10): Promise<ShiftRow[]> {
     const today = formatDateForCompare(now);
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
     const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE status = 'planned' ORDER BY date ASC, start_time ASC LIMIT ?",
-      [limit * 2]
+      "SELECT * FROM shifts WHERE status = 'planned'"
     );
     const filtered = rows.filter((r) => {
       const d = dateToComparable(r.date);
@@ -383,7 +403,7 @@ export async function getUpcomingShifts(limit = 10): Promise<ShiftRow[]> {
       const shiftMinutes = (h ?? 0) * 60 + (m ?? 0);
       return d > today || (d === today && shiftMinutes >= nowMinutes);
     });
-    return filtered.slice(0, limit);
+    return sortShiftsByDate(filtered).slice(0, limit);
   });
 }
 
@@ -479,15 +499,15 @@ export async function getDistinctMonthsWithShifts(): Promise<Array<{ year: numbe
 export async function getMonthSummary(year: number, month: number): Promise<MonthSummary> {
   return withDb(async (database) => {
     const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts ORDER BY date ASC, start_time ASC"
+      "SELECT * FROM shifts"
     );
-    const shifts = rows.filter((r) => {
+    const shifts = sortShiftsByDate(rows.filter((r) => {
       const parts = r.date.split(".");
       const d = Number(parts[0]);
       const m = Number(parts[1]);
       const y = Number(parts[2]);
       return y === year && m === month;
-    });
+    }));
     let plannedHours = 0;
     let actualHours = 0;
     let overtimeHours = 0;
@@ -562,12 +582,12 @@ export async function getExistingShiftKeys(): Promise<Set<string>> {
 
 export async function getShiftsInDateRange(fromDate: string, toDate: string): Promise<ShiftRow[]> {
   const rows = await withDb((database) =>
-    database.getAllAsync<ShiftRow>("SELECT * FROM shifts ORDER BY date ASC, start_time ASC")
+    database.getAllAsync<ShiftRow>("SELECT * FROM shifts")
   );
-  return rows.filter((r) => {
+  return sortShiftsByDate(rows.filter((r) => {
     const c = dateToComparable(r.date);
     const from = dateToComparable(fromDate);
     const to = dateToComparable(toDate);
     return c >= from && c <= to;
-  });
+  }));
 }
