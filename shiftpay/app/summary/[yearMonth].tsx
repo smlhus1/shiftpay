@@ -7,15 +7,14 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import type { Href } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getMonthSummary, getTariffRates, getDistinctMonthsWithShifts } from "../../lib/db";
 import type { ShiftRow } from "../../lib/db";
 import { calculateExpectedPay, calculateOvertimePay, type Shift } from "../../lib/calculations";
-import { shiftRowToShift } from "../../lib/format";
+import { shiftRowToShift, MONTH_KEYS, toYearMonthKey } from "../../lib/format";
 import { ShiftCard } from "../../components/ShiftCard";
 import { useTranslation } from "../../lib/i18n";
-
-const MONTH_KEYS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"] as const;
 
 function StatBox({ value, label }: { value: string; label: string }) {
   return (
@@ -65,9 +64,9 @@ export default function SummaryScreen() {
       setExpectedPay(pay + calculateOvertimePay(paidShifts, rates));
 
       const allMonths = await getDistinctMonthsWithShifts();
-      const currentKey = `${year}-${String(month).padStart(2, "0")}`;
+      const currentKey = toYearMonthKey(year, month);
       const idx = allMonths.findIndex(
-        (mo) => `${mo.year}-${String(mo.month).padStart(2, "0")}` === currentKey
+        (mo) => toYearMonthKey(mo.year, mo.month) === currentKey
       );
       setAdjacentMonths({
         prev: idx < allMonths.length - 1 ? allMonths[idx + 1] ?? null : null,
@@ -121,7 +120,7 @@ export default function SummaryScreen() {
           <TouchableOpacity
             onPress={() => {
               const p = adjacentMonths.prev!;
-              router.replace(`/summary/${p.year}-${String(p.month).padStart(2, "0")}` as any);
+              router.replace(`/summary/${toYearMonthKey(p.year, p.month)}` as Href);
             }}
             className="flex-row items-center gap-1"
           >
@@ -136,7 +135,7 @@ export default function SummaryScreen() {
           <TouchableOpacity
             onPress={() => {
               const n = adjacentMonths.next!;
-              router.replace(`/summary/${n.year}-${String(n.month).padStart(2, "0")}` as any);
+              router.replace(`/summary/${toYearMonthKey(n.year, n.month)}` as Href);
             }}
             className="flex-row items-center gap-1"
           >
@@ -205,7 +204,7 @@ export default function SummaryScreen() {
             shift={shift}
             showShiftType
             showOvertimeLabel
-            onEdit={(id) => router.push(`/confirm/${id}` as any)}
+            onEdit={(id) => router.push(`/confirm/${id}` as Href)}
           />
         ))
       )}

@@ -477,7 +477,6 @@ export async function getDistinctMonthsWithShifts(): Promise<Array<{ year: numbe
 }
 
 export async function getMonthSummary(year: number, month: number): Promise<MonthSummary> {
-  const monthStr = String(month).padStart(2, "0");
   return withDb(async (database) => {
     const rows = await database.getAllAsync<ShiftRow>(
       "SELECT * FROM shifts ORDER BY date ASC, start_time ASC"

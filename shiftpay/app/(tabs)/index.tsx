@@ -19,12 +19,11 @@ import {
   getTariffRates,
   type ShiftRow,
 } from "../../lib/db";
+import type { Href } from "expo-router";
 import { calculateExpectedPay, calculateOvertimePay, type Shift } from "../../lib/calculations";
-import { shiftRowToShift } from "../../lib/format";
+import { shiftRowToShift, MONTH_KEYS, toYearMonthKey } from "../../lib/format";
 import { ShiftCard } from "../../components/ShiftCard";
 import { useTranslation } from "../../lib/i18n";
-
-const MONTH_KEYS = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"] as const;
 
 function getWeekRange(): { from: string; to: string } {
   const now = new Date();
@@ -99,13 +98,7 @@ export default function DashboardScreen() {
         (s) => s.status === "completed" || s.status === "overtime"
       );
       const shiftsForPay: Shift[] = completedForPay.map(shiftRowToShift);
-      let pay = calculateExpectedPay(shiftsForPay, {
-        base_rate: rates.base_rate,
-        evening_supplement: rates.evening_supplement,
-        night_supplement: rates.night_supplement,
-        weekend_supplement: rates.weekend_supplement,
-        holiday_supplement: rates.holiday_supplement,
-      });
+      let pay = calculateExpectedPay(shiftsForPay, rates);
       pay += calculateOvertimePay(completedForPay, rates);
       setMonthSummary({
         plannedHours: sum.plannedHours,
@@ -140,16 +133,14 @@ export default function DashboardScreen() {
 
   const onPressConfirm = useCallback(
     (shiftId: string) => {
-      router.push(`/confirm/${shiftId}` as any);
+      router.push(`/confirm/${shiftId}` as Href);
     },
     [router]
   );
 
   const onPressSummary = useCallback(() => {
     const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, "0");
-    router.push(`/summary/${y}-${m}` as any);
+    router.push(`/summary/${toYearMonthKey(now.getFullYear(), now.getMonth() + 1)}` as Href);
   }, [router]);
 
   if (loading && monthsList.length === 0 && !nextShift && dueConfirmation.length === 0) {
@@ -284,12 +275,12 @@ export default function DashboardScreen() {
         <>
           <Text className="mb-2 font-medium text-slate-900">{t("dashboard.history.title")}</Text>
           {monthsList.map(({ year, month }) => {
-            const key = `${year}-${String(month).padStart(2, "0")}`;
+            const key = toYearMonthKey(year, month);
             const monthKey = MONTH_KEYS[month - 1] ?? "jan";
             return (
               <TouchableOpacity
                 key={key}
-                onPress={() => router.push(`/summary/${key}` as any)}
+                onPress={() => router.push(`/summary/${key}` as Href)}
                 activeOpacity={0.7}
                 className="mb-3 rounded-xl border border-stone-200 bg-white p-4"
               >

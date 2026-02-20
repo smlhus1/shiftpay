@@ -235,13 +235,7 @@ export default function ImportScreen() {
     setError(null);
     try {
       const rates = await getTariffRates();
-      const total = calculateExpectedPay(validShifts, {
-        base_rate: rates.base_rate,
-        evening_supplement: rates.evening_supplement,
-        night_supplement: rates.night_supplement,
-        weekend_supplement: rates.weekend_supplement,
-        holiday_supplement: rates.holiday_supplement,
-      });
+      const total = calculateExpectedPay(validShifts, rates);
       setExpectedPay(total);
       if (validShifts.length < rows.length) {
         setError(t("import.alerts.csvError"));
@@ -342,9 +336,9 @@ export default function ImportScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-50" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+    <ScrollView className="flex-1 bg-stone-50" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
       {error && (
-        <View className="mb-4 rounded-lg bg-red-100 p-3">
+        <View className="mb-4 rounded-xl bg-red-100 p-3">
           <Text className="text-red-800">{error}</Text>
         </View>
       )}
@@ -354,7 +348,7 @@ export default function ImportScreen() {
           {baseRateZero && (
             <TouchableOpacity
               onPress={() => router.push("/(tabs)/settings")}
-              className="mb-4 flex-row items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3"
+              className="mb-4 flex-row items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3"
             >
               <Text className="flex-1 text-sm text-amber-800">
                 {t("import.rateZero")}
@@ -362,14 +356,16 @@ export default function ImportScreen() {
               <Text className="font-medium text-amber-900">{t("import.rateZeroCta")}</Text>
             </TouchableOpacity>
           )}
-          <View className="mb-4 rounded-lg bg-gray-200 p-3">
-            <Text className="text-sm text-gray-700">
+          <View className="mb-4 rounded-xl bg-stone-100 p-3">
+            <Text className="text-sm text-slate-700">
               {t("import.disclaimer")}
             </Text>
           </View>
-          <TouchableOpacity onPress={openCamera} className="rounded-lg bg-blue-600 py-3">
-            <Text className="text-center font-medium text-white">{t("import.cameraBtn")}</Text>
+          {/* Primary: camera */}
+          <TouchableOpacity onPress={openCamera} className="rounded-xl bg-teal-700 py-4">
+            <Text className="text-center text-base font-semibold text-white">{t("import.cameraBtn")}</Text>
           </TouchableOpacity>
+          {/* Secondary: gallery/files */}
           <TouchableOpacity
             onPress={() =>
               Alert.alert(t("import.fileAlert.title"), "", [
@@ -378,15 +374,16 @@ export default function ImportScreen() {
                 { text: t("import.fileAlert.cancel"), style: "cancel" },
               ])
             }
-            className="mt-3 rounded-lg border border-gray-300 bg-white py-3"
+            className="mt-3 rounded-xl border-2 border-stone-300 bg-white py-4"
           >
-            <Text className="text-center font-medium text-gray-700">{t("import.fileBtn")}</Text>
+            <Text className="text-center text-base font-medium text-slate-700">{t("import.fileBtn")}</Text>
           </TouchableOpacity>
+          {/* Tertiary: more options toggle */}
           <TouchableOpacity
             onPress={() => setShowMore((v) => !v)}
             className="mt-3 py-2"
           >
-            <Text className="text-center text-sm text-gray-500">
+            <Text className="text-center text-sm text-slate-400">
               {t("import.moreOptions")} {showMore ? "▲" : "▼"}
             </Text>
           </TouchableOpacity>
@@ -394,15 +391,15 @@ export default function ImportScreen() {
             <>
               <TouchableOpacity
                 onPress={pickCSV}
-                className="mt-1 rounded-lg border border-gray-300 bg-white py-3"
+                className="mt-1 py-2"
               >
-                <Text className="text-center font-medium text-gray-700">{t("import.csvBtn")}</Text>
+                <Text className="text-center text-sm font-medium text-teal-700">{t("import.csvBtn")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={addShiftManually}
-                className="mt-3 rounded-lg border border-gray-300 bg-white py-3"
+                className="mt-2 py-2"
               >
-                <Text className="text-center font-medium text-gray-700">{t("import.manualBtn")}</Text>
+                <Text className="text-center text-sm font-medium text-teal-700">{t("import.manualBtn")}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -411,8 +408,8 @@ export default function ImportScreen() {
 
       {loading && (
         <View className="py-8">
-          <ActivityIndicator size="large" color="#2563eb" />
-          <Text className="mt-2 text-center text-gray-600">
+          <ActivityIndicator size="large" color="#0f766e" />
+          <Text className="mt-2 text-center text-slate-500">
             {ocrProgress ?? t("import.loading")}
           </Text>
         </View>

@@ -2,6 +2,14 @@
  * Shared display helpers — status labels, colors, source labels, and row conversion.
  */
 
+export const MONTH_KEYS = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"] as const;
+export type MonthKey = typeof MONTH_KEYS[number];
+
+/** "YYYY-MM" key from year + month number (1-based). */
+export function toYearMonthKey(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
 import type { ShiftStatus, ShiftRow } from "./db";
 import type { Shift } from "./calculations";
 
@@ -10,10 +18,10 @@ export function statusLabel(s: ShiftStatus, t: (key: string) => string): string 
 }
 
 export function statusColor(s: ShiftStatus): string {
-  if (s === "planned") return "bg-amber-100 text-amber-800";
-  if (s === "completed") return "bg-green-100 text-green-800";
-  if (s === "missed") return "bg-red-100 text-red-800";
-  return "bg-blue-100 text-blue-800";
+  if (s === "planned") return "bg-stone-100 text-slate-600";
+  if (s === "completed") return "bg-emerald-100 text-emerald-800";
+  if (s === "missed") return "bg-red-100 text-red-700";
+  return "bg-violet-100 text-violet-700";
 }
 
 export function sourceLabel(source: string, t: (key: string) => string): string {

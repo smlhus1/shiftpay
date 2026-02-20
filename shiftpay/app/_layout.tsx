@@ -4,6 +4,7 @@ import { Platform, Modal, View, Text, TouchableOpacity } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from "expo-router";
+import type { Href } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initDb, getTariffRates } from "../lib/db";
 import { ErrorBoundary } from "../components/ErrorBoundary";
@@ -52,7 +53,7 @@ function RootLayoutInner() {
     if (Platform.OS === "web") return;
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
       const shiftId = response.notification.request.content.data?.shiftId as string | undefined;
-      if (shiftId) router.push(`/confirm/${shiftId}` as any);
+      if (shiftId) router.push(`/confirm/${shiftId}` as Href);
     });
     return () => sub.remove();
   }, [router]);
@@ -86,11 +87,11 @@ function RootLayoutInner() {
         <Modal visible transparent animationType="fade">
           <View className="flex-1 justify-center bg-black/50 px-6">
             <View className="rounded-xl bg-white p-6">
-              <Text className="text-lg font-medium text-gray-900">{t("initError.title")}</Text>
-              <Text className="mt-2 text-gray-600">{initError}</Text>
+              <Text className="text-lg font-medium text-slate-900">{t("initError.title")}</Text>
+              <Text className="mt-2 text-slate-500">{initError}</Text>
               <TouchableOpacity
                 onPress={() => runInit()}
-                className="mt-6 rounded-lg bg-blue-600 py-3"
+                className="mt-6 rounded-xl bg-teal-700 py-3"
               >
                 <Text className="text-center font-medium text-white">{t("initError.retry")}</Text>
               </TouchableOpacity>
@@ -102,15 +103,15 @@ function RootLayoutInner() {
         <Modal visible transparent animationType="fade">
           <View className="flex-1 justify-center bg-black/50 px-6">
             <View className="rounded-xl bg-white p-6">
-              <Text className="text-lg font-medium text-gray-900">
+              <Text className="text-lg font-medium text-slate-900">
                 {t("onboarding.title")}
               </Text>
-              <Text className="mt-2 text-gray-600">
+              <Text className="mt-2 text-slate-500">
                 {t("onboarding.description")}
               </Text>
               <TouchableOpacity
                 onPress={dismissOnboarding}
-                className="mt-6 rounded-lg bg-blue-600 py-3"
+                className="mt-6 rounded-xl bg-teal-700 py-3"
               >
                 <Text className="text-center font-medium text-white">{t("onboarding.cta")}</Text>
               </TouchableOpacity>
