@@ -550,6 +550,16 @@ export async function getShiftById(id: string): Promise<ShiftRow | null> {
 }
 
 /** All shifts in date range (inclusive). date format DD.MM.YYYY. */
+/** Returns a Set of "date|start_time|end_time" keys for all existing shifts — used for deduplication on import. */
+export async function getExistingShiftKeys(): Promise<Set<string>> {
+  const rows = await withDb((database) =>
+    database.getAllAsync<{ date: string; start_time: string; end_time: string }>(
+      "SELECT date, start_time, end_time FROM shifts"
+    )
+  );
+  return new Set(rows.map((r) => `${r.date}|${r.start_time}|${r.end_time}`));
+}
+
 export async function getShiftsInDateRange(fromDate: string, toDate: string): Promise<ShiftRow[]> {
   const rows = await withDb((database) =>
     database.getAllAsync<ShiftRow>("SELECT * FROM shifts ORDER BY date ASC, start_time ASC")

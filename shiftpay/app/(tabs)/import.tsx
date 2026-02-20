@@ -19,7 +19,7 @@ import {
   isValidTime,
   normalizeShiftType,
 } from "../../lib/csv";
-import { getTariffRates, insertScheduleWithShifts } from "../../lib/db";
+import { getTariffRates, insertScheduleWithShifts, getExistingShiftKeys } from "../../lib/db";
 import { dateToComparable } from "../../lib/dates";
 import {
   scheduleShiftReminder,
@@ -118,7 +118,18 @@ export default function ImportScreen() {
         errors.push(`Image ${i + 1}: ${e instanceof Error ? e.message : "OCR failed"}`);
       }
     }
-    setRows(allRows);
+    // Deduplicate: same date + start_time + end_time = same shift
+    // Checks both within the batch and against already-saved shifts in the DB
+    const existingKeys = await getExistingShiftKeys();
+    const seen = new Set<string>(existingKeys);
+    const dedupedRows = allRows.filter((row) => {
+      const s = row.ok ? row.shift : row;
+      const key = `${s.date}|${s.start_time}|${s.end_time}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    setRows(dedupedRows);
     setExpectedPay(null);
     setOcrProgress(null);
     if (errors.length > 0) {
