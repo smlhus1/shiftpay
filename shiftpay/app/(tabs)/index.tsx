@@ -41,6 +41,13 @@ function getWeekRange(): { from: string; to: string } {
   return { from: fmt(monday), to: fmt(sunday) };
 }
 
+function isShiftEndPassed(shift: ShiftRow): boolean {
+  const [d, m, y] = shift.date.split(".").map(Number);
+  const [h, min] = shift.end_time.split(":").map(Number);
+  const end = new Date(y ?? 0, (m ?? 1) - 1, d ?? 1, h ?? 0, min ?? 0);
+  return new Date() >= end;
+}
+
 function countdownToShift(shift: ShiftRow): string {
   const [d, m, y] = shift.date.split(".").map(Number);
   const [h, min] = shift.start_time.split(":").map(Number);
@@ -211,12 +218,14 @@ export default function DashboardScreen() {
             {nextShift.date} · {nextShift.start_time}–{nextShift.end_time}
           </Text>
           <Text className="mt-1 text-sm text-gray-600">{countdownToShift(nextShift)}</Text>
-          <TouchableOpacity
-            onPress={() => onPressConfirm(nextShift.id)}
-            className="mt-3 self-start rounded-lg bg-blue-600 px-4 py-2"
-          >
-            <Text className="text-sm font-medium text-white">Bekreft vakt</Text>
-          </TouchableOpacity>
+          {isShiftEndPassed(nextShift) && (
+            <TouchableOpacity
+              onPress={() => onPressConfirm(nextShift.id)}
+              className="mt-3 self-start rounded-lg bg-blue-600 px-4 py-2"
+            >
+              <Text className="text-sm font-medium text-white">Bekreft vakt</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
 

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ import {
   requestNotificationPermission,
 } from "../../lib/notifications";
 import { calculateExpectedPay, type Shift, type ShiftType } from "../../lib/calculations";
+import { useRouter } from "expo-router";
 import { CameraCapture } from "../../components/CameraCapture";
 import { ShiftEditor } from "../../components/ShiftEditor";
 
@@ -76,6 +77,7 @@ function getValidShifts(rows: CsvRowResult[]): Shift[] {
 }
 
 export default function ImportScreen() {
+  const router = useRouter();
   const [showCamera, setShowCamera] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,8 +88,16 @@ export default function ImportScreen() {
   const [calculating, setCalculating] = useState(false);
   const [source, setSource] = useState<"ocr" | "manual" | "gallery" | "csv">("ocr");
   const [ocrProgress, setOcrProgress] = useState<string | null>(null);
+  const [showMore, setShowMore] = useState(false);
+  const [baseRateZero, setBaseRateZero] = useState(false);
   const cameraRef = useRef<{ takePicture: (opts?: object) => Promise<{ uri: string }> } | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
+
+  useEffect(() => {
+    getTariffRates()
+      .then((r) => setBaseRateZero(r.base_rate === 0))
+      .catch(() => setBaseRateZero(false));
+  }, []);
 
   /** Run OCR on multiple images and merge all shifts into rows. */
   const processMultipleImages = async (uris: string[]) => {
@@ -347,38 +357,61 @@ export default function ImportScreen() {
 
       {rows.length === 0 && !loading && (
         <>
+          {baseRateZero && (
+            <TouchableOpacity
+              onPress={() => router.push("/(tabs)/settings")}
+              className="mb-4 flex-row items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3"
+            >
+              <Text className="flex-1 text-sm text-amber-800">
+                Satser ikke satt opp — beregningen viser 0 kr
+              </Text>
+              <Text className="font-medium text-amber-900">Gå til satser →</Text>
+            </TouchableOpacity>
+          )}
           <View className="mb-4 rounded-lg bg-gray-200 p-3">
             <Text className="text-sm text-gray-700">
               Beregningen er veiledende og basert på dine egne satser. OCR kan inneholde feil — kontroller alltid mot original timeliste.
             </Text>
           </View>
           <TouchableOpacity onPress={openCamera} className="rounded-lg bg-blue-600 py-3">
-            <Text className="text-center font-medium text-white">Ta bilde av timeliste</Text>
+            <Text className="text-center font-medium text-white">📷 Ta bilde av timeliste</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={openGallery}
+            onPress={() =>
+              Alert.alert("Velg kilde", "Velg hvor bildet skal hentes fra", [
+                { text: "Galleri", onPress: openGallery },
+                { text: "Filer", onPress: pickImageFromFiles },
+                { text: "Avbryt", style: "cancel" },
+              ])
+            }
             className="mt-3 rounded-lg border border-gray-300 bg-white py-3"
           >
-            <Text className="text-center font-medium text-gray-700">Velg bilder fra galleri</Text>
+            <Text className="text-center font-medium text-gray-700">Velg fra telefonen</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={pickImageFromFiles}
-            className="mt-3 rounded-lg border border-gray-300 bg-white py-3"
+            onPress={() => setShowMore((v) => !v)}
+            className="mt-3 py-2"
           >
-            <Text className="text-center font-medium text-gray-700">Velg bilder fra filer</Text>
+            <Text className="text-center text-sm text-gray-500">
+              Andre alternativer {showMore ? "▲" : "▼"}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={pickCSV}
-            className="mt-3 rounded-lg border border-gray-300 bg-white py-3"
-          >
-            <Text className="text-center font-medium text-gray-700">Importer CSV-fil</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={addShiftManually}
-            className="mt-3 rounded-lg border border-gray-300 bg-white py-3"
-          >
-            <Text className="text-center font-medium text-gray-700">Legg til skift manuelt</Text>
-          </TouchableOpacity>
+          {showMore && (
+            <>
+              <TouchableOpacity
+                onPress={pickCSV}
+                className="mt-1 rounded-lg border border-gray-300 bg-white py-3"
+              >
+                <Text className="text-center font-medium text-gray-700">Importer CSV-fil</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={addShiftManually}
+                className="mt-3 rounded-lg border border-gray-300 bg-white py-3"
+              >
+                <Text className="text-center font-medium text-gray-700">Legg til skift manuelt</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </>
       )}
 

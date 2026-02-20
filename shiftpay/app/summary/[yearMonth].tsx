@@ -99,6 +99,16 @@ export default function SummaryScreen() {
       </Text>
 
       <View className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
+        <Text className="font-medium text-gray-900">Forventet lønn</Text>
+        <Text className="mt-1 text-lg font-semibold text-gray-900">
+          {expectedPay.toFixed(2)} kr
+        </Text>
+        <Text className="mt-1 text-sm text-gray-500">
+          Basert på fullførte vakter og overtid
+        </Text>
+      </View>
+
+      <View className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
         <Text className="font-medium text-gray-900">Vakter</Text>
         <View className="mt-2 flex-row flex-wrap gap-3">
           <Text className="text-gray-600">
@@ -116,16 +126,6 @@ export default function SummaryScreen() {
             <Text className="text-blue-700">Overtid: {summary.overtimeHours.toFixed(1)} t</Text>
           )}
         </View>
-      </View>
-
-      <View className="mb-4 rounded-lg border border-gray-200 bg-white p-4">
-        <Text className="font-medium text-gray-900">Forventet lønn</Text>
-        <Text className="mt-1 text-lg font-semibold text-gray-900">
-          {expectedPay.toFixed(2)} kr
-        </Text>
-        <Text className="mt-1 text-sm text-gray-500">
-          Basert på fullførte vakter og overtid
-        </Text>
       </View>
 
       <Text className="mb-2 font-medium text-gray-900">Vakter denne måneden</Text>

@@ -52,7 +52,9 @@ export function ShiftCard({
       {onConfirm && shift.status === "planned" && (
         <TouchableOpacity
           onPress={() => onConfirm(shift.id)}
-          className={compact ? "rounded bg-blue-600 px-2 py-1" : "rounded bg-blue-600 px-3 py-1"}
+          accessibilityRole="button"
+          accessibilityLabel={`Bekreft vakt ${shift.date}`}
+          className="rounded bg-blue-600 px-3 py-2"
         >
           <Text className={compact ? "text-xs font-medium text-white" : "text-sm font-medium text-white"}>
             Bekreft

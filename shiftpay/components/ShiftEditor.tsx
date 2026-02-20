@@ -73,12 +73,14 @@ export function ShiftEditor({
                 value={date}
                 onChangeText={(s) => onUpdateRow(index, "date", s)}
                 placeholder="DD.MM.YYYY"
+                accessibilityLabel="Dato"
                 className="min-w-[100px] rounded border border-gray-200 px-2 py-1 text-gray-900"
               />
               <TextInput
                 value={start_time}
                 onChangeText={(s) => onUpdateRow(index, "start_time", s)}
                 placeholder="HH:MM"
+                accessibilityLabel="Starttid"
                 className="w-16 rounded border border-gray-200 px-2 py-1 text-gray-900"
               />
               <Text className="self-center text-gray-500">–</Text>
@@ -86,6 +88,7 @@ export function ShiftEditor({
                 value={end_time}
                 onChangeText={(s) => onUpdateRow(index, "end_time", s)}
                 placeholder="HH:MM"
+                accessibilityLabel="Sluttid"
                 className="w-16 rounded border border-gray-200 px-2 py-1 text-gray-900"
               />
               <View className="flex-row gap-1">
@@ -93,6 +96,9 @@ export function ShiftEditor({
                   <TouchableOpacity
                     key={type}
                     onPress={() => onUpdateRow(index, "shift_type", type)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: displayType === type }}
+                    accessibilityLabel={`Skifttype ${type}`}
                     className={`rounded px-2 py-1 ${
                       displayType === type ? "bg-blue-600" : "bg-gray-200"
                     }`}
@@ -120,7 +126,7 @@ export function ShiftEditor({
           onPress={onAddRow}
           className="mb-3 rounded-lg border border-dashed border-gray-300 bg-gray-50 py-3"
         >
-          <Text className="text-center text-gray-600">+ Add another shift</Text>
+          <Text className="text-center text-gray-600">+ Legg til nytt skift</Text>
         </TouchableOpacity>
       )}
 
@@ -164,7 +170,12 @@ export function ShiftEditor({
       )}
 
       {saved && (
-        <Text className="mt-3 text-center text-green-600">Saved. You can import another.</Text>
+        <Text
+          className="mt-3 text-center text-green-600"
+          accessibilityLiveRegion="polite"
+        >
+          Lagret. Du kan importere en ny.
+        </Text>
       )}
 
       <TouchableOpacity

@@ -86,37 +86,37 @@ export default function SettingsScreen() {
     >
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
         <Text className="mb-4 text-sm text-gray-600">
-          Hourly rates (e.g. NOK). Used to calculate expected pay from shifts.
+          Timelønnsatser (f.eks. NOK). Brukes til å beregne forventet lønn.
         </Text>
 
         <RateField
-          label="Base rate"
+          label="Grunnlønn"
           value={toStr(rates.base_rate)}
           onChangeText={(s) => setRates((r) => ({ ...r, base_rate: toNum(s) }))}
         />
         <RateField
-          label="Evening supplement"
+          label="Kveldstillegg"
           value={toStr(rates.evening_supplement)}
           onChangeText={(s) =>
             setRates((r) => ({ ...r, evening_supplement: toNum(s) }))
           }
         />
         <RateField
-          label="Night supplement"
+          label="Nattillegg"
           value={toStr(rates.night_supplement)}
           onChangeText={(s) =>
             setRates((r) => ({ ...r, night_supplement: toNum(s) }))
           }
         />
         <RateField
-          label="Weekend supplement"
+          label="Helgetillegg"
           value={toStr(rates.weekend_supplement)}
           onChangeText={(s) =>
             setRates((r) => ({ ...r, weekend_supplement: toNum(s) }))
           }
         />
         <RateField
-          label="Holiday supplement"
+          label="Helligdagstillegg"
           value={toStr(rates.holiday_supplement)}
           onChangeText={(s) =>
             setRates((r) => ({ ...r, holiday_supplement: toNum(s) }))
@@ -132,12 +132,17 @@ export default function SettingsScreen() {
           {saving ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-center font-medium text-white">Save</Text>
+            <Text className="text-center font-medium text-white">Lagre</Text>
           )}
         </TouchableOpacity>
 
         {saved && (
-          <Text className="mt-3 text-center text-green-600">Saved.</Text>
+          <Text
+            className="mt-3 text-center text-green-600"
+            accessibilityLiveRegion="polite"
+          >
+            Lagret.
+          </Text>
         )}
       </ScrollView>
     </KeyboardAvoidingView>

@@ -11,6 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { getShiftById, confirmShift } from "../../lib/db";
 import type { ShiftRow } from "../../lib/db";
 
@@ -27,6 +28,7 @@ export default function ConfirmShiftScreen() {
   const [notFound, setNotFound] = useState(false);
   const [showOvertime, setShowOvertime] = useState(false);
   const [overtimeMinutes, setOvertimeMinutes] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
 
   const load = useCallback(async () => {
     if (!shiftId) {
@@ -61,7 +63,8 @@ export default function ConfirmShiftScreen() {
         setSubmitting(true);
         try {
           await confirmShift(shiftId, "overtime", mins);
-          router.back();
+          setConfirmed(true);
+          setTimeout(() => router.back(), 1500);
         } catch (e) {
           Alert.alert("Feil", e instanceof Error ? e.message : "Kunne ikke lagre");
         } finally {
@@ -72,7 +75,8 @@ export default function ConfirmShiftScreen() {
       setSubmitting(true);
       try {
         await confirmShift(shiftId, status);
-        router.back();
+        setConfirmed(true);
+        setTimeout(() => router.back(), 1500);
       } catch (e) {
         Alert.alert("Feil", e instanceof Error ? e.message : "Kunne ikke lagre");
       } finally {
@@ -114,6 +118,18 @@ export default function ConfirmShiftScreen() {
         >
           <Text className="text-white">Tilbake</Text>
         </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (confirmed) {
+    return (
+      <View className="flex-1 items-center justify-center bg-green-50 p-8">
+        <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-green-100">
+          <Ionicons name="checkmark-circle" size={40} color="#16a34a" />
+        </View>
+        <Text className="text-xl font-semibold text-green-900">Vakt bekreftet!</Text>
+        <Text className="mt-2 text-center text-gray-600">{formatShiftLabel(shift)}</Text>
       </View>
     );
   }
