@@ -8,8 +8,10 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import { getTariffRates, setTariffRates, type TariffRatesInput } from "../../lib/db";
 import { useTranslation, SUPPORTED_LOCALES, type Locale } from "../../lib/i18n";
 
@@ -145,6 +147,9 @@ export default function SettingsScreen() {
         <TouchableOpacity
           onPress={handleSave}
           disabled={saving}
+          accessibilityRole="button"
+          accessibilityLabel={t("settings.save")}
+          accessibilityState={{ disabled: saving }}
           style={saving ? { opacity: 0.6 } : undefined}
           className="mt-6 rounded-xl bg-teal-700 py-4"
         >
@@ -165,8 +170,8 @@ export default function SettingsScreen() {
         )}
 
         {/* Language picker */}
-        <View className="mt-8">
-          <Text className="mb-3 text-sm font-medium text-slate-700">{t("settings.language.title")}</Text>
+        <View className="mt-8" accessibilityRole="radiogroup" accessibilityLabel={t("settings.language.title")}>
+          <Text className="mb-3 text-sm font-medium text-slate-700" accessibilityRole="header">{t("settings.language.title")}</Text>
           {LOCALE_OPTIONS.map((opt) => (
             <TouchableOpacity
               key={opt.code}
@@ -181,6 +186,34 @@ export default function SettingsScreen() {
               )}
             </TouchableOpacity>
           ))}
+        </View>
+
+        {/* About section */}
+        <View className="mt-8 rounded-xl border border-stone-200 bg-white p-4">
+          <Text className="mb-3 text-sm font-medium text-slate-700" accessibilityRole="header">{t("settings.about.title")}</Text>
+          <Text className="mb-3 text-sm text-slate-500">{t("settings.about.description")}</Text>
+          <Text className="mb-3 text-sm text-slate-500">{t("settings.about.privacy")}</Text>
+          <TouchableOpacity
+            onPress={() => Linking.openURL("https://github.com/smlhus/shiftpay").catch(() => {})}
+            accessibilityRole="link"
+            accessibilityLabel="GitHub"
+            className="mb-2 flex-row items-center gap-2"
+            style={{ minHeight: 48 }}
+          >
+            <Ionicons name="logo-github" size={18} color="#0f766e" />
+            <Text className="text-sm text-teal-700">GitHub</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => Linking.openURL("mailto:shiftpay@smlhus.com").catch(() => {})}
+            accessibilityRole="link"
+            accessibilityLabel="shiftpay@smlhus.com"
+            className="mb-3 flex-row items-center gap-2"
+            style={{ minHeight: 48 }}
+          >
+            <Ionicons name="mail-outline" size={18} color="#0f766e" />
+            <Text className="text-sm text-teal-700">shiftpay@smlhus.com</Text>
+          </TouchableOpacity>
+          <Text className="text-xs text-slate-500">ShiftPay v{Constants.expoConfig?.version ?? "1.0.0"}</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -204,6 +237,7 @@ function RateField({
         onChangeText={onChangeText}
         keyboardType="decimal-pad"
         placeholder="0"
+        accessibilityLabel={label}
         className="min-h-[48px] rounded-xl border border-stone-300 bg-white px-4 py-3 text-slate-900"
       />
     </View>

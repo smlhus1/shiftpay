@@ -537,8 +537,46 @@ export async function getScheduleById(id: string): Promise<ScheduleRow | null> {
 
 export async function deleteSchedule(id: string): Promise<void> {
   await withDb(async (database) => {
-    await database.runAsync("DELETE FROM shifts WHERE schedule_id = ?", [id]);
-    await database.runAsync("DELETE FROM schedules WHERE id = ?", [id]);
+    await database.withTransactionAsync(async () => {
+      await database.runAsync("DELETE FROM shifts WHERE schedule_id = ?", [id]);
+      await database.runAsync("DELETE FROM schedules WHERE id = ?", [id]);
+    });
+  });
+}
+
+export async function deleteShift(shiftId: string): Promise<void> {
+  await withDb(async (database) => {
+    await database.runAsync("DELETE FROM shifts WHERE id = ?", [shiftId]);
+  });
+}
+
+export async function updateShift(
+  shiftId: string,
+  updates: Partial<Pick<ShiftInsert, "date" | "start_time" | "end_time" | "shift_type">>
+): Promise<void> {
+  if (updates.date !== undefined && !/^\d{2}\.\d{2}\.\d{4}$/.test(updates.date)) {
+    throw new Error("Invalid date format (expected DD.MM.YYYY)");
+  }
+  if (updates.start_time !== undefined && !/^\d{1,2}:\d{2}$/.test(updates.start_time)) {
+    throw new Error("Invalid start time format (expected HH:MM)");
+  }
+  if (updates.end_time !== undefined && !/^\d{1,2}:\d{2}$/.test(updates.end_time)) {
+    throw new Error("Invalid end time format (expected HH:MM)");
+  }
+  const validTypes = ["tidlig", "mellom", "kveld", "natt"];
+  if (updates.shift_type !== undefined && !validTypes.includes(updates.shift_type)) {
+    throw new Error("Invalid shift type");
+  }
+  await withDb(async (database) => {
+    const sets: string[] = [];
+    const values: (string | number)[] = [];
+    if (updates.date !== undefined) { sets.push("date = ?"); values.push(updates.date); }
+    if (updates.start_time !== undefined) { sets.push("start_time = ?"); values.push(updates.start_time); }
+    if (updates.end_time !== undefined) { sets.push("end_time = ?"); values.push(updates.end_time); }
+    if (updates.shift_type !== undefined) { sets.push("shift_type = ?"); values.push(updates.shift_type); }
+    if (sets.length === 0) return;
+    values.push(shiftId);
+    await database.runAsync(`UPDATE shifts SET ${sets.join(", ")} WHERE id = ?`, values);
   });
 }
 

@@ -32,7 +32,7 @@ const da: TranslationShape = {
       title: "Denne måned",
       planned: "Planlagt: %{hours} t",
       actual: "Faktisk: %{hours} t",
-      expectedPay: "Forventet løn: %{amount} kr",
+      expectedPay: "Forventet løn: %{amount}",
       viewSummary: "Se oversigt",
     },
     week: {
@@ -106,6 +106,42 @@ const da: TranslationShape = {
       sv: "🇸🇪 Svenska",
       da: "🇩🇰 Dansk",
     },
+    about: {
+      title: "Om ShiftPay",
+      description: "ShiftPay hjælper vagtarbejdere med at kontrollere, om de har fået den rigtige løn. Tag foto af timesedlen, indtast dine satser og sammenlign med lønsedlen.",
+      privacy: "Alle data gemmes lokalt på din enhed. Ingen konti, ingen cloudlagring, ingen sporing.",
+    },
+  },
+  notifications: {
+    title: "Vagt afsluttet?",
+    body: "Fuldførte du vagten kl %{time}?",
+    channel: "Vagtpåmindelser",
+  },
+  api: {
+    ocrError: "OCR fejlede: %{status}",
+    ocrTimeout: "OCR tog for lang tid. Prøv igen eller tjek forbindelsen.",
+    ocrNotConfigured: "OCR-endpoint er ikke konfigureret.",
+  },
+  errorBoundary: {
+    title: "Noget gik galt",
+    retry: "Prøv igen",
+  },
+  csvErrors: {
+    missingDate: "manglende dato",
+    missingStart: "manglende starttid",
+    missingEnd: "manglende sluttid",
+    invalidDate: "Ugyldig dato (brug DD.MM.ÅÅÅÅ).",
+    invalidStart: "Ugyldig starttid (brug TT:MM).",
+    invalidEnd: "Ugyldig sluttid (brug TT:MM).",
+    invalidRow: "Kunne ikke fortolke rækken.",
+    noHeader: "CSV skal have en overskriftsrække og mindst én datarække.",
+    missingColumns: "CSV skal have kolonnerne: date, start_time, end_time (og eventuelt shift_type).",
+  },
+  shiftTypes: {
+    tidlig: "Tidlig",
+    mellom: "Midt på dagen",
+    kveld: "Aften",
+    natt: "Nat",
   },
   confirm: {
     question: "Fuldførte du vagten?",
@@ -130,6 +166,13 @@ const da: TranslationShape = {
       saveError: "Kunne ikke gemme",
     },
     backBtnLabel: "Tilbage",
+    editFields: {
+      title: "Rediger vagt",
+      date: "Dato",
+      start: "Starttid",
+      end: "Sluttid",
+      save: "Gem ændringer",
+    },
   },
   summary: {
     invalid: "Ugyldig måned eller ingen data.",
@@ -149,6 +192,13 @@ const da: TranslationShape = {
     list: {
       title: "Vagter denne måned",
       empty: "Ingen vagter registreret.",
+    },
+    export: "Eksporter CSV",
+    deleteShift: {
+      title: "Slet vagt",
+      message: "Er du sikker på, at du vil slette denne vagt?",
+      confirm: "Slet",
+      error: "Kunne ikke slette vagten.",
     },
     back: "Tilbage",
   },
@@ -185,7 +235,7 @@ const da: TranslationShape = {
       },
       addShift: "+ Tilføj ny vagt",
       calculate: "Beregn løn",
-      result: "Du burde have fået: %{amount} kr",
+      result: "Du burde have fået: %{amount}",
       disclaimer:
         "Beregningen er vejledende og baseret på dine egne satser. Kontroller mod den originale timeseddel.",
       save: "Gem timeseddel",
@@ -195,6 +245,7 @@ const da: TranslationShape = {
     shiftCard: {
       confirm: "Bekræft",
       confirmA11y: "Bekræft vagt %{date}",
+      deleteA11y: "Slet vagt %{date}",
       edit: "Rediger",
       overtime: "+%{minutes} min overarbejde",
     },

@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { statusLabel, statusColor } from "../lib/format";
+import { statusLabel, statusColor, shiftTypeLabel } from "../lib/format";
 import type { ShiftRow } from "../lib/db";
 import { useTranslation } from "../lib/i18n";
 
@@ -10,6 +10,8 @@ interface ShiftCardProps {
   onConfirm?: (id: string) => void;
   /** If provided, makes the whole card tappable for non-planned shifts. */
   onEdit?: (id: string) => void;
+  /** If provided, shows a delete button on the card. */
+  onDelete?: (id: string) => void;
   /** Show "+X min overtime" label for overtime shifts. */
   showOvertimeLabel?: boolean;
   /** Compact layout used on Dashboard (no separate date/time, smaller text). */
@@ -29,6 +31,7 @@ export function ShiftCard({
   shift,
   onConfirm,
   onEdit,
+  onDelete,
   showOvertimeLabel,
   compact,
   showShiftType,
@@ -67,7 +70,7 @@ export function ShiftCard({
     <View className="mt-2 flex-row flex-wrap gap-2">
       {showShiftType && (
         <View className={`rounded-full px-2 py-0.5 ${shiftTypeBadgeColor(shift.shift_type)}`}>
-          <Text className="text-sm">{shift.shift_type}</Text>
+          <Text className="text-sm">{shiftTypeLabel(shift.shift_type, t)}</Text>
         </View>
       )}
       <View className={`rounded-full px-2 py-0.5 ${statusColor(shift.status)}`}>
@@ -97,7 +100,20 @@ export function ShiftCard({
             </View>
             {badges}
           </View>
-          <Ionicons name="chevron-forward" size={18} color="#94a3b8" style={{ marginLeft: 8 }} />
+          <View className="flex-row items-center gap-1">
+            {onDelete && (
+              <TouchableOpacity
+                onPress={() => onDelete(shift.id)}
+                accessibilityRole="button"
+                accessibilityLabel={t("components.shiftCard.deleteA11y", { date: shift.date })}
+                hitSlop={8}
+                className="p-2"
+              >
+                <Ionicons name="trash-outline" size={18} color="#ef4444" />
+              </TouchableOpacity>
+            )}
+            <Ionicons name="chevron-forward" size={18} color="#94a3b8" style={{ marginLeft: 4 }} importantForAccessibility="no" />
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -105,9 +121,22 @@ export function ShiftCard({
 
   return (
     <View className={normalClass + " border-stone-200"}>
-      <View className="flex-row items-center gap-2">
-        <Text className="font-medium text-slate-900">{shift.date}</Text>
-        <Text className="text-slate-500">{shift.start_time} – {shift.end_time}</Text>
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
+          <Text className="font-medium text-slate-900">{shift.date}</Text>
+          <Text className="text-slate-500">{shift.start_time} – {shift.end_time}</Text>
+        </View>
+        {onDelete && (
+          <TouchableOpacity
+            onPress={() => onDelete(shift.id)}
+            accessibilityRole="button"
+            accessibilityLabel={t("components.shiftCard.deleteA11y", { date: shift.date })}
+            hitSlop={8}
+            className="p-2"
+          >
+            <Ionicons name="trash-outline" size={18} color="#ef4444" />
+          </TouchableOpacity>
+        )}
       </View>
       {badges}
       {onConfirm && shift.status === "planned" && (

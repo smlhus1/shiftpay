@@ -10,7 +10,10 @@
       "android": { "buildType": "apk" }
     },
     "production": {
-      "android": { "buildType": "aab" }
+      "android": { "buildType": "aab" },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://dnjsrxbiswsmivzxfqza.supabase.co/functions/v1/ocr"
+      }
     }
   }
 }

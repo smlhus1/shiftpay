@@ -13,6 +13,26 @@ export function toYearMonthKey(year: number, month: number): string {
 import type { ShiftStatus, ShiftRow } from "./db";
 import type { Shift } from "./calculations";
 
+const LOCALE_CURRENCY: Record<string, { currency: string; locale: string }> = {
+  nb: { currency: "NOK", locale: "nb-NO" },
+  en: { currency: "GBP", locale: "en-GB" },
+  sv: { currency: "SEK", locale: "sv-SE" },
+  da: { currency: "DKK", locale: "da-DK" },
+};
+
+export function formatCurrency(amount: number, appLocale: string): string {
+  const config = LOCALE_CURRENCY[appLocale] ?? LOCALE_CURRENCY.nb;
+  try {
+    return new Intl.NumberFormat(config.locale, {
+      style: "currency",
+      currency: config.currency,
+      maximumFractionDigits: 0,
+    }).format(Math.round(amount));
+  } catch {
+    return `${Math.round(amount)} ${config.currency}`;
+  }
+}
+
 export function statusLabel(s: ShiftStatus, t: (key: string) => string): string {
   return t(`format.status.${s}`);
 }
@@ -28,6 +48,11 @@ export function sourceLabel(source: string, t: (key: string) => string): string 
   const key = `format.source.${source}`;
   const validSources = ["ocr", "gallery", "csv", "manual"];
   return t(validSources.includes(source) ? key : "format.source.manual");
+}
+
+export function shiftTypeLabel(type: string, t: (key: string) => string): string {
+  const key = `shiftTypes.${type}`;
+  return t(key);
 }
 
 export function shiftRowToShift(s: ShiftRow): Shift {

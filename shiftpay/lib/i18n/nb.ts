@@ -30,7 +30,7 @@ const nb = {
       title: "Denne måneden",
       planned: "Planlagt: %{hours} t",
       actual: "Faktisk: %{hours} t",
-      expectedPay: "Forventet lønn: %{amount} kr",
+      expectedPay: "Forventet lønn: %{amount}",
       viewSummary: "Se oppsummering",
     },
     week: {
@@ -104,6 +104,42 @@ const nb = {
       sv: "🇸🇪 Svenska",
       da: "🇩🇰 Dansk",
     },
+    about: {
+      title: "Om ShiftPay",
+      description: "ShiftPay hjelper skiftarbeidere med å sjekke om de har fått riktig lønn. Ta bilde av timelisten, legg inn satsene dine, og sammenlign med lønnsslippen.",
+      privacy: "All data lagres lokalt på enheten din. Ingen konto, ingen skylagring, ingen sporing.",
+    },
+  },
+  notifications: {
+    title: "Vakt fullført?",
+    body: "Fullførte du vakten kl %{time}?",
+    channel: "Vaktpåminnelser",
+  },
+  api: {
+    ocrError: "OCR feilet: %{status}",
+    ocrTimeout: "OCR tok for lang tid. Prøv igjen eller sjekk tilkoblingen.",
+    ocrNotConfigured: "OCR-endepunkt er ikke konfigurert.",
+  },
+  errorBoundary: {
+    title: "Noe gikk galt",
+    retry: "Prøv igjen",
+  },
+  csvErrors: {
+    missingDate: "manglende dato",
+    missingStart: "manglende starttid",
+    missingEnd: "manglende sluttid",
+    invalidDate: "Ugyldig dato (bruk DD.MM.YYYY).",
+    invalidStart: "Ugyldig starttid (bruk HH:MM).",
+    invalidEnd: "Ugyldig sluttid (bruk HH:MM).",
+    invalidRow: "Kunne ikke tolke raden.",
+    noHeader: "CSV må ha en headerrad og minst én datarad.",
+    missingColumns: "CSV må ha kolonner: date, start_time, end_time (og valgfritt shift_type).",
+  },
+  shiftTypes: {
+    tidlig: "Tidlig",
+    mellom: "Mellom",
+    kveld: "Kveld",
+    natt: "Natt",
   },
   confirm: {
     question: "Fullførte du vakten?",
@@ -128,6 +164,13 @@ const nb = {
       saveError: "Kunne ikke lagre",
     },
     backBtnLabel: "Tilbake",
+    editFields: {
+      title: "Rediger vakt",
+      date: "Dato",
+      start: "Starttid",
+      end: "Sluttid",
+      save: "Lagre endringer",
+    },
   },
   summary: {
     invalid: "Ugyldig måned eller ingen data.",
@@ -147,6 +190,13 @@ const nb = {
     list: {
       title: "Vakter denne måneden",
       empty: "Ingen vakter registrert.",
+    },
+    export: "Eksporter CSV",
+    deleteShift: {
+      title: "Slett vakt",
+      message: "Er du sikker på at du vil slette denne vakten?",
+      confirm: "Slett",
+      error: "Kunne ikke slette vakten.",
     },
     back: "Tilbake",
   },
@@ -183,7 +233,7 @@ const nb = {
       },
       addShift: "+ Legg til nytt skift",
       calculate: "Beregn lønn",
-      result: "Du bør ha fått: %{amount} kr",
+      result: "Du bør ha fått: %{amount}",
       disclaimer:
         "Beregningen er veiledende og basert på dine egne satser. Kontroller mot original timeliste.",
       save: "Lagre timeliste",
@@ -193,6 +243,7 @@ const nb = {
     shiftCard: {
       confirm: "Bekreft",
       confirmA11y: "Bekreft vakt %{date}",
+      deleteA11y: "Slett vakt %{date}",
       edit: "Endre",
       overtime: "+%{minutes} min overtid",
     },

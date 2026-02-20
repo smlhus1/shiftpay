@@ -84,3 +84,8 @@ export function useTranslation() {
   );
   return { t, locale, setLocale };
 }
+
+/** Non-React translation function — reads current i18n locale from singleton. */
+export function getTranslation(key: string, options?: object): string {
+  return i18n.t(key, options);
+}

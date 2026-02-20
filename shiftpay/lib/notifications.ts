@@ -2,6 +2,7 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { parseDateTimeSafe } from "./dates";
+import { getTranslation } from "./i18n";
 
 const STORAGE_KEY = "shiftpay_schedule_notifs";
 
@@ -40,10 +41,12 @@ async function ensureChannel(): Promise<void> {
   if (Platform.OS !== "android") return;
   try {
     await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-      name: "Vaktpåminnelser",
+      name: getTranslation("notifications.channel"),
       importance: Notifications.AndroidImportance.DEFAULT,
     });
-  } catch {}
+  } catch (e) {
+    if (__DEV__) console.warn("[ShiftPay] ensureChannel failed:", e);
+  }
 }
 
 export async function scheduleShiftReminder(shift: ShiftForReminder): Promise<string | null> {
@@ -54,14 +57,15 @@ export async function scheduleShiftReminder(shift: ShiftForReminder): Promise<st
     await ensureChannel();
     const id = await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Vakt fullført?",
-        body: `Fullførte du vakten kl ${shift.end_time}?`,
+        title: getTranslation("notifications.title"),
+        body: getTranslation("notifications.body", { time: shift.end_time }),
         data: { shiftId: shift.id },
       },
       trigger: { date: fireDate, channelId: CHANNEL_ID },
     });
     return id;
-  } catch {
+  } catch (e) {
+    if (__DEV__) console.warn("[ShiftPay] scheduleShiftReminder failed:", e);
     return null;
   }
 }
@@ -70,7 +74,9 @@ async function getStoredNotifs(): Promise<Record<string, string[]>> {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch (e) {
+    if (__DEV__) console.warn("[ShiftPay] getStoredNotifs failed:", e);
+  }
   return {};
 }
 
@@ -92,7 +98,9 @@ export async function cancelScheduleReminders(scheduleId: string): Promise<void>
   for (const id of ids) {
     try {
       await Notifications.cancelScheduledNotificationAsync(id);
-    } catch {}
+    } catch (e) {
+      if (__DEV__) console.warn("[ShiftPay] cancelNotification failed:", e);
+    }
   }
   delete record[scheduleId];
   await setStoredNotifs(record);

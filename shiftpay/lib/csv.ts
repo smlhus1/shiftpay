@@ -6,7 +6,10 @@
  */
 
 import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 import type { Shift, ShiftType } from "./calculations";
+import type { ShiftRow, TariffRatesRow } from "./db";
+import { getTranslation } from "./i18n";
 
 export type CsvRowResult =
   | { ok: true; shift: Shift }
@@ -63,15 +66,15 @@ function rowReason(
 ): string {
   if (missing.date || missing.start || missing.end) {
     const parts: string[] = [];
-    if (missing.date) parts.push("manglende dato");
-    if (missing.start) parts.push("manglende starttid");
-    if (missing.end) parts.push("manglende sluttid");
+    if (missing.date) parts.push(getTranslation("csvErrors.missingDate"));
+    if (missing.start) parts.push(getTranslation("csvErrors.missingStart"));
+    if (missing.end) parts.push(getTranslation("csvErrors.missingEnd"));
     return parts.join(", ") + ".";
   }
-  if (invalid.date) return `Ugyldig dato (bruk DD.MM.YYYY).`;
-  if (invalid.start) return `Ugyldig starttid (bruk HH:MM).`;
-  if (invalid.end) return `Ugyldig sluttid (bruk HH:MM).`;
-  return "Kunne ikke tolke raden.";
+  if (invalid.date) return getTranslation("csvErrors.invalidDate");
+  if (invalid.start) return getTranslation("csvErrors.invalidStart");
+  if (invalid.end) return getTranslation("csvErrors.invalidEnd");
+  return getTranslation("csvErrors.invalidRow");
 }
 
 /**
@@ -172,4 +175,35 @@ export function parseCSVContent(content: string): ParseResult {
   }
 
   return { rows, errors };
+}
+
+function escapeCsvField(value: string | number | null | undefined): string {
+  const str = String(value ?? "");
+  if (/[",\r\n]/.test(str) || str.startsWith("=") || str.startsWith("+") || str.startsWith("@") || str.startsWith("-")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+/** Export shifts as CSV and open share dialog. */
+export async function exportShiftsAsCSV(
+  shifts: ShiftRow[],
+  monthLabel: string
+): Promise<void> {
+  const header = "date,start_time,end_time,shift_type,status,overtime_minutes";
+  const lines = shifts.map((s) =>
+    [s.date, s.start_time, s.end_time, s.shift_type, s.status, s.overtime_minutes]
+      .map(escapeCsvField)
+      .join(",")
+  );
+  const csv = "\uFEFF" + [header, ...lines].join("\n");
+  const filename = `shiftpay-${monthLabel}.csv`;
+  const fileUri = `${FileSystem.cacheDirectory}${filename}`;
+  await FileSystem.writeAsStringAsync(fileUri, csv, {
+    encoding: FileSystem.EncodingType.UTF8,
+  });
+  await Sharing.shareAsync(fileUri, {
+    mimeType: "text/csv",
+    dialogTitle: filename,
+  });
 }

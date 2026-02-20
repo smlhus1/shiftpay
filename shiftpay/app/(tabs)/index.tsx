@@ -21,7 +21,7 @@ import {
 } from "../../lib/db";
 import type { Href } from "expo-router";
 import { calculateExpectedPay, calculateOvertimePay, type Shift } from "../../lib/calculations";
-import { shiftRowToShift, MONTH_KEYS, toYearMonthKey } from "../../lib/format";
+import { shiftRowToShift, MONTH_KEYS, toYearMonthKey, formatCurrency } from "../../lib/format";
 import { ShiftCard } from "../../components/ShiftCard";
 import { useTranslation } from "../../lib/i18n";
 
@@ -62,7 +62,7 @@ function countdownToShift(shift: ShiftRow, t: (key: string, opts?: object) => st
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [monthsList, setMonthsList] = useState<Array<{ year: number; month: number }>>([]);
   const [nextShift, setNextShift] = useState<ShiftRow | null>(null);
   const [weekShifts, setWeekShifts] = useState<ShiftRow[]>([]);
@@ -161,6 +161,8 @@ export default function DashboardScreen() {
             setLoading(true);
             load();
           }}
+          accessibilityRole="button"
+          accessibilityLabel={t("dashboard.error.retry")}
           className="mt-6 rounded-xl bg-teal-700 px-6 py-4"
         >
           <Text className="font-medium text-white">{t("dashboard.error.retry")}</Text>
@@ -187,6 +189,8 @@ export default function DashboardScreen() {
           </Text>
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/import")}
+            accessibilityRole="button"
+            accessibilityLabel={t("dashboard.empty.cta")}
             className="mt-6 rounded-xl bg-teal-700 px-6 py-4"
           >
             <Text className="font-medium text-white">{t("dashboard.empty.cta")}</Text>
@@ -240,9 +244,11 @@ export default function DashboardScreen() {
       {monthSummary && (monthSummary.plannedHours > 0 || monthSummary.actualHours > 0) ? (
         <TouchableOpacity
           onPress={onPressSummary}
+          accessibilityRole="button"
+          accessibilityLabel={t("dashboard.month.title")}
           className="mb-4 rounded-xl border border-stone-200 bg-white p-4"
         >
-          <Text className="font-medium text-slate-900">{t("dashboard.month.title")}</Text>
+          <Text className="font-medium text-slate-900" accessibilityRole="header">{t("dashboard.month.title")}</Text>
           <View className="mt-2 flex-row gap-4">
             <Text className="text-sm text-slate-500">
               {t("dashboard.month.planned", { hours: monthSummary.plannedHours.toFixed(1) })}
@@ -252,7 +258,7 @@ export default function DashboardScreen() {
             </Text>
           </View>
           <Text className="mt-2 text-lg font-bold text-slate-900">
-            {t("dashboard.month.expectedPay", { amount: monthSummary.expectedPay.toFixed(0) })}
+            {t("dashboard.month.expectedPay", { amount: formatCurrency(monthSummary.expectedPay, locale) })}
           </Text>
         </TouchableOpacity>
       ) : null}
@@ -273,7 +279,7 @@ export default function DashboardScreen() {
 
       {monthsList.length > 0 && (
         <>
-          <Text className="mb-2 font-medium text-slate-900">{t("dashboard.history.title")}</Text>
+          <Text className="mb-2 font-medium text-slate-900" accessibilityRole="header">{t("dashboard.history.title")}</Text>
           {monthsList.map(({ year, month }) => {
             const key = toYearMonthKey(year, month);
             const monthKey = MONTH_KEYS[month - 1] ?? "jan";
@@ -282,13 +288,15 @@ export default function DashboardScreen() {
                 key={key}
                 onPress={() => router.push(`/summary/${key}` as Href)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`${t(`months.${monthKey}`)} ${year}`}
                 className="mb-3 rounded-xl border border-stone-200 bg-white p-4"
               >
                 <View className="flex-row items-center justify-between">
                   <Text className="font-medium text-slate-900">
                     {t(`months.${monthKey}`)} {year}
                   </Text>
-                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" importantForAccessibility="no" />
                 </View>
               </TouchableOpacity>
             );

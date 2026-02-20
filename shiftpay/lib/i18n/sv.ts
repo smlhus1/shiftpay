@@ -32,7 +32,7 @@ const sv: TranslationShape = {
       title: "Den här månaden",
       planned: "Planerat: %{hours} t",
       actual: "Faktiskt: %{hours} t",
-      expectedPay: "Förväntad lön: %{amount} kr",
+      expectedPay: "Förväntad lön: %{amount}",
       viewSummary: "Visa sammanfattning",
     },
     week: {
@@ -106,6 +106,42 @@ const sv: TranslationShape = {
       sv: "🇸🇪 Svenska",
       da: "🇩🇰 Dansk",
     },
+    about: {
+      title: "Om ShiftPay",
+      description: "ShiftPay hjälper skiftarbetare att kontrollera om de fått rätt lön. Ta foto av tidlistan, ange dina taxor och jämför med lönebeskedet.",
+      privacy: "All data lagras lokalt på din enhet. Inga konton, ingen molnlagring, ingen spårning.",
+    },
+  },
+  notifications: {
+    title: "Skift avslutat?",
+    body: "Slutförde du skiftet kl %{time}?",
+    channel: "Skiftpåminnelser",
+  },
+  api: {
+    ocrError: "OCR misslyckades: %{status}",
+    ocrTimeout: "OCR tog för lång tid. Försök igen eller kontrollera anslutningen.",
+    ocrNotConfigured: "OCR-endpoint är inte konfigurerat.",
+  },
+  errorBoundary: {
+    title: "Något gick fel",
+    retry: "Försök igen",
+  },
+  csvErrors: {
+    missingDate: "saknat datum",
+    missingStart: "saknad starttid",
+    missingEnd: "saknad sluttid",
+    invalidDate: "Ogiltigt datum (använd DD.MM.ÅÅÅÅ).",
+    invalidStart: "Ogiltig starttid (använd HH:MM).",
+    invalidEnd: "Ogiltig sluttid (använd HH:MM).",
+    invalidRow: "Kunde inte tolka raden.",
+    noHeader: "CSV måste ha en rubrikrad och minst en datarad.",
+    missingColumns: "CSV måste ha kolumner: date, start_time, end_time (och valfritt shift_type).",
+  },
+  shiftTypes: {
+    tidlig: "Tidig",
+    mellom: "Mitt på dagen",
+    kveld: "Kväll",
+    natt: "Natt",
   },
   confirm: {
     question: "Slutförde du skiftet?",
@@ -130,6 +166,13 @@ const sv: TranslationShape = {
       saveError: "Kunde inte spara",
     },
     backBtnLabel: "Tillbaka",
+    editFields: {
+      title: "Redigera skift",
+      date: "Datum",
+      start: "Starttid",
+      end: "Sluttid",
+      save: "Spara ändringar",
+    },
   },
   summary: {
     invalid: "Ogiltig månad eller ingen data.",
@@ -149,6 +192,13 @@ const sv: TranslationShape = {
     list: {
       title: "Skift den här månaden",
       empty: "Inga skift registrerade.",
+    },
+    export: "Exportera CSV",
+    deleteShift: {
+      title: "Ta bort skift",
+      message: "Är du säker på att du vill ta bort det här skiftet?",
+      confirm: "Ta bort",
+      error: "Kunde inte ta bort skiftet.",
     },
     back: "Tillbaka",
   },
@@ -185,7 +235,7 @@ const sv: TranslationShape = {
       },
       addShift: "+ Lägg till nytt skift",
       calculate: "Beräkna lön",
-      result: "Du borde ha fått: %{amount} kr",
+      result: "Du borde ha fått: %{amount}",
       disclaimer:
         "Beräkningen är vägledande och baseras på dina egna taxor. Kontrollera mot originaltidlistan.",
       save: "Spara tidlista",
@@ -195,6 +245,7 @@ const sv: TranslationShape = {
     shiftCard: {
       confirm: "Bekräfta",
       confirmA11y: "Bekräfta skift %{date}",
+      deleteA11y: "Ta bort skift %{date}",
       edit: "Ändra",
       overtime: "+%{minutes} min övertid",
     },
