@@ -38,7 +38,7 @@ function RootLayoutInner() {
         }
       }
     } catch (e) {
-      console.warn("[ShiftPay] DB init failed:", e);
+      if (__DEV__) console.warn("[ShiftPay] DB init failed:", e);
       setInitError(e instanceof Error ? e.message : t("initError.title"));
     } finally {
       await SplashScreen.hideAsync();
@@ -51,9 +51,10 @@ function RootLayoutInner() {
 
   useEffect(() => {
     if (Platform.OS === "web") return;
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
       const shiftId = response.notification.request.content.data?.shiftId as string | undefined;
-      if (shiftId) router.push(`/confirm/${shiftId}` as Href);
+      if (shiftId && UUID_RE.test(shiftId)) router.push(`/confirm/${shiftId}` as Href);
     });
     return () => sub.remove();
   }, [router]);

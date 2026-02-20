@@ -24,7 +24,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <View className="flex-1 items-center justify-center bg-stone-50 p-6">
           <Text className="text-lg font-medium text-slate-900">{getTranslation("errorBoundary.title")}</Text>
           <Text className="mt-2 text-center text-sm text-slate-500">
-            {this.state.error.message}
+            {__DEV__ ? this.state.error.message : "Please restart the app."}
           </Text>
           <TouchableOpacity
             onPress={() => this.setState({ hasError: false, error: null })}

@@ -49,7 +49,7 @@ ShiftPay lets you import timesheets (photo OCR / CSV / manual), set your own tar
 - **EAS Build** (bygg til Play Store)
 
 ### Backend (stateless OCR-prosessor)
-- **Anbefalt: Supabase Edge Function** — `supabase/functions/ocr/` (Deno, Claude Haiku 4.5 Vision). Deploy: `supabase functions deploy ocr --no-verify-jwt` + secret `ANTHROPIC_API_KEY`. Appen resizer bilder client-side (max 2048px, JPEG 85%) før upload.
+- **Anbefalt: Supabase Edge Function** — `supabase/functions/ocr/` (Deno, Claude Haiku 4.5 Vision). Deploy: `supabase functions deploy ocr --no-verify-jwt` + secrets `ANTHROPIC_API_KEY` og `SHIFTPAY_API_KEY`. Krever `X-API-Key`-header for autentisering. Appen resizer bilder client-side (max 2048px, JPEG 85%) før upload.
 - **Arkiv: FastAPI** i `backend/` — Tesseract + Claude Vision; kan brukes lokalt eller på Railway/Fly.io/Render hvis ønsket.
 - **Ingen database** i backend — prosesserer og returnerer, lagrer ingenting.
 
@@ -124,11 +124,14 @@ Migrering: eksisterende `timesheets` (JSON-skift) migreres én gang ved DB-init 
 
 ## Env vars
 
-### App
-- `EXPO_PUBLIC_API_URL` — OCR-endepunkt: Supabase `https://<project-ref>.supabase.co/functions/v1/ocr` (sett i `shiftpay/.env`)
+### App (`shiftpay/.env`)
+- `EXPO_PUBLIC_API_URL` — OCR-endepunkt: Supabase `https://<project-ref>.supabase.co/functions/v1/ocr`
+- `EXPO_PUBLIC_OCR_API_KEY` — Delt API-nøkkel for OCR-autentisering
 
-### Supabase Edge Function (OCR)
-- `ANTHROPIC_API_KEY` — for Claude Haiku 4.5 Vision (`supabase secrets set ANTHROPIC_API_KEY=...`)
+### Supabase secrets (`supabase secrets set`)
+- `ANTHROPIC_API_KEY` — for Claude Haiku 4.5 Vision
+- `SHIFTPAY_API_KEY` — Må matche `EXPO_PUBLIC_OCR_API_KEY` i appen
+- `ALLOWED_ORIGINS` — (valgfri) Kommaseparerte tillatte CORS-origins for web-klienter
 
 ## Kjøre lokalt
 
