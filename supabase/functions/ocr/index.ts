@@ -1,6 +1,6 @@
 // ShiftPay OCR — Supabase Edge Function (Claude Haiku 4.5 Vision only, no Tesseract)
 // Model ID from https://docs.anthropic.com/en/docs/models-overview (Claude Haiku 4.5)
-// Deploy: supabase functions deploy ocr --no-verify-jwt && supabase secrets set ANTHROPIC_API_KEY=...
+// Deploy: supabase functions deploy ocr --no-verify-jwt && supabase secrets set ANTHROPIC_API_KEY=... SHIFTPAY_API_KEY=...
 
 import { encodeBase64 } from "jsr:@std/encoding/base64";
 import Anthropic from "npm:@anthropic-ai/sdk@0.39.0";
@@ -40,31 +40,50 @@ Regler for shift_type (basert på starttid):
 
 Datoformat ALLTID DD.MM.YYYY. Tidsformat ALLTID HH:MM. Returner BARE JSON.`;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
+// CORS: Only needed if called from browsers. Mobile apps don't send Origin.
+// Restrict to known origins; omit wildcard to prevent cross-origin abuse.
+const ALLOWED_ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").filter(Boolean);
 
-function jsonResponse(body: unknown, status = 200) {
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin") ?? "";
+  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : "";
+  if (!allowOrigin) return {};
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
+  };
+}
+
+function jsonResponse(body: unknown, status = 200, req?: Request) {
+  const cors = req ? getCorsHeaders(req) : {};
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json", ...corsHeaders },
+    headers: { "Content-Type": "application/json", ...cors },
   });
 }
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
+    return new Response(null, { status: 204, headers: getCorsHeaders(req) });
   }
 
   if (req.method !== "POST") {
-    return jsonResponse({ detail: "Method not allowed" }, 405);
+    return jsonResponse({ detail: "Method not allowed" }, 405, req);
+  }
+
+  // API key authentication — reject requests without valid key
+  const appApiKey = Deno.env.get("SHIFTPAY_API_KEY");
+  if (appApiKey) {
+    const provided = req.headers.get("x-api-key");
+    if (provided !== appApiKey) {
+      return jsonResponse({ detail: "Unauthorized" }, 401, req);
+    }
   }
 
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) {
-    return jsonResponse({ detail: "ANTHROPIC_API_KEY not configured" }, 503);
+    return jsonResponse({ detail: "Service unavailable" }, 503, req);
   }
 
   let file: File;
@@ -72,21 +91,21 @@ Deno.serve(async (req: Request) => {
     const formData = await req.formData();
     const f = formData.get("file");
     if (!f || !(f instanceof File)) {
-      return jsonResponse({ detail: "Missing or invalid file in form field 'file'" }, 400);
+      return jsonResponse({ detail: "Missing or invalid file in form field 'file'" }, 400, req);
     }
     file = f;
   } catch {
-    return jsonResponse({ detail: "Invalid multipart body" }, 400);
+    return jsonResponse({ detail: "Invalid multipart body" }, 400, req);
   }
 
   if (file.size > MAX_FILE_BYTES) {
-    return jsonResponse({ detail: "File too large (max 5MB)" }, 400);
+    return jsonResponse({ detail: "File too large (max 5MB)" }, 400, req);
   }
   let mime = (file.type?.toLowerCase() || "").trim();
   if (!mime || !mime.startsWith("image/")) mime = "image/jpeg";
   if (mime === "image/jpg") mime = "image/jpeg";
   if (!ALLOWED_TYPES.includes(mime)) {
-    return jsonResponse({ detail: "Only image/jpeg and image/png allowed" }, 400);
+    return jsonResponse({ detail: "Only image/jpeg and image/png allowed" }, 400, req);
   }
 
   const buf = await file.arrayBuffer();
@@ -120,7 +139,7 @@ Deno.serve(async (req: Request) => {
     const textBlock = response.content?.find((b) => b.type === "text");
     const raw = textBlock?.type === "text" ? textBlock.text?.trim() : null;
     if (!raw) {
-      return jsonResponse({ detail: "Empty response from Claude" }, 502);
+      return jsonResponse({ detail: "Empty response from Claude" }, 502, req);
     }
 
     // Claude may wrap JSON in markdown (e.g. ```json ... ```); extract raw JSON before parsing
@@ -145,26 +164,48 @@ Deno.serve(async (req: Request) => {
       }>;
       notes?: string;
     };
-    const shifts = (data.shifts ?? []).map((s) => ({
-      date: s.date,
-      start_time: s.start_time,
-      end_time: s.end_time,
-      shift_type: s.shift_type,
-      confidence: Math.min(1, Math.max(0, Number(s.confidence) || 0.85)),
-    }));
+
+    // Schema validation: only accept shifts with valid format
+    const DATE_RE = /^\d{1,2}\.\d{1,2}\.\d{4}$/;
+    const TIME_RE = /^\d{1,2}:\d{2}$/;
+    const VALID_TYPES = ["tidlig", "mellom", "kveld", "natt"];
+
+    const shifts = (data.shifts ?? [])
+      .filter(
+        (s) =>
+          typeof s.date === "string" &&
+          DATE_RE.test(s.date) &&
+          typeof s.start_time === "string" &&
+          TIME_RE.test(s.start_time) &&
+          typeof s.end_time === "string" &&
+          TIME_RE.test(s.end_time) &&
+          typeof s.shift_type === "string" &&
+          VALID_TYPES.includes(s.shift_type)
+      )
+      .map((s) => ({
+        date: s.date,
+        start_time: s.start_time,
+        end_time: s.end_time,
+        shift_type: s.shift_type,
+        confidence: Math.min(1, Math.max(0, Number(s.confidence) || 0.85)),
+      }));
 
     const confidence = shifts.length
       ? shifts.reduce((a, s) => a + s.confidence, 0) / shifts.length
       : 0;
 
-    return jsonResponse({
-      shifts,
-      confidence,
-      method: "claude-vision",
-    });
+    return jsonResponse(
+      {
+        shifts,
+        confidence,
+        method: "claude-vision",
+      },
+      200,
+      req
+    );
   } catch (e) {
     console.error("OCR error:", e);
-    const message = e instanceof Error ? e.message : "Claude Vision API error";
-    return jsonResponse({ detail: message }, 502);
+    // Never expose internal error details to clients
+    return jsonResponse({ detail: "OCR processing failed. Please try again." }, 502, req);
   }
 });

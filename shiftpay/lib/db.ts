@@ -214,11 +214,12 @@ export interface TimesheetRow {
 const TARIFF_ID = 1;
 
 function generateId(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
+  bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 1
+  const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 const MAX_SHIFT_HOURS = 16;
@@ -272,6 +273,15 @@ export async function getTariffRates(): Promise<TariffRatesRow> {
 }
 
 export async function setTariffRates(rates: TariffRatesInput): Promise<void> {
+  // Clamp all rates to non-negative values
+  const validated = {
+    base_rate: Math.max(0, rates.base_rate),
+    evening_supplement: Math.max(0, rates.evening_supplement),
+    night_supplement: Math.max(0, rates.night_supplement),
+    weekend_supplement: Math.max(0, rates.weekend_supplement),
+    holiday_supplement: Math.max(0, rates.holiday_supplement),
+    overtime_supplement: Math.max(0, rates.overtime_supplement),
+  };
   await withDb(async (database) => {
     const now = new Date().toISOString();
     await database.runAsync(
@@ -287,12 +297,12 @@ export async function setTariffRates(rates: TariffRatesInput): Promise<void> {
          updated_at = excluded.updated_at`,
       [
         TARIFF_ID,
-        rates.base_rate,
-        rates.evening_supplement,
-        rates.night_supplement,
-        rates.weekend_supplement,
-        rates.holiday_supplement,
-        rates.overtime_supplement,
+        validated.base_rate,
+        validated.evening_supplement,
+        validated.night_supplement,
+        validated.weekend_supplement,
+        validated.holiday_supplement,
+        validated.overtime_supplement,
         now,
       ]
     );

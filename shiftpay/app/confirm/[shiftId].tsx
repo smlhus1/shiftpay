@@ -16,6 +16,8 @@ import { getShiftById, confirmShift } from "../../lib/db";
 import type { ShiftRow } from "../../lib/db";
 import { useTranslation } from "../../lib/i18n";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 function formatShiftLabel(shift: ShiftRow): string {
   return `${shift.date} ${shift.start_time}–${shift.end_time} (${shift.shift_type})`;
 }
@@ -34,7 +36,7 @@ export default function ConfirmShiftScreen() {
   const [confirmed, setConfirmed] = useState(false);
 
   const load = useCallback(async () => {
-    if (!shiftId) {
+    if (!shiftId || !UUID_RE.test(shiftId)) {
       setNotFound(true);
       setLoading(false);
       return;

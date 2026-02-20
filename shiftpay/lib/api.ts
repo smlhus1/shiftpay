@@ -2,12 +2,18 @@
  * OCR backend client — Supabase Edge Function or local backend.
  * Client-side resize (expo-image-manipulator) will be re-enabled after next dev build.
  * EXPO_PUBLIC_API_URL = full OCR endpoint URL (e.g. https://xxx.supabase.co/functions/v1/ocr).
+ * EXPO_PUBLIC_OCR_API_KEY = shared secret for OCR endpoint authentication.
  */
 
 const getOcrUrl = (): string => {
   const url = process.env.EXPO_PUBLIC_API_URL;
   if (url) return url;
-  return "http://localhost:8000/api/ocr";
+  if (__DEV__) return "http://localhost:8000/api/ocr";
+  throw new Error("EXPO_PUBLIC_API_URL is not configured");
+};
+
+const getOcrApiKey = (): string | undefined => {
+  return process.env.EXPO_PUBLIC_OCR_API_KEY || undefined;
 };
 
 export interface OcrShift {
@@ -26,6 +32,47 @@ export interface OcrResponse {
 
 const OCR_TIMEOUT_MS = 30_000;
 
+const DATE_RE = /^\d{1,2}\.\d{1,2}\.\d{4}$/;
+const TIME_RE = /^\d{1,2}:\d{2}$/;
+
+/** Validate and sanitize OCR response from server. */
+function validateOcrResponse(data: unknown): OcrResponse {
+  if (!data || typeof data !== "object") {
+    throw new Error("Invalid OCR response format");
+  }
+  const obj = data as Record<string, unknown>;
+  if (!Array.isArray(obj.shifts)) {
+    throw new Error("Invalid OCR response: missing shifts array");
+  }
+  const shifts: OcrShift[] = obj.shifts
+    .filter(
+      (s: unknown) =>
+        s &&
+        typeof s === "object" &&
+        typeof (s as Record<string, unknown>).date === "string" &&
+        typeof (s as Record<string, unknown>).start_time === "string" &&
+        typeof (s as Record<string, unknown>).end_time === "string" &&
+        DATE_RE.test((s as Record<string, unknown>).date as string) &&
+        TIME_RE.test((s as Record<string, unknown>).start_time as string) &&
+        TIME_RE.test((s as Record<string, unknown>).end_time as string)
+    )
+    .map((s: unknown) => {
+      const shift = s as Record<string, unknown>;
+      return {
+        date: shift.date as string,
+        start_time: shift.start_time as string,
+        end_time: shift.end_time as string,
+        shift_type: typeof shift.shift_type === "string" ? shift.shift_type : "tidlig",
+        confidence: typeof shift.confidence === "number" ? shift.confidence : undefined,
+      };
+    });
+  return {
+    shifts,
+    confidence: typeof obj.confidence === "number" ? obj.confidence : 0,
+    method: (obj.method as OcrResponse["method"]) ?? "claude-vision",
+  };
+}
+
 export async function postOcr(imageUri: string): Promise<OcrResponse> {
   const uriToSend = imageUri;
 
@@ -39,11 +86,17 @@ export async function postOcr(imageUri: string): Promise<OcrResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), OCR_TIMEOUT_MS);
 
+  const headers: Record<string, string> = {};
+  const apiKey = getOcrApiKey();
+  if (apiKey) {
+    headers["X-API-Key"] = apiKey;
+  }
+
   try {
     const res = await fetch(getOcrUrl(), {
       method: "POST",
       body: formData,
-      headers: {},
+      headers,
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -59,7 +112,8 @@ export async function postOcr(imageUri: string): Promise<OcrResponse> {
       throw new Error(detail);
     }
 
-    return res.json();
+    const raw = await res.json();
+    return validateOcrResponse(raw);
   } catch (e) {
     clearTimeout(timeoutId);
     if (e instanceof Error) {

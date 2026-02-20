@@ -28,7 +28,7 @@ function toStr(n: number): string {
 
 function toNum(s: string): number {
   const v = parseFloat(s.replace(",", "."));
-  return Number.isFinite(v) ? v : 0;
+  return Number.isFinite(v) && v >= 0 ? v : 0;
 }
 
 const LOCALE_OPTIONS: { code: Locale; label: string }[] = [
