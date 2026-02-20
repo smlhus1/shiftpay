@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from "reac
 import { Ionicons } from "@expo/vector-icons";
 import type { CsvRowResult } from "../lib/csv";
 import type { Shift, ShiftType } from "../lib/calculations";
+import { useTranslation } from "../lib/i18n";
 
 export type ImportSource = "ocr" | "manual" | "gallery" | "csv";
 
@@ -36,19 +37,14 @@ export function ShiftEditor({
   onSave,
   onReset,
 }: ShiftEditorProps) {
-  const sourceTag =
-    source === "manual"
-      ? "Manuell"
-      : source === "csv"
-        ? "CSV"
-        : source === "gallery"
-          ? "Galleri"
-          : "OCR";
+  const { t } = useTranslation();
+  const sourceKey = `components.shiftEditor.sources.${source}` as const;
+  const sourceTag = t(sourceKey);
 
   return (
     <>
       <Text className="mb-2 font-medium text-gray-900">
-        Skift (rediger om nødvendig) · {sourceTag}
+        {t("components.shiftEditor.header", { source: sourceTag })}
       </Text>
       {rows.map((row, index) => {
         const isError = !row.ok;
@@ -65,7 +61,7 @@ export function ShiftEditor({
           >
             {isError && (
               <Text className="mb-2 text-sm text-amber-800">
-                Sjekk dato og tid: {row.reason}
+                {t("components.shiftEditor.errors.check", { reason: row.reason })}
               </Text>
             )}
             <View className="flex-row flex-wrap items-center gap-2">
@@ -73,14 +69,14 @@ export function ShiftEditor({
                 value={date}
                 onChangeText={(s) => onUpdateRow(index, "date", s)}
                 placeholder="DD.MM.YYYY"
-                accessibilityLabel="Dato"
+                accessibilityLabel="Date"
                 className="min-w-[100px] rounded border border-gray-200 px-2 py-1 text-gray-900"
               />
               <TextInput
                 value={start_time}
                 onChangeText={(s) => onUpdateRow(index, "start_time", s)}
                 placeholder="HH:MM"
-                accessibilityLabel="Starttid"
+                accessibilityLabel="Start time"
                 className="w-16 rounded border border-gray-200 px-2 py-1 text-gray-900"
               />
               <Text className="self-center text-gray-500">–</Text>
@@ -88,7 +84,7 @@ export function ShiftEditor({
                 value={end_time}
                 onChangeText={(s) => onUpdateRow(index, "end_time", s)}
                 placeholder="HH:MM"
-                accessibilityLabel="Sluttid"
+                accessibilityLabel="End time"
                 className="w-16 rounded border border-gray-200 px-2 py-1 text-gray-900"
               />
               <View className="flex-row gap-1">
@@ -98,7 +94,7 @@ export function ShiftEditor({
                     onPress={() => onUpdateRow(index, "shift_type", type)}
                     accessibilityRole="radio"
                     accessibilityState={{ checked: displayType === type }}
-                    accessibilityLabel={`Skifttype ${type}`}
+                    accessibilityLabel={`Shift type ${type}`}
                     className={`rounded px-2 py-1 ${
                       displayType === type ? "bg-blue-600" : "bg-gray-200"
                     }`}
@@ -112,7 +108,7 @@ export function ShiftEditor({
               <TouchableOpacity
                 onPress={() => onRemoveRow(index)}
                 className="ml-auto rounded p-2"
-                accessibilityLabel="Fjern rad"
+                accessibilityLabel="Remove row"
               >
                 <Ionicons name="trash-outline" size={22} color="#b91c1c" />
               </TouchableOpacity>
@@ -126,7 +122,7 @@ export function ShiftEditor({
           onPress={onAddRow}
           className="mb-3 rounded-lg border border-dashed border-gray-300 bg-gray-50 py-3"
         >
-          <Text className="text-center text-gray-600">+ Legg til nytt skift</Text>
+          <Text className="text-center text-gray-600">{t("components.shiftEditor.addShift")}</Text>
         </TouchableOpacity>
       )}
 
@@ -139,19 +135,18 @@ export function ShiftEditor({
         {calculating ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text className="text-center font-medium text-white">Beregn lønn</Text>
+          <Text className="text-center font-medium text-white">{t("components.shiftEditor.calculate")}</Text>
         )}
       </TouchableOpacity>
 
       {expectedPay !== null && (
         <View className="mt-4 rounded-lg border border-gray-200 bg-white p-4">
           <Text className="text-lg font-medium text-gray-900">
-            Du bør ha fått: {expectedPay.toFixed(2)} kr
+            {t("components.shiftEditor.result", { amount: expectedPay.toFixed(2) })}
           </Text>
           <View className="mt-2 rounded bg-gray-100 p-2">
             <Text className="text-xs text-gray-600">
-              Beregningen er veiledende og basert på dine egne satser. Kontroller mot original
-              timeliste.
+              {t("components.shiftEditor.disclaimer")}
             </Text>
           </View>
           <TouchableOpacity
@@ -163,7 +158,7 @@ export function ShiftEditor({
             {saving ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text className="text-center text-white">Lagre timeliste</Text>
+              <Text className="text-center text-white">{t("components.shiftEditor.save")}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -174,7 +169,7 @@ export function ShiftEditor({
           className="mt-3 text-center text-green-600"
           accessibilityLiveRegion="polite"
         >
-          Lagret. Du kan importere en ny.
+          {t("components.shiftEditor.saved")}
         </Text>
       )}
 
@@ -182,7 +177,7 @@ export function ShiftEditor({
         onPress={onReset}
         className="mt-4 rounded-lg border border-gray-300 py-2"
       >
-        <Text className="text-center text-gray-700">Start på nytt</Text>
+        <Text className="text-center text-gray-700">{t("components.shiftEditor.reset")}</Text>
       </TouchableOpacity>
     </>
   );

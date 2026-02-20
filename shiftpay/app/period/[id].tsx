@@ -18,6 +18,7 @@ import {
 import { cancelScheduleReminders } from "../../lib/notifications";
 import { sourceLabel } from "../../lib/format";
 import { ShiftCard } from "../../components/ShiftCard";
+import { useTranslation } from "../../lib/i18n";
 
 function formatCreated(createdAt: string): string {
   try {
@@ -43,6 +44,7 @@ function periodToYearMonth(periodStart: string): string {
 export default function PeriodDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [schedule, setSchedule] = useState<ScheduleRow | null>(null);
@@ -80,12 +82,12 @@ export default function PeriodDetailScreen() {
   const handleDelete = useCallback(() => {
     if (!id) return;
     Alert.alert(
-      "Slett vaktplan",
-      "Er du sikker på at du vil slette denne vaktplanen? Dette kan ikke angres.",
+      t("period.delete.title"),
+      t("period.delete.message"),
       [
-        { text: "Avbryt", style: "cancel" },
+        { text: t("period.delete.cancel"), style: "cancel" },
         {
-          text: "Slett",
+          text: t("period.delete.confirm"),
           style: "destructive",
           onPress: async () => {
             setDeleting(true);
@@ -94,7 +96,7 @@ export default function PeriodDetailScreen() {
               await deleteSchedule(id);
               router.back();
             } catch (e) {
-              Alert.alert("Feil", e instanceof Error ? e.message : "Kunne ikke slette");
+              Alert.alert(t("common.error"), e instanceof Error ? e.message : t("period.errors.deleteError"));
             } finally {
               setDeleting(false);
             }
@@ -102,7 +104,7 @@ export default function PeriodDetailScreen() {
         },
       ]
     );
-  }, [id, router]);
+  }, [id, router, t]);
 
   if (loading) {
     return (
@@ -115,12 +117,12 @@ export default function PeriodDetailScreen() {
   if (notFound || !id) {
     return (
       <View className="flex-1 items-center justify-center bg-gray-50 p-6">
-        <Text className="text-center text-gray-600">Vaktplanen ble ikke funnet.</Text>
+        <Text className="text-center text-gray-600">{t("period.notFound")}</Text>
         <TouchableOpacity
           onPress={() => router.back()}
           className="mt-4 rounded-lg bg-blue-600 px-6 py-2"
         >
-          <Text className="text-white">Tilbake</Text>
+          <Text className="text-white">{t("common.back")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -140,7 +142,7 @@ export default function PeriodDetailScreen() {
           {schedule.period_start} – {schedule.period_end}
         </Text>
         <Text className="mt-1 text-sm text-gray-600">
-          Kilde: {sourceLabel(schedule.source)} · Lagt til {formatCreated(schedule.created_at)}
+          {t("period.source", { source: sourceLabel(schedule.source, t), date: formatCreated(schedule.created_at) })}
         </Text>
         {yearMonth && (
           <TouchableOpacity
@@ -148,16 +150,16 @@ export default function PeriodDetailScreen() {
             className="mt-3 rounded-lg border border-blue-200 bg-blue-50 py-2"
           >
             <Text className="text-center text-sm font-medium text-blue-700">
-              Se månedsoppsummering
+              {t("period.viewSummary")}
             </Text>
           </TouchableOpacity>
         )}
       </View>
 
-      <Text className="mb-2 font-medium text-gray-900">Vakter</Text>
+      <Text className="mb-2 font-medium text-gray-900">{t("period.shifts.title")}</Text>
       {shifts.length === 0 ? (
         <View className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <Text className="text-center text-gray-600">Ingen vakter i denne perioden.</Text>
+          <Text className="text-center text-gray-600">{t("period.shifts.empty")}</Text>
         </View>
       ) : (
         shifts.map((shift) => (
@@ -179,7 +181,7 @@ export default function PeriodDetailScreen() {
         {deleting ? (
           <ActivityIndicator color="#b91c1c" />
         ) : (
-          <Text className="text-center font-medium text-red-700">Slett vaktplan</Text>
+          <Text className="text-center font-medium text-red-700">{t("period.delete.btn")}</Text>
         )}
       </TouchableOpacity>
     </ScrollView>

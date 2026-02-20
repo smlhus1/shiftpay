@@ -30,6 +30,7 @@ import { calculateExpectedPay, type Shift, type ShiftType } from "../../lib/calc
 import { useRouter } from "expo-router";
 import { CameraCapture } from "../../components/CameraCapture";
 import { ShiftEditor } from "../../components/ShiftEditor";
+import { useTranslation } from "../../lib/i18n";
 
 function ocrShiftToShift(s: OcrShift): Shift {
   return {
@@ -78,6 +79,7 @@ function getValidShifts(rows: CsvRowResult[]): Shift[] {
 
 export default function ImportScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [showCamera, setShowCamera] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -102,18 +104,18 @@ export default function ImportScreen() {
   /** Run OCR on multiple images and merge all shifts into rows. */
   const processMultipleImages = async (uris: string[]) => {
     setLoading(true);
-    setOcrProgress(`Behandler 1 av ${uris.length} bilder...`);
+    setOcrProgress(t("import.progress", { current: 1, total: uris.length }));
     const allRows: CsvRowResult[] = [];
     const errors: string[] = [];
     for (let i = 0; i < uris.length; i++) {
-      setOcrProgress(`Behandler ${i + 1} av ${uris.length} bilder...`);
+      setOcrProgress(t("import.progress", { current: i + 1, total: uris.length }));
       try {
         const ocrResult = await postOcr(uris[i]);
         for (const s of ocrResult.shifts) {
           allRows.push({ ok: true as const, shift: ocrShiftToShift(s) });
         }
       } catch (e) {
-        errors.push(`Bilde ${i + 1}: ${e instanceof Error ? e.message : "OCR feilet"}`);
+        errors.push(`Image ${i + 1}: ${e instanceof Error ? e.message : "OCR failed"}`);
       }
     }
     setRows(allRows);
@@ -139,7 +141,7 @@ export default function ImportScreen() {
       const uris = result.assets.map((a) => a.uri);
       await processMultipleImages(uris);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Kunne ikke åpne galleri");
+      setError(e instanceof Error ? e.message : t("import.alerts.saveError"));
       setLoading(false);
     }
   };
@@ -158,7 +160,7 @@ export default function ImportScreen() {
       const uris = result.assets.map((a) => a.uri);
       await processMultipleImages(uris);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Kunne ikke åpne filvelger");
+      setError(e instanceof Error ? e.message : t("import.alerts.saveError"));
       setLoading(false);
     }
   };
@@ -179,12 +181,12 @@ export default function ImportScreen() {
       if (parseErrors.length > 0) {
         setError(parseErrors[0]);
       } else if (parsedRows.length === 0) {
-        setError("Ingen datarader i CSV. Bruk kolonner: date, start_time, end_time, shift_type.");
+        setError(t("import.alerts.csvEmpty"));
       } else {
         setError(null);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Kunne ikke lese CSV");
+      setError(e instanceof Error ? e.message : t("import.alerts.saveError"));
       setRows([]);
     } finally {
       setLoading(false);
@@ -226,10 +228,7 @@ export default function ImportScreen() {
   const calculate = async () => {
     if (rows.length === 0) return;
     if (validShifts.length === 0) {
-      Alert.alert(
-        "Manglende data",
-        "Fyll inn dato, starttid og sluttid for minst ett skift. Rader merket «må rettes» inkluderes ikke før de er gyldige."
-      );
+      Alert.alert(t("import.alerts.missingData"), t("import.alerts.missingDataCalculate"));
       return;
     }
     setCalculating(true);
@@ -245,9 +244,7 @@ export default function ImportScreen() {
       });
       setExpectedPay(total);
       if (validShifts.length < rows.length) {
-        setError(
-          "Noen rader ble ikke med (manglende eller ugyldig dato/tid). Retting eller fjern rader som må rettes."
-        );
+        setError(t("import.alerts.csvError"));
       }
     } finally {
       setCalculating(false);
@@ -263,10 +260,7 @@ export default function ImportScreen() {
 
   const saveTimesheet = async () => {
     if (validShifts.length === 0) {
-      Alert.alert(
-        "Manglende data",
-        "Fyll inn dato, starttid og sluttid for minst ett skift for å lagre."
-      );
+      Alert.alert(t("import.alerts.missingData"), t("import.alerts.missingDataSave"));
       return;
     }
     const dates = validShifts.map((s) => s.date);
@@ -313,7 +307,7 @@ export default function ImportScreen() {
       setExpectedPay(null);
       setTimeout(() => setSaved(false), 2000);
     } catch (e) {
-      Alert.alert("Feil", e instanceof Error ? e.message : "Kunne ikke lagre");
+      Alert.alert(t("common.error"), e instanceof Error ? e.message : t("import.alerts.saveError"));
     } finally {
       setSaving(false);
     }
@@ -363,37 +357,37 @@ export default function ImportScreen() {
               className="mb-4 flex-row items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3"
             >
               <Text className="flex-1 text-sm text-amber-800">
-                Satser ikke satt opp — beregningen viser 0 kr
+                {t("import.rateZero")}
               </Text>
-              <Text className="font-medium text-amber-900">Gå til satser →</Text>
+              <Text className="font-medium text-amber-900">{t("import.rateZeroCta")}</Text>
             </TouchableOpacity>
           )}
           <View className="mb-4 rounded-lg bg-gray-200 p-3">
             <Text className="text-sm text-gray-700">
-              Beregningen er veiledende og basert på dine egne satser. OCR kan inneholde feil — kontroller alltid mot original timeliste.
+              {t("import.disclaimer")}
             </Text>
           </View>
           <TouchableOpacity onPress={openCamera} className="rounded-lg bg-blue-600 py-3">
-            <Text className="text-center font-medium text-white">📷 Ta bilde av timeliste</Text>
+            <Text className="text-center font-medium text-white">{t("import.cameraBtn")}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() =>
-              Alert.alert("Velg kilde", "Velg hvor bildet skal hentes fra", [
-                { text: "Galleri", onPress: openGallery },
-                { text: "Filer", onPress: pickImageFromFiles },
-                { text: "Avbryt", style: "cancel" },
+              Alert.alert(t("import.fileAlert.title"), "", [
+                { text: t("import.fileAlert.gallery"), onPress: openGallery },
+                { text: t("import.fileAlert.files"), onPress: pickImageFromFiles },
+                { text: t("import.fileAlert.cancel"), style: "cancel" },
               ])
             }
             className="mt-3 rounded-lg border border-gray-300 bg-white py-3"
           >
-            <Text className="text-center font-medium text-gray-700">Velg fra telefonen</Text>
+            <Text className="text-center font-medium text-gray-700">{t("import.fileBtn")}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setShowMore((v) => !v)}
             className="mt-3 py-2"
           >
             <Text className="text-center text-sm text-gray-500">
-              Andre alternativer {showMore ? "▲" : "▼"}
+              {t("import.moreOptions")} {showMore ? "▲" : "▼"}
             </Text>
           </TouchableOpacity>
           {showMore && (
@@ -402,13 +396,13 @@ export default function ImportScreen() {
                 onPress={pickCSV}
                 className="mt-1 rounded-lg border border-gray-300 bg-white py-3"
               >
-                <Text className="text-center font-medium text-gray-700">Importer CSV-fil</Text>
+                <Text className="text-center font-medium text-gray-700">{t("import.csvBtn")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={addShiftManually}
                 className="mt-3 rounded-lg border border-gray-300 bg-white py-3"
               >
-                <Text className="text-center font-medium text-gray-700">Legg til skift manuelt</Text>
+                <Text className="text-center font-medium text-gray-700">{t("import.manualBtn")}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -419,7 +413,7 @@ export default function ImportScreen() {
         <View className="py-8">
           <ActivityIndicator size="large" color="#2563eb" />
           <Text className="mt-2 text-center text-gray-600">
-            {ocrProgress ?? "Behandler..."}
+            {ocrProgress ?? t("import.loading")}
           </Text>
         </View>
       )}

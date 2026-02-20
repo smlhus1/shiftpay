@@ -9,7 +9,9 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { getTariffRates, setTariffRates, type TariffRatesInput } from "../../lib/db";
+import { useTranslation, SUPPORTED_LOCALES, type Locale } from "../../lib/i18n";
 
 const defaultRates: TariffRatesInput = {
   base_rate: 0,
@@ -28,7 +30,15 @@ function toNum(s: string): number {
   return Number.isFinite(v) ? v : 0;
 }
 
+const LOCALE_OPTIONS: { code: Locale; label: string }[] = [
+  { code: "nb", label: "🇳🇴 Norsk" },
+  { code: "en", label: "🇬🇧 English" },
+  { code: "sv", label: "🇸🇪 Svenska" },
+  { code: "da", label: "🇩🇰 Dansk" },
+];
+
 export default function SettingsScreen() {
+  const { t, locale, setLocale } = useTranslation();
   const [rates, setRates] = useState<TariffRatesInput>(defaultRates);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -86,37 +96,37 @@ export default function SettingsScreen() {
     >
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
         <Text className="mb-4 text-sm text-gray-600">
-          Timelønnsatser (f.eks. NOK). Brukes til å beregne forventet lønn.
+          {t("settings.description")}
         </Text>
 
         <RateField
-          label="Grunnlønn"
+          label={t("settings.labels.base")}
           value={toStr(rates.base_rate)}
           onChangeText={(s) => setRates((r) => ({ ...r, base_rate: toNum(s) }))}
         />
         <RateField
-          label="Kveldstillegg"
+          label={t("settings.labels.evening")}
           value={toStr(rates.evening_supplement)}
           onChangeText={(s) =>
             setRates((r) => ({ ...r, evening_supplement: toNum(s) }))
           }
         />
         <RateField
-          label="Nattillegg"
+          label={t("settings.labels.night")}
           value={toStr(rates.night_supplement)}
           onChangeText={(s) =>
             setRates((r) => ({ ...r, night_supplement: toNum(s) }))
           }
         />
         <RateField
-          label="Helgetillegg"
+          label={t("settings.labels.weekend")}
           value={toStr(rates.weekend_supplement)}
           onChangeText={(s) =>
             setRates((r) => ({ ...r, weekend_supplement: toNum(s) }))
           }
         />
         <RateField
-          label="Helligdagstillegg"
+          label={t("settings.labels.holiday")}
           value={toStr(rates.holiday_supplement)}
           onChangeText={(s) =>
             setRates((r) => ({ ...r, holiday_supplement: toNum(s) }))
@@ -132,7 +142,7 @@ export default function SettingsScreen() {
           {saving ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-center font-medium text-white">Lagre</Text>
+            <Text className="text-center font-medium text-white">{t("settings.save")}</Text>
           )}
         </TouchableOpacity>
 
@@ -141,9 +151,28 @@ export default function SettingsScreen() {
             className="mt-3 text-center text-green-600"
             accessibilityLiveRegion="polite"
           >
-            Lagret.
+            {t("settings.saved")}
           </Text>
         )}
+
+        {/* Language picker */}
+        <View className="mt-8">
+          <Text className="mb-3 text-sm font-medium text-gray-700">{t("settings.language.title")}</Text>
+          {LOCALE_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.code}
+              onPress={() => setLocale(opt.code)}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: locale === opt.code }}
+              className="mb-2 flex-row items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3"
+            >
+              <Text className="text-gray-900">{opt.label}</Text>
+              {locale === opt.code && (
+                <Ionicons name="checkmark" size={20} color="#2563eb" />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );

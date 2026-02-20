@@ -5,11 +5,8 @@
 import type { ShiftStatus, ShiftRow } from "./db";
 import type { Shift } from "./calculations";
 
-export function statusLabel(s: ShiftStatus): string {
-  if (s === "planned") return "Planlagt";
-  if (s === "completed") return "Fullført";
-  if (s === "missed") return "Ikke møtt";
-  return "Overtid";
+export function statusLabel(s: ShiftStatus, t: (key: string) => string): string {
+  return t(`format.status.${s}`);
 }
 
 export function statusColor(s: ShiftStatus): string {
@@ -19,11 +16,10 @@ export function statusColor(s: ShiftStatus): string {
   return "bg-blue-100 text-blue-800";
 }
 
-export function sourceLabel(source: string): string {
-  if (source === "ocr") return "OCR";
-  if (source === "gallery") return "Galleri";
-  if (source === "csv") return "CSV";
-  return "Manuell";
+export function sourceLabel(source: string, t: (key: string) => string): string {
+  const key = `format.source.${source}`;
+  const validSources = ["ocr", "gallery", "csv", "manual"];
+  return t(validSources.includes(source) ? key : "format.source.manual");
 }
 
 export function shiftRowToShift(s: ShiftRow): Shift {

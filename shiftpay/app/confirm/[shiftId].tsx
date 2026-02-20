@@ -14,6 +14,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getShiftById, confirmShift } from "../../lib/db";
 import type { ShiftRow } from "../../lib/db";
+import { useTranslation } from "../../lib/i18n";
 
 function formatShiftLabel(shift: ShiftRow): string {
   return `${shift.date} ${shift.start_time}–${shift.end_time} (${shift.shift_type})`;
@@ -22,6 +23,7 @@ function formatShiftLabel(shift: ShiftRow): string {
 export default function ConfirmShiftScreen() {
   const { shiftId } = useLocalSearchParams<{ shiftId: string }>();
   const router = useRouter();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [shift, setShift] = useState<ShiftRow | null>(null);
@@ -57,7 +59,7 @@ export default function ConfirmShiftScreen() {
       if (status === "overtime") {
         const mins = parseInt(overtimeMinutes, 10);
         if (Number.isNaN(mins) || mins <= 0) {
-          Alert.alert("Ugyldig verdi", "Skriv inn antall overtidsminutter (større enn 0).");
+          Alert.alert(t("confirm.overtimeError.title"), t("confirm.overtimeError.message"));
           return;
         }
         setSubmitting(true);
@@ -66,7 +68,7 @@ export default function ConfirmShiftScreen() {
           setConfirmed(true);
           setTimeout(() => router.back(), 1500);
         } catch (e) {
-          Alert.alert("Feil", e instanceof Error ? e.message : "Kunne ikke lagre");
+          Alert.alert(t("common.error"), e instanceof Error ? e.message : t("confirm.errors.saveError"));
         } finally {
           setSubmitting(false);
         }
@@ -78,12 +80,12 @@ export default function ConfirmShiftScreen() {
         setConfirmed(true);
         setTimeout(() => router.back(), 1500);
       } catch (e) {
-        Alert.alert("Feil", e instanceof Error ? e.message : "Kunne ikke lagre");
+        Alert.alert(t("common.error"), e instanceof Error ? e.message : t("confirm.errors.saveError"));
       } finally {
         setSubmitting(false);
       }
     },
-    [shiftId, overtimeMinutes, router]
+    [shiftId, overtimeMinutes, router, t]
   );
 
   if (loading) {
@@ -97,12 +99,12 @@ export default function ConfirmShiftScreen() {
   if (notFound || !shiftId) {
     return (
       <View className="flex-1 items-center justify-center bg-gray-50 p-6">
-        <Text className="text-center text-gray-600">Vakten ble ikke funnet.</Text>
+        <Text className="text-center text-gray-600">{t("confirm.errors.notFound")}</Text>
         <TouchableOpacity
           onPress={() => router.back()}
           className="mt-4 rounded-lg bg-blue-600 px-6 py-2"
         >
-          <Text className="text-white">Tilbake</Text>
+          <Text className="text-white">{t("confirm.backBtnLabel")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -111,12 +113,12 @@ export default function ConfirmShiftScreen() {
   if (!shift) {
     return (
       <View className="flex-1 items-center justify-center bg-gray-50 p-6">
-        <Text className="text-center text-gray-600">Kunne ikke laste vakten.</Text>
+        <Text className="text-center text-gray-600">{t("confirm.errors.loadError")}</Text>
         <TouchableOpacity
           onPress={() => router.back()}
           className="mt-4 rounded-lg bg-blue-600 px-6 py-2"
         >
-          <Text className="text-white">Tilbake</Text>
+          <Text className="text-white">{t("confirm.backBtnLabel")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -128,7 +130,7 @@ export default function ConfirmShiftScreen() {
         <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-green-100">
           <Ionicons name="checkmark-circle" size={40} color="#16a34a" />
         </View>
-        <Text className="text-xl font-semibold text-green-900">Vakt bekreftet!</Text>
+        <Text className="text-xl font-semibold text-green-900">{t("confirm.success")}</Text>
         <Text className="mt-2 text-center text-gray-600">{formatShiftLabel(shift)}</Text>
       </View>
     );
@@ -139,13 +141,13 @@ export default function ConfirmShiftScreen() {
     return (
       <View className="flex-1 bg-gray-50 p-6">
         <Text className="text-center text-gray-600">
-          Denne vakten er allerede bekreftet som «{shift.status}».
+          {t("confirm.alreadyConfirmed", { status: shift.status })}
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
           className="mt-6 rounded-lg bg-blue-600 py-3"
         >
-          <Text className="text-center font-medium text-white">Tilbake</Text>
+          <Text className="text-center font-medium text-white">{t("confirm.backBtn")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -161,7 +163,7 @@ export default function ConfirmShiftScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
-          <Text className="text-lg font-medium text-gray-900">Fullførte du vakten?</Text>
+          <Text className="text-lg font-medium text-gray-900">{t("confirm.question")}</Text>
           <Text className="mt-2 text-gray-600">{formatShiftLabel(shift)}</Text>
         </View>
 
@@ -173,7 +175,7 @@ export default function ConfirmShiftScreen() {
               className="mb-3 rounded-lg bg-green-600 py-3"
               style={submitting ? { opacity: 0.6 } : undefined}
             >
-              <Text className="text-center font-medium text-white">Ja, fullført</Text>
+              <Text className="text-center font-medium text-white">{t("confirm.completed")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => handleConfirm("missed")}
@@ -181,7 +183,7 @@ export default function ConfirmShiftScreen() {
               className="mb-3 rounded-lg border border-gray-300 bg-white py-3"
               style={submitting ? { opacity: 0.6 } : undefined}
             >
-              <Text className="text-center font-medium text-gray-700">Nei, ikke fullført</Text>
+              <Text className="text-center font-medium text-gray-700">{t("confirm.missed")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setShowOvertime(true)}
@@ -189,16 +191,16 @@ export default function ConfirmShiftScreen() {
               className="mb-3 rounded-lg border border-blue-300 bg-blue-50 py-3"
               style={submitting ? { opacity: 0.6 } : undefined}
             >
-              <Text className="text-center font-medium text-blue-700">Overtid</Text>
+              <Text className="text-center font-medium text-blue-700">{t("confirm.overtime")}</Text>
             </TouchableOpacity>
           </>
         ) : (
           <>
-            <Text className="mb-2 font-medium text-gray-900">Ekstra overtidsminutter</Text>
+            <Text className="mb-2 font-medium text-gray-900">{t("confirm.overtimeLabel")}</Text>
             <TextInput
               value={overtimeMinutes}
               onChangeText={setOvertimeMinutes}
-              placeholder="0"
+              placeholder={t("confirm.overtimePlaceholder")}
               keyboardType="number-pad"
               className="mb-4 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900"
             />
@@ -211,7 +213,7 @@ export default function ConfirmShiftScreen() {
               {submitting ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text className="text-center font-medium text-white">Lagre overtid</Text>
+                <Text className="text-center font-medium text-white">{t("confirm.saveOvertime")}</Text>
               )}
             </TouchableOpacity>
             <TouchableOpacity
@@ -219,7 +221,7 @@ export default function ConfirmShiftScreen() {
               disabled={submitting}
               className="rounded-lg border border-gray-300 bg-white py-3"
             >
-              <Text className="text-center font-medium text-gray-600">Tilbake</Text>
+              <Text className="text-center font-medium text-gray-600">{t("confirm.backBtn")}</Text>
             </TouchableOpacity>
           </>
         )}
