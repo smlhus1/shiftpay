@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
 } from "react-native";
@@ -19,7 +18,11 @@ import {
 import { cancelScheduleReminders } from "../../lib/notifications";
 import { sourceLabel } from "../../lib/format";
 import { ShiftCard } from "../../components/ShiftCard";
+import { PressableScale } from "../../components/PressableScale";
+import { AnimatedCard } from "../../components/AnimatedCard";
 import { useTranslation } from "../../lib/i18n";
+import { colors } from "../../lib/theme";
+import * as Haptics from "expo-haptics";
 
 function formatCreated(createdAt: string): string {
   try {
@@ -93,6 +96,7 @@ export default function PeriodDetailScreen() {
           onPress: async () => {
             setDeleting(true);
             try {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
               await cancelScheduleReminders(id);
               await deleteSchedule(id);
               router.back();
@@ -109,22 +113,22 @@ export default function PeriodDetailScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-stone-50">
-        <ActivityIndicator size="large" color="#0f766e" />
+      <View className="flex-1 items-center justify-center bg-dark-bg">
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
 
   if (notFound || !id) {
     return (
-      <View className="flex-1 items-center justify-center bg-stone-50 p-6">
-        <Text className="text-center text-slate-500">{t("period.notFound")}</Text>
-        <TouchableOpacity
+      <View className="flex-1 items-center justify-center bg-dark-bg p-6">
+        <Text className="text-center text-slate-400">{t("period.notFound")}</Text>
+        <PressableScale
           onPress={() => router.back()}
-          className="mt-4 rounded-xl bg-teal-700 px-6 py-2"
+          className="mt-4 rounded-xl bg-accent px-6 py-2"
         >
-          <Text className="text-white">{t("common.back")}</Text>
-        </TouchableOpacity>
+          <Text className="font-inter-semibold text-slate-900">{t("common.back")}</Text>
+        </PressableScale>
       </View>
     );
   }
@@ -135,32 +139,32 @@ export default function PeriodDetailScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-stone-50"
+      className="flex-1 bg-dark-bg"
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
     >
-      <View className="mb-4 rounded-xl border border-stone-200 bg-white p-4">
-        <Text className="text-lg font-medium text-slate-900">
+      <AnimatedCard index={0} className="mb-4 rounded-xl border border-dark-border bg-dark-surface p-4">
+        <Text className="text-lg font-inter-semibold text-slate-100">
           {schedule.period_start} – {schedule.period_end}
         </Text>
-        <Text className="mt-1 text-sm text-slate-500">
+        <Text className="mt-1 text-sm text-slate-400">
           {t("period.source", { source: sourceLabel(schedule.source, t), date: formatCreated(schedule.created_at) })}
         </Text>
         {yearMonth && (
-          <TouchableOpacity
+          <PressableScale
             onPress={() => router.push(`/summary/${yearMonth}` as Href)}
-            className="mt-3 rounded-xl border border-teal-200 bg-teal-50 py-2"
+            className="mt-3 rounded-xl border border-sky-400/20 bg-sky-400/10 py-2"
           >
-            <Text className="text-center text-sm font-medium text-teal-700">
+            <Text className="text-center text-sm font-inter-semibold text-accent">
               {t("period.viewSummary")}
             </Text>
-          </TouchableOpacity>
+          </PressableScale>
         )}
-      </View>
+      </AnimatedCard>
 
-      <Text className="mb-2 font-medium text-slate-900">{t("period.shifts.title")}</Text>
+      <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-slate-400">{t("period.shifts.title")}</Text>
       {shifts.length === 0 ? (
-        <View className="rounded-xl border border-stone-200 bg-stone-50 p-4">
-          <Text className="text-center text-slate-500">{t("period.shifts.empty")}</Text>
+        <View className="rounded-xl border border-dark-border bg-dark-surface p-4">
+          <Text className="text-center text-slate-400">{t("period.shifts.empty")}</Text>
         </View>
       ) : (
         shifts.map((shift) => (
@@ -173,18 +177,18 @@ export default function PeriodDetailScreen() {
         ))
       )}
 
-      <TouchableOpacity
+      <PressableScale
         onPress={handleDelete}
         disabled={deleting}
         style={deleting ? { opacity: 0.6 } : undefined}
-        className="mt-6 rounded-xl border border-red-300 bg-red-50 py-3"
+        className="mt-6 rounded-xl border border-red-500/20 bg-red-500/10 py-3"
       >
         {deleting ? (
-          <ActivityIndicator color="#b91c1c" />
+          <ActivityIndicator color={colors.error} />
         ) : (
-          <Text className="text-center font-medium text-red-700">{t("period.delete.btn")}</Text>
+          <Text className="text-center font-inter-semibold text-red-400">{t("period.delete.btn")}</Text>
         )}
-      </TouchableOpacity>
+      </PressableScale>
     </ScrollView>
   );
 }

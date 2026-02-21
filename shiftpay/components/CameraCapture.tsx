@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { CameraView } from "expo-camera";
 import type { RefObject } from "react";
 import { useTranslation } from "../lib/i18n";
+import { PressableScale } from "./PressableScale";
 
 interface CameraCaptureProps {
   cameraRef: RefObject<{ takePictureAsync: (opts?: object) => Promise<{ uri: string }> } | null>;
@@ -21,12 +22,12 @@ export function CameraCapture({ cameraRef, onCancel, onCapture }: CameraCaptureP
         </Text>
       </View>
       <View className="absolute bottom-8 left-0 right-0 flex-row justify-center gap-4">
-        <TouchableOpacity onPress={onCancel} className="rounded-xl bg-stone-700 px-6 py-3">
-          <Text className="text-white">{t("components.camera.cancel")}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={onCapture} className="rounded-xl bg-teal-700 px-6 py-3">
-          <Text className="text-white">{t("components.camera.capture")}</Text>
-        </TouchableOpacity>
+        <PressableScale onPress={onCancel} className="rounded-xl bg-dark-elevated px-6 py-3">
+          <Text className="font-inter-medium text-white">{t("components.camera.cancel")}</Text>
+        </PressableScale>
+        <PressableScale onPress={onCapture} className="rounded-xl bg-accent px-6 py-3">
+          <Text className="font-inter-medium text-slate-900">{t("components.camera.capture")}</Text>
+        </PressableScale>
       </View>
     </View>
   );

@@ -1,14 +1,17 @@
 import "../global.css";
 import { useCallback, useEffect, useState } from "react";
-import { Platform, Modal, View, Text, TouchableOpacity } from "react-native";
+import { Platform, Modal, View, Text, Pressable } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
+import { StatusBar } from "expo-status-bar";
 import { Stack, useRouter } from "expo-router";
 import type { Href } from "expo-router";
+import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from "@expo-google-fonts/inter";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initDb, getTariffRates } from "../lib/db";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { LocaleProvider, useTranslation } from "../lib/i18n";
+import { colors } from "../lib/theme";
 
 const ONBOARDING_DONE_KEY = "shiftpay_onboarding_done";
 
@@ -22,6 +25,13 @@ function RootLayoutInner() {
   const { t } = useTranslation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
+
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
 
   const runInit = useCallback(async () => {
     if (Platform.OS === "web") return;
@@ -46,8 +56,8 @@ function RootLayoutInner() {
   }, [t]);
 
   useEffect(() => {
-    runInit();
-  }, [runInit]);
+    if (fontsLoaded) runInit();
+  }, [fontsLoaded, runInit]);
 
   useEffect(() => {
     if (Platform.OS === "web") return;
@@ -65,10 +75,21 @@ function RootLayoutInner() {
     router.replace("/(tabs)/settings");
   };
 
+  if (!fontsLoaded) return null;
+
   return (
     <>
+      <StatusBar style="light" />
       <ErrorBoundary>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            headerStyle: { backgroundColor: colors.bg },
+            headerTintColor: colors.textPrimary,
+            headerTitleStyle: { color: colors.textPrimary, fontFamily: 'Inter_600SemiBold' },
+            contentStyle: { backgroundColor: colors.bg },
+          }}
+        >
           <Stack.Screen name="(tabs)" />
           <Stack.Screen
             name="period/[id]"
@@ -87,15 +108,15 @@ function RootLayoutInner() {
       {Platform.OS !== "web" && initError && (
         <Modal visible transparent animationType="fade">
           <View className="flex-1 justify-center bg-black/50 px-6">
-            <View className="rounded-xl bg-white p-6">
-              <Text className="text-lg font-medium text-slate-900">{t("initError.title")}</Text>
-              <Text className="mt-2 text-slate-500">{initError}</Text>
-              <TouchableOpacity
+            <View className="rounded-xl bg-dark-surface p-6">
+              <Text className="text-lg font-inter-semibold text-slate-100">{t("initError.title")}</Text>
+              <Text className="mt-2 text-slate-400">{initError}</Text>
+              <Pressable
                 onPress={() => runInit()}
-                className="mt-6 rounded-xl bg-teal-700 py-3"
+                className="mt-6 rounded-xl bg-accent py-3"
               >
-                <Text className="text-center font-medium text-white">{t("initError.retry")}</Text>
-              </TouchableOpacity>
+                <Text className="text-center font-inter-semibold text-slate-900">{t("initError.retry")}</Text>
+              </Pressable>
             </View>
           </View>
         </Modal>
@@ -103,19 +124,19 @@ function RootLayoutInner() {
       {Platform.OS !== "web" && showOnboarding && !initError && (
         <Modal visible transparent animationType="fade">
           <View className="flex-1 justify-center bg-black/50 px-6">
-            <View className="rounded-xl bg-white p-6">
-              <Text className="text-lg font-medium text-slate-900">
+            <View className="rounded-xl bg-dark-surface p-6">
+              <Text className="text-lg font-inter-semibold text-slate-100">
                 {t("onboarding.title")}
               </Text>
-              <Text className="mt-2 text-slate-500">
+              <Text className="mt-2 text-slate-400">
                 {t("onboarding.description")}
               </Text>
-              <TouchableOpacity
+              <Pressable
                 onPress={dismissOnboarding}
-                className="mt-6 rounded-xl bg-teal-700 py-3"
+                className="mt-6 rounded-xl bg-accent py-3"
               >
-                <Text className="text-center font-medium text-white">{t("onboarding.cta")}</Text>
-              </TouchableOpacity>
+                <Text className="text-center font-inter-semibold text-slate-900">{t("onboarding.cta")}</Text>
+              </Pressable>
             </View>
           </View>
         </Modal>

@@ -1,20 +1,21 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../lib/i18n";
+import { colors } from "../../lib/theme";
 
 export default function TabsLayout() {
   const { t } = useTranslation();
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#0f766e',
-        tabBarInactiveTintColor: '#94a3b8',
-        headerStyle: { backgroundColor: '#ffffff' },
-        headerTitleStyle: { color: '#0f172a', fontWeight: '600' },
+        tabBarActiveTintColor: colors.tabActive,
+        tabBarInactiveTintColor: colors.tabInactive,
+        headerStyle: { backgroundColor: colors.bg },
+        headerTitleStyle: { color: colors.textPrimary, fontFamily: 'Inter_600SemiBold' },
         headerShadowVisible: false,
         tabBarStyle: {
-          borderTopColor: '#e7e5e3',
-          backgroundColor: '#ffffff',
+          borderTopColor: colors.border,
+          backgroundColor: colors.surface,
         },
         headerTitle: "ShiftPay",
       }}

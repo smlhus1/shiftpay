@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -11,9 +10,12 @@ import {
   Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import Constants from "expo-constants";
 import { getTariffRates, setTariffRates, type TariffRatesInput } from "../../lib/db";
 import { useTranslation, SUPPORTED_LOCALES, type Locale } from "../../lib/i18n";
+import { PressableScale } from "../../components/PressableScale";
+import { colors } from "../../lib/theme";
 
 const defaultRates: TariffRatesInput = {
   base_rate: 0,
@@ -34,10 +36,10 @@ function toNum(s: string): number {
 }
 
 const LOCALE_OPTIONS: { code: Locale; label: string }[] = [
-  { code: "nb", label: "🇳🇴 Norsk" },
-  { code: "en", label: "🇬🇧 English" },
-  { code: "sv", label: "🇸🇪 Svenska" },
-  { code: "da", label: "🇩🇰 Dansk" },
+  { code: "nb", label: "Norsk" },
+  { code: "en", label: "English" },
+  { code: "sv", label: "Svenska" },
+  { code: "da", label: "Dansk" },
 ];
 
 export default function SettingsScreen() {
@@ -78,6 +80,7 @@ export default function SettingsScreen() {
     setSaved(false);
     try {
       await setTariffRates(rates);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {
@@ -87,8 +90,8 @@ export default function SettingsScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-stone-50">
-        <ActivityIndicator size="large" color="#0f766e" />
+      <View className="flex-1 items-center justify-center bg-dark-bg">
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
@@ -96,10 +99,10 @@ export default function SettingsScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className="flex-1 bg-stone-50"
+      className="flex-1 bg-dark-bg"
     >
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
-        <Text className="mb-4 text-sm text-slate-500">
+        <Text className="mb-4 text-sm text-slate-400">
           {t("settings.description")}
         </Text>
 
@@ -144,25 +147,24 @@ export default function SettingsScreen() {
           }
         />
 
-        <TouchableOpacity
+        <PressableScale
           onPress={handleSave}
           disabled={saving}
-          accessibilityRole="button"
           accessibilityLabel={t("settings.save")}
           accessibilityState={{ disabled: saving }}
           style={saving ? { opacity: 0.6 } : undefined}
-          className="mt-6 rounded-xl bg-teal-700 py-4"
+          className="mt-6 rounded-xl bg-accent py-4"
         >
           {saving ? (
-            <ActivityIndicator color="white" />
+            <ActivityIndicator color={colors.bg} />
           ) : (
-            <Text className="text-center font-medium text-white">{t("settings.save")}</Text>
+            <Text className="text-center font-inter-semibold text-slate-900">{t("settings.save")}</Text>
           )}
-        </TouchableOpacity>
+        </PressableScale>
 
         {saved && (
           <Text
-            className="mt-3 text-center text-green-600"
+            className="mt-3 text-center text-emerald-400"
             accessibilityLiveRegion="polite"
           >
             {t("settings.saved")}
@@ -171,48 +173,48 @@ export default function SettingsScreen() {
 
         {/* Language picker */}
         <View className="mt-8" accessibilityRole="radiogroup" accessibilityLabel={t("settings.language.title")}>
-          <Text className="mb-3 text-sm font-medium text-slate-700" accessibilityRole="header">{t("settings.language.title")}</Text>
+          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-slate-400" accessibilityRole="header">{t("settings.language.title")}</Text>
           {LOCALE_OPTIONS.map((opt) => (
-            <TouchableOpacity
+            <PressableScale
               key={opt.code}
               onPress={() => setLocale(opt.code)}
               accessibilityRole="radio"
               accessibilityState={{ checked: locale === opt.code }}
-              className="mb-2 flex-row items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3"
+              className="mb-2 flex-row items-center justify-between rounded-xl border border-dark-border bg-dark-surface px-4 py-3"
             >
-              <Text className="text-slate-900">{opt.label}</Text>
+              <Text className="text-slate-100">{opt.label}</Text>
               {locale === opt.code && (
-                <Ionicons name="checkmark" size={20} color="#0f766e" />
+                <Ionicons name="checkmark" size={20} color={colors.accent} />
               )}
-            </TouchableOpacity>
+            </PressableScale>
           ))}
         </View>
 
         {/* About section */}
-        <View className="mt-8 rounded-xl border border-stone-200 bg-white p-4">
-          <Text className="mb-3 text-sm font-medium text-slate-700" accessibilityRole="header">{t("settings.about.title")}</Text>
-          <Text className="mb-3 text-sm text-slate-500">{t("settings.about.description")}</Text>
-          <Text className="mb-3 text-sm text-slate-500">{t("settings.about.privacy")}</Text>
-          <TouchableOpacity
+        <View className="mt-8 rounded-xl border border-dark-border bg-dark-surface p-4">
+          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-slate-400" accessibilityRole="header">{t("settings.about.title")}</Text>
+          <Text className="mb-3 text-sm text-slate-400">{t("settings.about.description")}</Text>
+          <Text className="mb-3 text-sm text-slate-400">{t("settings.about.privacy")}</Text>
+          <PressableScale
             onPress={() => Linking.openURL("https://github.com/smlhus/shiftpay").catch(() => {})}
             accessibilityRole="link"
             accessibilityLabel="GitHub"
             className="mb-2 flex-row items-center gap-2"
             style={{ minHeight: 48 }}
           >
-            <Ionicons name="logo-github" size={18} color="#0f766e" />
-            <Text className="text-sm text-teal-700">GitHub</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+            <Ionicons name="logo-github" size={18} color={colors.accent} />
+            <Text className="text-sm text-accent">GitHub</Text>
+          </PressableScale>
+          <PressableScale
             onPress={() => Linking.openURL("mailto:shiftpay@smlhus.com").catch(() => {})}
             accessibilityRole="link"
             accessibilityLabel="shiftpay@smlhus.com"
             className="mb-3 flex-row items-center gap-2"
             style={{ minHeight: 48 }}
           >
-            <Ionicons name="mail-outline" size={18} color="#0f766e" />
-            <Text className="text-sm text-teal-700">shiftpay@smlhus.com</Text>
-          </TouchableOpacity>
+            <Ionicons name="mail-outline" size={18} color={colors.accent} />
+            <Text className="text-sm text-accent">shiftpay@smlhus.com</Text>
+          </PressableScale>
           <Text className="text-xs text-slate-500">ShiftPay v{Constants.expoConfig?.version ?? "1.0.0"}</Text>
         </View>
       </ScrollView>
@@ -231,14 +233,15 @@ function RateField({
 }) {
   return (
     <View className="mb-4">
-      <Text className="mb-1.5 text-sm font-medium text-slate-700">{label}</Text>
+      <Text className="mb-1.5 text-sm font-inter-medium text-slate-300">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         keyboardType="decimal-pad"
         placeholder="0"
+        placeholderTextColor={colors.textMuted}
         accessibilityLabel={label}
-        className="min-h-[48px] rounded-xl border border-stone-300 bg-white px-4 py-3 text-slate-900"
+        className="min-h-[48px] rounded-xl border border-dark-border bg-dark-surface px-4 py-3 text-slate-100"
       />
     </View>
   );

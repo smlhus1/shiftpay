@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
@@ -23,7 +22,10 @@ import type { Href } from "expo-router";
 import { calculateExpectedPay, calculateOvertimePay, type Shift } from "../../lib/calculations";
 import { shiftRowToShift, MONTH_KEYS, toYearMonthKey, formatCurrency } from "../../lib/format";
 import { ShiftCard } from "../../components/ShiftCard";
+import { PressableScale } from "../../components/PressableScale";
+import { AnimatedCard } from "../../components/AnimatedCard";
 import { useTranslation } from "../../lib/i18n";
+import { colors } from "../../lib/theme";
 
 function getWeekRange(): { from: string; to: string } {
   const now = new Date();
@@ -145,28 +147,27 @@ export default function DashboardScreen() {
 
   if (loading && monthsList.length === 0 && !nextShift && dueConfirmation.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center bg-stone-50">
-        <ActivityIndicator size="large" color="#0f766e" />
+      <View className="flex-1 items-center justify-center bg-dark-bg">
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
 
   if (loadError) {
     return (
-      <View className="flex-1 items-center justify-center bg-stone-50 p-6">
-        <Text className="text-center text-slate-500">{loadError}</Text>
-        <TouchableOpacity
+      <View className="flex-1 items-center justify-center bg-dark-bg p-6">
+        <Text className="text-center text-slate-400">{loadError}</Text>
+        <PressableScale
           onPress={() => {
             setLoadError(null);
             setLoading(true);
             load();
           }}
-          accessibilityRole="button"
           accessibilityLabel={t("dashboard.error.retry")}
-          className="mt-6 rounded-xl bg-teal-700 px-6 py-4"
+          className="mt-6 rounded-xl bg-accent px-6 py-4"
         >
-          <Text className="font-medium text-white">{t("dashboard.error.retry")}</Text>
-        </TouchableOpacity>
+          <Text className="font-inter-semibold text-slate-900">{t("dashboard.error.retry")}</Text>
+        </PressableScale>
       </View>
     );
   }
@@ -175,97 +176,125 @@ export default function DashboardScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-stone-50"
+      className="flex-1 bg-dark-bg"
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#0f766e"]} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={[colors.accent]}
+          tintColor={colors.accent}
+          progressBackgroundColor={colors.surface}
+        />
       }
     >
       {empty && (
         <View className="flex-1 items-center justify-center py-12">
-          <Text className="text-lg font-medium text-slate-900">{t("dashboard.empty.title")}</Text>
-          <Text className="mt-2 text-center text-slate-500">
+          <Text className="text-lg font-inter-semibold text-slate-100">{t("dashboard.empty.title")}</Text>
+          <Text className="mt-2 text-center text-slate-400">
             {t("dashboard.empty.description")}
           </Text>
-          <TouchableOpacity
+          <PressableScale
             onPress={() => router.push("/(tabs)/import")}
-            accessibilityRole="button"
             accessibilityLabel={t("dashboard.empty.cta")}
-            className="mt-6 rounded-xl bg-teal-700 px-6 py-4"
+            className="mt-6 rounded-xl bg-accent px-6 py-4"
           >
-            <Text className="font-medium text-white">{t("dashboard.empty.cta")}</Text>
-          </TouchableOpacity>
+            <Text className="font-inter-semibold text-slate-900">{t("dashboard.empty.cta")}</Text>
+          </PressableScale>
         </View>
       )}
 
+      {/* Next shift — full width */}
       {nextShift && (
-        <View className="mb-4 rounded-xl bg-teal-700 p-5">
-          <Text className="text-sm font-medium text-teal-100">{t("dashboard.nextShift.title")}</Text>
-          <Text className="mt-1 text-xl font-semibold text-white">
+        <AnimatedCard index={0} className="mb-4 rounded-xl bg-dark-surface p-5">
+          <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-400">{t("dashboard.nextShift.title")}</Text>
+          <Text className="mt-1 text-xl font-inter-semibold text-slate-100">
             {nextShift.date} · {nextShift.start_time}–{nextShift.end_time}
           </Text>
-          <Text className="mt-1 text-sm text-teal-200">{countdownToShift(nextShift, t)}</Text>
+          <Text className="mt-1 text-sm text-accent">{countdownToShift(nextShift, t)}</Text>
           {isShiftEndPassed(nextShift) && (
-            <TouchableOpacity
+            <PressableScale
               onPress={() => onPressConfirm(nextShift.id)}
-              className="mt-3 self-start rounded-xl bg-white px-4 py-2"
+              className="mt-3 self-start rounded-xl bg-accent px-4 py-2"
             >
-              <Text className="text-sm font-semibold text-teal-700">{t("dashboard.nextShift.confirm")}</Text>
-            </TouchableOpacity>
+              <Text className="text-sm font-inter-semibold text-slate-900">{t("dashboard.nextShift.confirm")}</Text>
+            </PressableScale>
           )}
-        </View>
+        </AnimatedCard>
       )}
 
-      {dueConfirmation.length > 0 && (
-        <View className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <Text className="font-medium text-amber-900">
+      {/* Bento: two-column row — Expected pay + Unconfirmed */}
+      {(monthSummary || dueConfirmation.length > 0) && (
+        <AnimatedCard index={1} className="mb-4 flex-row gap-3">
+          {/* Expected pay tile */}
+          {monthSummary && (monthSummary.plannedHours > 0 || monthSummary.actualHours > 0) ? (
+            <PressableScale
+              onPress={onPressSummary}
+              accessibilityLabel={t("dashboard.month.title")}
+              className="flex-1 rounded-xl bg-dark-surface p-4"
+            >
+              <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-400">{t("dashboard.month.title")}</Text>
+              <Text className="mt-1 font-display text-2xl text-warm">
+                {formatCurrency(monthSummary.expectedPay, locale)}
+              </Text>
+              <Text className="mt-1 text-xs text-slate-500">
+                {t("dashboard.month.actual", { hours: monthSummary.actualHours.toFixed(1) })}
+              </Text>
+            </PressableScale>
+          ) : (
+            <View className="flex-1" />
+          )}
+
+          {/* Unconfirmed tile */}
+          {dueConfirmation.length > 0 ? (
+            <PressableScale
+              onPress={() => onPressConfirm(dueConfirmation[0].id)}
+              className="flex-1 rounded-xl bg-dark-surface p-4"
+            >
+              <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-400">{t("dashboard.pending.title")}</Text>
+              <Text className="mt-1 font-display text-2xl text-red-400">
+                {dueConfirmation.length}
+              </Text>
+              <Text className="mt-1 text-xs text-slate-500">
+                {t("dashboard.pending.confirmBtn")}
+              </Text>
+            </PressableScale>
+          ) : (
+            <View className="flex-1" />
+          )}
+        </AnimatedCard>
+      )}
+
+      {/* Pending confirmation list (if more than visible in tile) */}
+      {dueConfirmation.length > 1 && (
+        <AnimatedCard index={2} className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
+          <Text className="text-xs font-inter-medium uppercase tracking-wider text-amber-300">
             {t("dashboard.pending.title")} ({dueConfirmation.length})
           </Text>
           {dueConfirmation.slice(0, 3).map((s) => (
-            <TouchableOpacity
+            <PressableScale
               key={s.id}
               onPress={() => onPressConfirm(s.id)}
-              className="mt-2 flex-row items-center justify-between rounded-xl border border-amber-200 bg-white p-3"
+              className="mt-2 flex-row items-center justify-between rounded-xl border border-dark-border bg-dark-surface p-3"
             >
-              <Text className="text-slate-900">
+              <Text className="text-slate-100">
                 {s.date} {s.start_time}–{s.end_time}
               </Text>
-              <Text className="text-sm font-medium text-teal-700">{t("dashboard.pending.confirmBtn")}</Text>
-            </TouchableOpacity>
+              <Text className="text-sm font-inter-medium text-accent">{t("dashboard.pending.confirmBtn")}</Text>
+            </PressableScale>
           ))}
           {dueConfirmation.length > 3 && (
-            <Text className="mt-2 text-sm text-amber-800">
+            <Text className="mt-2 text-sm text-amber-300">
               {t("dashboard.pending.more", { count: dueConfirmation.length - 3 })}
             </Text>
           )}
-        </View>
+        </AnimatedCard>
       )}
 
-      {monthSummary && (monthSummary.plannedHours > 0 || monthSummary.actualHours > 0) ? (
-        <TouchableOpacity
-          onPress={onPressSummary}
-          accessibilityRole="button"
-          accessibilityLabel={t("dashboard.month.title")}
-          className="mb-4 rounded-xl border border-stone-200 bg-white p-4"
-        >
-          <Text className="font-medium text-slate-900" accessibilityRole="header">{t("dashboard.month.title")}</Text>
-          <View className="mt-2 flex-row gap-4">
-            <Text className="text-sm text-slate-500">
-              {t("dashboard.month.planned", { hours: monthSummary.plannedHours.toFixed(1) })}
-            </Text>
-            <Text className="text-sm text-slate-500">
-              {t("dashboard.month.actual", { hours: monthSummary.actualHours.toFixed(1) })}
-            </Text>
-          </View>
-          <Text className="mt-2 text-lg font-bold text-slate-900">
-            {t("dashboard.month.expectedPay", { amount: formatCurrency(monthSummary.expectedPay, locale) })}
-          </Text>
-        </TouchableOpacity>
-      ) : null}
-
+      {/* This week */}
       {weekShifts.length > 0 && (
-        <View className="mb-4 rounded-xl border border-stone-200 bg-white p-4">
-          <Text className="font-medium text-slate-900">{t("dashboard.week.title")}</Text>
+        <AnimatedCard index={3} className="mb-4 rounded-xl border border-dark-border bg-dark-surface p-4">
+          <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-400">{t("dashboard.week.title")}</Text>
           {weekShifts.slice(0, 7).map((s) => (
             <ShiftCard
               key={s.id}
@@ -274,31 +303,30 @@ export default function DashboardScreen() {
               compact
             />
           ))}
-        </View>
+        </AnimatedCard>
       )}
 
+      {/* History */}
       {monthsList.length > 0 && (
         <>
-          <Text className="mb-2 font-medium text-slate-900" accessibilityRole="header">{t("dashboard.history.title")}</Text>
+          <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-slate-400" accessibilityRole="header">{t("dashboard.history.title")}</Text>
           {monthsList.map(({ year, month }) => {
             const key = toYearMonthKey(year, month);
             const monthKey = MONTH_KEYS[month - 1] ?? "jan";
             return (
-              <TouchableOpacity
+              <PressableScale
                 key={key}
                 onPress={() => router.push(`/summary/${key}` as Href)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
                 accessibilityLabel={`${t(`months.${monthKey}`)} ${year}`}
-                className="mb-3 rounded-xl border border-stone-200 bg-white p-4"
+                className="mb-3 rounded-xl border border-dark-border bg-dark-surface p-4"
               >
                 <View className="flex-row items-center justify-between">
-                  <Text className="font-medium text-slate-900">
+                  <Text className="font-inter-medium text-slate-100">
                     {t(`months.${monthKey}`)} {year}
                   </Text>
-                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" importantForAccessibility="no" />
+                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} importantForAccessibility="no" />
                 </View>
-              </TouchableOpacity>
+              </PressableScale>
             );
           })}
         </>

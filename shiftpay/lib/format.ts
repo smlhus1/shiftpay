@@ -38,10 +38,10 @@ export function statusLabel(s: ShiftStatus, t: (key: string) => string): string 
 }
 
 export function statusColor(s: ShiftStatus): string {
-  if (s === "planned") return "bg-stone-100 text-slate-600";
-  if (s === "completed") return "bg-emerald-100 text-emerald-800";
-  if (s === "missed") return "bg-red-100 text-red-700";
-  return "bg-violet-100 text-violet-700";
+  if (s === "planned") return "bg-slate-400/15 text-slate-400";
+  if (s === "completed") return "bg-emerald-500/15 text-emerald-400";
+  if (s === "missed") return "bg-red-500/15 text-red-400";
+  return "bg-violet-500/15 text-violet-400";
 }
 
 export function sourceLabel(source: string, t: (key: string) => string): string {

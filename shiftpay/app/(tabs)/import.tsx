@@ -2,13 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
+import * as Haptics from "expo-haptics";
 import { useCameraPermissions } from "expo-camera";
 import { postOcr } from "../../lib/api";
 import type { OcrShift } from "../../lib/api";
@@ -30,7 +30,10 @@ import { calculateExpectedPay, type Shift, type ShiftType } from "../../lib/calc
 import { useRouter } from "expo-router";
 import { CameraCapture } from "../../components/CameraCapture";
 import { ShiftEditor } from "../../components/ShiftEditor";
+import { PressableScale } from "../../components/PressableScale";
+import { AnimatedCard } from "../../components/AnimatedCard";
 import { useTranslation } from "../../lib/i18n";
+import { colors } from "../../lib/theme";
 
 function ocrShiftToShift(s: OcrShift): Shift {
   return {
@@ -307,6 +310,7 @@ export default function ImportScreen() {
         }
         // Shift data is already saved; do not fail the whole save
       }
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setSaved(true);
       setRows([]);
       setExpectedPay(null);
@@ -347,71 +351,76 @@ export default function ImportScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-stone-50" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+    <ScrollView className="flex-1 bg-dark-bg" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
       {error && (
-        <View className="mb-4 rounded-xl bg-red-100 p-3">
-          <Text className="text-red-800">{error}</Text>
+        <View className="mb-4 rounded-xl bg-red-500/10 p-3">
+          <Text className="text-red-400">{error}</Text>
         </View>
       )}
 
       {rows.length === 0 && !loading && (
         <>
           {baseRateZero && (
-            <TouchableOpacity
+            <PressableScale
               onPress={() => router.push("/(tabs)/settings")}
-              className="mb-4 flex-row items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3"
+              className="mb-4 flex-row items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3"
             >
-              <Text className="flex-1 text-sm text-amber-800">
+              <Text className="flex-1 text-sm text-amber-300">
                 {t("import.rateZero")}
               </Text>
-              <Text className="font-medium text-amber-900">{t("import.rateZeroCta")}</Text>
-            </TouchableOpacity>
+              <Text className="font-inter-semibold text-amber-400">{t("import.rateZeroCta")}</Text>
+            </PressableScale>
           )}
-          <View className="mb-4 rounded-xl bg-stone-100 p-3">
-            <Text className="text-sm text-slate-700">
+          <AnimatedCard index={0} className="mb-4 rounded-xl bg-dark-surface p-3">
+            <Text className="text-sm text-slate-400">
               {t("import.disclaimer")}
             </Text>
-          </View>
+          </AnimatedCard>
           {/* Primary: camera */}
-          <TouchableOpacity onPress={openCamera} className="rounded-xl bg-teal-700 py-4">
-            <Text className="text-center text-base font-semibold text-white">{t("import.cameraBtn")}</Text>
-          </TouchableOpacity>
+          <AnimatedCard index={1}>
+            <PressableScale onPress={openCamera} className="rounded-xl bg-accent py-4">
+              <Text className="text-center text-base font-inter-semibold text-slate-900">{t("import.cameraBtn")}</Text>
+            </PressableScale>
+          </AnimatedCard>
           {/* Secondary: gallery/files */}
-          <TouchableOpacity
-            onPress={() =>
-              Alert.alert(t("import.fileAlert.title"), "", [
-                { text: t("import.fileAlert.gallery"), onPress: openGallery },
-                { text: t("import.fileAlert.files"), onPress: pickImageFromFiles },
-                { text: t("import.fileAlert.cancel"), style: "cancel" },
-              ])
-            }
-            className="mt-3 rounded-xl border-2 border-stone-300 bg-white py-4"
-          >
-            <Text className="text-center text-base font-medium text-slate-700">{t("import.fileBtn")}</Text>
-          </TouchableOpacity>
+          <AnimatedCard index={2}>
+            <PressableScale
+              onPress={() =>
+                Alert.alert(t("import.fileAlert.title"), "", [
+                  { text: t("import.fileAlert.gallery"), onPress: openGallery },
+                  { text: t("import.fileAlert.files"), onPress: pickImageFromFiles },
+                  { text: t("import.fileAlert.cancel"), style: "cancel" },
+                ])
+              }
+              className="mt-3 rounded-xl border-2 border-dark-border bg-dark-surface py-4"
+            >
+              <Text className="text-center text-base font-inter-medium text-slate-300">{t("import.fileBtn")}</Text>
+            </PressableScale>
+          </AnimatedCard>
           {/* Tertiary: more options toggle */}
-          <TouchableOpacity
+          <PressableScale
             onPress={() => setShowMore((v) => !v)}
             className="mt-3 py-2"
+            haptic={false}
           >
-            <Text className="text-center text-sm text-slate-400">
+            <Text className="text-center text-sm text-slate-500">
               {t("import.moreOptions")} {showMore ? "▲" : "▼"}
             </Text>
-          </TouchableOpacity>
+          </PressableScale>
           {showMore && (
             <>
-              <TouchableOpacity
+              <PressableScale
                 onPress={pickCSV}
                 className="mt-1 py-2"
               >
-                <Text className="text-center text-sm font-medium text-teal-700">{t("import.csvBtn")}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+                <Text className="text-center text-sm font-inter-medium text-accent">{t("import.csvBtn")}</Text>
+              </PressableScale>
+              <PressableScale
                 onPress={addShiftManually}
                 className="mt-2 py-2"
               >
-                <Text className="text-center text-sm font-medium text-teal-700">{t("import.manualBtn")}</Text>
-              </TouchableOpacity>
+                <Text className="text-center text-sm font-inter-medium text-accent">{t("import.manualBtn")}</Text>
+              </PressableScale>
             </>
           )}
         </>
@@ -419,8 +428,8 @@ export default function ImportScreen() {
 
       {loading && (
         <View className="py-8">
-          <ActivityIndicator size="large" color="#0f766e" />
-          <Text className="mt-2 text-center text-slate-500">
+          <ActivityIndicator size="large" color={colors.accent} />
+          <Text className="mt-2 text-center text-slate-400">
             {ocrProgress ?? t("import.loading")}
           </Text>
         </View>
