@@ -88,13 +88,13 @@ const sv: TranslationShape = {
     save: "Spara tidlista",
   },
   settings: {
-    description: "Timlönetaxor (t.ex. NOK). Används för att beräkna förväntad lön.",
+    description: "Taxor per timme. Tillägg läggs ovanpå grundlönen.",
     labels: {
-      base: "Grundlön",
-      evening: "Kvällstillägg",
-      night: "Natttillägg",
-      weekend: "Helgtillägg",
-      holiday: "Helgdagstillägg",
+      base: "Grundlön (per timme)",
+      evening: "Kvällstillägg (per timme)",
+      night: "Natttillägg (per timme)",
+      weekend: "Helgtillägg (per timme)",
+      holiday: "Helgdagstillägg (per timme)",
       overtime: "Övertidstillägg (%)",
     },
     save: "Spara",
@@ -105,6 +105,9 @@ const sv: TranslationShape = {
       en: "🇬🇧 English",
       sv: "🇸🇪 Svenska",
       da: "🇩🇰 Dansk",
+    },
+    currency: {
+      title: "Valuta",
     },
     theme: {
       title: "Tema",

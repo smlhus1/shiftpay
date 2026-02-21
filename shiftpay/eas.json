@@ -7,12 +7,15 @@
     },
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" }
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://ifzngxyvdzaobyxtnrcy.supabase.co/functions/v1/ocr"
+      }
     },
     "production": {
-      "android": { "buildType": "aab" },
+      "android": { "buildType": "app-bundle" },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://dnjsrxbiswsmivzxfqza.supabase.co/functions/v1/ocr"
+        "EXPO_PUBLIC_API_URL": "https://ifzngxyvdzaobyxtnrcy.supabase.co/functions/v1/ocr"
       }
     }
   }

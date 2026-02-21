@@ -34,6 +34,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d648781a-3c53-44da-876d-1e7e1ded49e7"
+      }
+    },
+    "owner": "smlhus"
   }
 }

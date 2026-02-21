@@ -86,13 +86,13 @@ const nb = {
     save: "Lagre timeliste",
   },
   settings: {
-    description: "Timelønnsatser (f.eks. NOK). Brukes til å beregne forventet lønn.",
+    description: "Satser per time. Tillegg legges oppå grunnlønnen.",
     labels: {
-      base: "Grunnlønn",
-      evening: "Kveldstillegg",
-      night: "Nattillegg",
-      weekend: "Helgetillegg",
-      holiday: "Helligdagstillegg",
+      base: "Grunnlønn (kr/time)",
+      evening: "Kveldstillegg (kr/time)",
+      night: "Nattillegg (kr/time)",
+      weekend: "Helgetillegg (kr/time)",
+      holiday: "Helligdagstillegg (kr/time)",
       overtime: "Overtidstillegg (%)",
     },
     save: "Lagre",
@@ -103,6 +103,9 @@ const nb = {
       en: "🇬🇧 English",
       sv: "🇸🇪 Svenska",
       da: "🇩🇰 Dansk",
+    },
+    currency: {
+      title: "Valuta",
     },
     theme: {
       title: "Tema",

@@ -40,7 +40,7 @@ export function ShiftEditor({
   onSave,
   onReset,
 }: ShiftEditorProps) {
-  const { t, locale } = useTranslation();
+  const { t, currency } = useTranslation();
   const colors = useThemeColors();
   const sourceKey = `components.shiftEditor.sources.${source}` as const;
   const sourceTag = t(sourceKey);
@@ -150,7 +150,7 @@ export function ShiftEditor({
       {expectedPay !== null && (
         <View className="mt-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
           <Text className="text-lg font-display text-amber-600 dark:text-warm">
-            {t("components.shiftEditor.result", { amount: formatCurrency(expectedPay, locale) })}
+            {t("components.shiftEditor.result", { amount: formatCurrency(expectedPay, currency) })}
           </Text>
           <View className="mt-2 rounded-lg bg-app-elevated dark:bg-dark-elevated p-2">
             <Text className="text-xs text-slate-600 dark:text-slate-400">

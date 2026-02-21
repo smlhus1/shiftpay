@@ -39,10 +39,10 @@ export function shiftDurationHours(startTime: string, endTime: string): number {
   return (end - start) / 60;
 }
 
-/** DD.MM.YYYY → day of week 0–6 (0 = Sunday). Returns 0 if invalid. */
+/** DD.MM.YYYY → day of week 0–6 (0 = Sunday). Returns -1 if invalid. */
 function dayOfWeek(dateStr: string): number {
   const date = parseDateSafe(dateStr);
-  return date ? date.getDay() : 0;
+  return date ? date.getDay() : -1;
 }
 
 function isWeekend(dateStr: string): boolean {

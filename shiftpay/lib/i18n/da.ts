@@ -88,13 +88,13 @@ const da: TranslationShape = {
     save: "Gem timeseddel",
   },
   settings: {
-    description: "Timelønsatser (f.eks. NOK). Bruges til at beregne forventet løn.",
+    description: "Satser per time. Tillæg lægges oven på grundlønnen.",
     labels: {
-      base: "Grundløn",
-      evening: "Aftentillæg",
-      night: "Nattillæg",
-      weekend: "Weekendtillæg",
-      holiday: "Helligdagstillæg",
+      base: "Grundløn (pr. time)",
+      evening: "Aftentillæg (pr. time)",
+      night: "Nattillæg (pr. time)",
+      weekend: "Weekendtillæg (pr. time)",
+      holiday: "Helligdagstillæg (pr. time)",
       overtime: "Overarbejdstillæg (%)",
     },
     save: "Gem",
@@ -105,6 +105,9 @@ const da: TranslationShape = {
       en: "🇬🇧 English",
       sv: "🇸🇪 Svenska",
       da: "🇩🇰 Dansk",
+    },
+    currency: {
+      title: "Valuta",
     },
     theme: {
       title: "Tema",

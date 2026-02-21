@@ -88,13 +88,13 @@ const en: TranslationShape = {
     save: "Save timesheet",
   },
   settings: {
-    description: "Hourly pay rates (e.g. NOK). Used to calculate expected pay.",
+    description: "Per-hour rates. Supplements are added on top of base rate.",
     labels: {
-      base: "Base rate",
-      evening: "Evening supplement",
-      night: "Night supplement",
-      weekend: "Weekend supplement",
-      holiday: "Holiday supplement",
+      base: "Base rate (per hour)",
+      evening: "Evening supplement (per hour)",
+      night: "Night supplement (per hour)",
+      weekend: "Weekend supplement (per hour)",
+      holiday: "Holiday supplement (per hour)",
       overtime: "Overtime supplement (%)",
     },
     save: "Save",
@@ -105,6 +105,9 @@ const en: TranslationShape = {
       en: "🇬🇧 English",
       sv: "🇸🇪 Svenska",
       da: "🇩🇰 Dansk",
+    },
+    currency: {
+      title: "Currency",
     },
     theme: {
       title: "Theme",

@@ -33,7 +33,7 @@ function StatBox({ value, label }: { value: string; label: string }) {
 export default function SummaryScreen() {
   const { yearMonth } = useLocalSearchParams<{ yearMonth: string }>();
   const router = useRouter();
-  const { t, locale } = useTranslation();
+  const { t, currency } = useTranslation();
   const colors = useThemeColors();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<Awaited<ReturnType<typeof getMonthSummary>> | null>(null);
@@ -184,7 +184,7 @@ export default function SummaryScreen() {
       <AnimatedCard index={0} className="mb-4 rounded-xl bg-app-surface dark:bg-dark-surface p-5">
         <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("summary.expectedPay.title")}</Text>
         <Text className="mt-1 font-display text-4xl text-amber-600 dark:text-warm">
-          {formatCurrency(expectedPay, locale)}
+          {formatCurrency(expectedPay, currency)}
         </Text>
         <Text className="mt-1 text-xs text-slate-500">{t("summary.expectedPay.subtitle")}</Text>
       </AnimatedCard>

@@ -64,7 +64,7 @@ function countdownToShift(shift: ShiftRow, t: (key: string, opts?: object) => st
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { t, locale } = useTranslation();
+  const { t, currency } = useTranslation();
   const colors = useThemeColors();
   const [monthsList, setMonthsList] = useState<Array<{ year: number; month: number }>>([]);
   const [nextShift, setNextShift] = useState<ShiftRow | null>(null);
@@ -239,7 +239,7 @@ export default function DashboardScreen() {
               </Text>
             </View>
             <Text className="font-display text-3xl text-amber-600 dark:text-warm">
-              {formatCurrency(monthSummary.expectedPay, locale)}
+              {formatCurrency(monthSummary.expectedPay, currency)}
             </Text>
           </PressableScale>
         </AnimatedCard>

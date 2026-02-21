@@ -13,23 +13,24 @@ export function toYearMonthKey(year: number, month: number): string {
 import type { ShiftStatus, ShiftRow } from "./db";
 import type { Shift } from "./calculations";
 
-const LOCALE_CURRENCY: Record<string, { currency: string; locale: string }> = {
-  nb: { currency: "NOK", locale: "nb-NO" },
-  en: { currency: "GBP", locale: "en-GB" },
-  sv: { currency: "SEK", locale: "sv-SE" },
-  da: { currency: "DKK", locale: "da-DK" },
+const CURRENCY_LOCALE: Record<string, string> = {
+  NOK: "nb-NO",
+  GBP: "en-GB",
+  SEK: "sv-SE",
+  DKK: "da-DK",
+  EUR: "de-DE",
 };
 
-export function formatCurrency(amount: number, appLocale: string): string {
-  const config = LOCALE_CURRENCY[appLocale] ?? LOCALE_CURRENCY.nb;
+export function formatCurrency(amount: number, currency: string): string {
+  const numberLocale = CURRENCY_LOCALE[currency] ?? "nb-NO";
   try {
-    return new Intl.NumberFormat(config.locale, {
+    return new Intl.NumberFormat(numberLocale, {
       style: "currency",
-      currency: config.currency,
+      currency,
       maximumFractionDigits: 0,
     }).format(Math.round(amount));
   } catch {
-    return `${Math.round(amount)} ${config.currency}`;
+    return `${Math.round(amount)} ${currency}`;
   }
 }
 

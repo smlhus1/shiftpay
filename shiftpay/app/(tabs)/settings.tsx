@@ -13,7 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Constants from "expo-constants";
 import { getTariffRates, setTariffRates, type TariffRatesInput } from "../../lib/db";
-import { useTranslation, SUPPORTED_LOCALES, type Locale } from "../../lib/i18n";
+import { useTranslation, SUPPORTED_LOCALES, SUPPORTED_CURRENCIES, type Locale, type Currency } from "../../lib/i18n";
 import { PressableScale } from "../../components/PressableScale";
 import { useTheme, useThemeColors, type ThemePreference } from "../../lib/theme-context";
 
@@ -42,6 +42,14 @@ const LOCALE_OPTIONS: { code: Locale; label: string }[] = [
   { code: "da", label: "Dansk" },
 ];
 
+const CURRENCY_OPTIONS: { code: Currency; label: string; symbol: string }[] = [
+  { code: "NOK", label: "NOK", symbol: "kr" },
+  { code: "GBP", label: "GBP", symbol: "£" },
+  { code: "SEK", label: "SEK", symbol: "kr" },
+  { code: "DKK", label: "DKK", symbol: "kr" },
+  { code: "EUR", label: "EUR", symbol: "€" },
+];
+
 const THEME_OPTIONS: { value: ThemePreference; icon: keyof typeof Ionicons.glyphMap }[] = [
   { value: "system", icon: "phone-portrait-outline" },
   { value: "light", icon: "sunny-outline" },
@@ -49,7 +57,7 @@ const THEME_OPTIONS: { value: ThemePreference; icon: keyof typeof Ionicons.glyph
 ];
 
 export default function SettingsScreen() {
-  const { t, locale, setLocale } = useTranslation();
+  const { t, locale, setLocale, currency, setCurrency } = useTranslation();
   const { preference, setPreference } = useTheme();
   const colors = useThemeColors();
   const [rates, setRates] = useState<TariffRatesInput>(defaultRates);
@@ -192,6 +200,25 @@ export default function SettingsScreen() {
             >
               <Text className="text-slate-900 dark:text-slate-100">{opt.label}</Text>
               {locale === opt.code && (
+                <Ionicons name="checkmark" size={20} color={colors.accent} />
+              )}
+            </PressableScale>
+          ))}
+        </View>
+
+        {/* Currency picker */}
+        <View className="mt-8" accessibilityRole="radiogroup" accessibilityLabel={t("settings.currency.title")}>
+          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400" accessibilityRole="header">{t("settings.currency.title")}</Text>
+          {CURRENCY_OPTIONS.map((opt) => (
+            <PressableScale
+              key={opt.code}
+              onPress={() => setCurrency(opt.code)}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: currency === opt.code }}
+              className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3"
+            >
+              <Text className="text-slate-900 dark:text-slate-100">{opt.symbol} {opt.label}</Text>
+              {currency === opt.code && (
                 <Ionicons name="checkmark" size={20} color={colors.accent} />
               )}
             </PressableScale>
