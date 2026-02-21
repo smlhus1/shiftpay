@@ -350,6 +350,7 @@
   <a href="#slide7"></a>
   <a href="#slide8"></a>
   <a href="#slide9"></a>
+  <a href="#slide10"></a>
 </nav>
 
 <!-- SLIDE 0: META DISCLAIMER -->
@@ -368,7 +369,7 @@
       <p>This is the reality for <span class="highlight">millions of shift workers</span> across healthcare, retail, and hospitality.</p>
     </div>
   </div>
-  <div class="slide-num">1 / 9</div>
+  <div class="slide-num">1 / 10</div>
 </section>
 
 <!-- SLIDE 2: SOLUTION INTRO + IMPORT -->
@@ -395,7 +396,7 @@
       </div>
     </div>
   </div>
-  <div class="slide-num">2 / 9</div>
+  <div class="slide-num">2 / 10</div>
 </section>
 
 <!-- SLIDE 3: CAMERA + OCR -->
@@ -414,7 +415,7 @@
       </div>
     </div>
   </div>
-  <div class="slide-num">3 / 9</div>
+  <div class="slide-num">3 / 10</div>
 </section>
 
 <!-- SLIDE 4: PARSED TABLE -->
@@ -433,7 +434,7 @@
       </div>
     </div>
   </div>
-  <div class="slide-num">4 / 9</div>
+  <div class="slide-num">4 / 10</div>
 </section>
 
 <!-- SLIDE 5: DASHBOARD -->
@@ -452,7 +453,7 @@
       </div>
     </div>
   </div>
-  <div class="slide-num">5 / 9</div>
+  <div class="slide-num">5 / 10</div>
 </section>
 
 <!-- SLIDE 6: CONFIRM -->
@@ -473,7 +474,7 @@
       </div>
     </div>
   </div>
-  <div class="slide-num">6 / 9</div>
+  <div class="slide-num">6 / 10</div>
 </section>
 
 <!-- SLIDE 7: PRIVACY + TECH -->
@@ -532,48 +533,71 @@
       </div>
     </div>
   </div>
-  <div class="slide-num">7 / 9</div>
+  <div class="slide-num">7 / 10</div>
 </section>
 
-<!-- SLIDE 8: TOOLING -->
+<!-- SLIDE 8: CLAUDE CODE -->
 <section class="slide dark" id="slide8">
   <div class="slide-inner center">
-    <div class="text-side" style="max-width: 750px;">
-      <div class="badge">How we built it</div>
-      <h2>Vibe coding with real engineering</h2>
-      <p style="color: #cbd5e1; font-size: 18px; margin-bottom: 32px;">Two AI-powered editors. One human making the decisions.</p>
+    <div class="text-side" style="max-width: 700px;">
+      <div class="badge">How we built it &mdash; 1/2</div>
+      <h2 style="margin-bottom: 8px;">Claude Code</h2>
+      <p style="color: var(--teal-light); font-size: 15px; margin-bottom: 28px;">CLI agent &mdash; architecture, security pipelines, multi-file refactoring</p>
 
-      <div style="display: flex; gap: 24px; margin-bottom: 36px; flex-wrap: wrap; justify-content: center;">
-        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 28px 32px; flex: 1; min-width: 280px;">
-          <div style="font-size: 20px; font-weight: 700; color: white; margin-bottom: 4px;">Claude Code</div>
-          <div style="font-size: 13px; color: var(--teal-light); margin-bottom: 16px;">CLI &mdash; architecture, pipelines, deep work</div>
-          <div style="font-size: 14px; color: #94a3b8; line-height: 1.8;">
-            <div style="margin-bottom: 8px;"><span style="color: var(--teal-light); font-weight: 600;">/sec-eval</span> &mdash; Full 5-phase security audit pipeline. Spawns specialized agents (security-auditor, dep-config-scanner, attack-scenario-builder) sequentially, each building on the previous phase. Identified 14 findings, fixed all in one session.</div>
-            <div style="margin-bottom: 8px;"><span style="color: var(--teal-light); font-weight: 600;">/refactor</span> &mdash; Structured code refactoring with analyze &rarr; plan &rarr; implement &rarr; verify cycle. Used for extracting date utilities, fixing type errors, and cleaning up routing.</div>
-            <div style="margin-bottom: 8px;"><span style="color: var(--teal-light); font-weight: 600;">/design-review</span> &mdash; Design evaluation with accessibility audit agent. Found 28 UU findings across 4 severity levels with concrete WCAG references and fixes.</div>
-            <div><span style="color: var(--teal-light); font-weight: 600;">/commit</span> &mdash; Smart commits: scans for debug code, secrets, and lint issues before staging. Generates conventional commit messages from the actual diff.</div>
-          </div>
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 22px;">
+          <div style="font-size: 15px; font-weight: 600; color: var(--teal-light); margin-bottom: 4px;">/sec-eval</div>
+          <div style="font-size: 14px; color: #94a3b8;">5-phase security pipeline with specialized agents. Found 14 vulnerabilities, fixed all in one session.</div>
         </div>
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 22px;">
+          <div style="font-size: 15px; font-weight: 600; color: var(--teal-light); margin-bottom: 4px;">/refactor</div>
+          <div style="font-size: 14px; color: #94a3b8;">Structured refactoring: analyze &rarr; plan &rarr; implement &rarr; verify. Date utilities, type fixes, routing cleanup.</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 22px;">
+          <div style="font-size: 15px; font-weight: 600; color: var(--teal-light); margin-bottom: 4px;">/design-review</div>
+          <div style="font-size: 14px; color: #94a3b8;">Accessibility audit: 28 WCAG findings across all screens with concrete fixes.</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 22px;">
+          <div style="font-size: 15px; font-weight: 600; color: var(--teal-light); margin-bottom: 4px;">/commit</div>
+          <div style="font-size: 14px; color: #94a3b8;">Smart commits: scans for debug code and secrets before staging, generates message from diff.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">8 / 10</div>
+</section>
 
-        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 28px 32px; flex: 1; min-width: 280px;">
-          <div style="font-size: 20px; font-weight: 700; color: white; margin-bottom: 4px;">Cursor</div>
-          <div style="font-size: 13px; color: #a78bfa; margin-bottom: 16px;">IDE &mdash; fast iteration, UI, components</div>
-          <div style="font-size: 14px; color: #94a3b8; line-height: 1.8;">
-            <div style="margin-bottom: 8px;"><span style="color: #a78bfa; font-weight: 600;">Component development</span> &mdash; Rapid iteration on React Native components with inline previews. ShiftTable, PaySummary, camera flow.</div>
-            <div style="margin-bottom: 8px;"><span style="color: #a78bfa; font-weight: 600;">NativeWind styling</span> &mdash; Quick Tailwind class iteration with context-aware completions for the teal design system.</div>
-            <div><span style="color: #a78bfa; font-weight: 600;">Bug fixes</span> &mdash; Fast debugging with full codebase context. Camera API migration, SQLite connection handling, date sorting.</div>
-          </div>
+<!-- SLIDE 9: CURSOR -->
+<section class="slide" id="slide9">
+  <div class="slide-inner center">
+    <div class="text-side" style="max-width: 700px;">
+      <div class="badge">How we built it &mdash; 2/2</div>
+      <h2 style="margin-bottom: 8px;">Cursor</h2>
+      <p style="color: #a78bfa; font-size: 15px; margin-bottom: 28px;">AI-powered IDE &mdash; fast iteration, UI components, styling</p>
+
+      <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 22px;">
+          <div style="font-size: 15px; font-weight: 600; color: #a78bfa; margin-bottom: 4px;">Component development</div>
+          <div style="font-size: 14px; color: #94a3b8;">Rapid iteration on React Native components. ShiftTable, PaySummary, camera flow &mdash; all built with inline AI assistance.</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 22px;">
+          <div style="font-size: 15px; font-weight: 600; color: #a78bfa; margin-bottom: 4px;">NativeWind styling</div>
+          <div style="font-size: 14px; color: #94a3b8;">Quick Tailwind class iteration for the teal design system. Color palette, spacing, border-radius consistency.</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 22px;">
+          <div style="font-size: 15px; font-weight: 600; color: #a78bfa; margin-bottom: 4px;">Bug fixes &amp; debugging</div>
+          <div style="font-size: 14px; color: #94a3b8;">Camera API migration, SQLite connection handling, date sorting &mdash; fast debugging with full codebase context.</div>
         </div>
       </div>
 
-      <p style="color: #64748b; font-size: 14px;">The AI writes code. The human validates the problem, makes design decisions, and ships.</p>
+      <p style="color: #64748b; font-size: 14px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px;">The AI writes code. The human validates the problem, makes design decisions, and ships.</p>
     </div>
   </div>
-  <div class="slide-num">8 / 9</div>
+  <div class="slide-num">9 / 10</div>
 </section>
 
-<!-- SLIDE 9: CTA -->
-<section class="slide hero" id="slide9">
+<!-- SLIDE 10: CTA -->
+<section class="slide hero" id="slide10">
   <div class="slide-inner center">
     <div class="text-side" style="max-width: 700px;">
       <h1 style="font-size: 56px;">Did you get paid right?</h1>
@@ -599,7 +623,7 @@
       </p>
     </div>
   </div>
-  <div class="slide-num">9 / 9</div>
+  <div class="slide-num">10 / 10</div>
 </section>
 
 <script>
