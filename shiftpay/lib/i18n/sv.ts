@@ -106,6 +106,12 @@ const sv: TranslationShape = {
       sv: "🇸🇪 Svenska",
       da: "🇩🇰 Dansk",
     },
+    theme: {
+      title: "Tema",
+      system: "System",
+      light: "Ljust",
+      dark: "Mörkt",
+    },
     about: {
       title: "Om ShiftPay",
       description: "ShiftPay hjälper skiftarbetare att kontrollera om de fått rätt lön. Ta foto av tidlistan, ange dina taxor och jämför med lönebeskedet.",

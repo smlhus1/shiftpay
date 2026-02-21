@@ -5,7 +5,7 @@ import type { Shift, ShiftType } from "../lib/calculations";
 import { useTranslation } from "../lib/i18n";
 import { formatCurrency } from "../lib/format";
 import { PressableScale } from "./PressableScale";
-import { colors } from "../lib/theme";
+import { useThemeColors } from "../lib/theme-context";
 
 export type ImportSource = "ocr" | "manual" | "gallery" | "csv";
 
@@ -41,12 +41,13 @@ export function ShiftEditor({
   onReset,
 }: ShiftEditorProps) {
   const { t, locale } = useTranslation();
+  const colors = useThemeColors();
   const sourceKey = `components.shiftEditor.sources.${source}` as const;
   const sourceTag = t(sourceKey);
 
   return (
     <>
-      <Text className="mb-2 font-inter-medium text-slate-100">
+      <Text className="mb-2 font-inter-medium text-slate-900 dark:text-slate-100">
         {t("components.shiftEditor.header", { source: sourceTag })}
       </Text>
       {rows.map((row, index) => {
@@ -58,12 +59,12 @@ export function ShiftEditor({
         return (
           <View
             key={`row-${index}`}
-            className={`mb-3 rounded-xl border bg-dark-surface p-3 ${
-              isError ? "border-l-4 border-l-amber-500 border-dark-border" : "border-dark-border"
+            className={`mb-3 rounded-xl border bg-app-surface dark:bg-dark-surface p-3 ${
+              isError ? "border-l-4 border-l-amber-500 border-app-border dark:border-dark-border" : "border-app-border dark:border-dark-border"
             }`}
           >
             {isError && (
-              <Text className="mb-2 text-sm text-amber-300">
+              <Text className="mb-2 text-sm text-amber-700 dark:text-amber-300">
                 {t("components.shiftEditor.errors.check", { reason: row.reason })}
               </Text>
             )}
@@ -74,7 +75,7 @@ export function ShiftEditor({
                 placeholder="DD.MM.YYYY"
                 placeholderTextColor={colors.textMuted}
                 accessibilityLabel="Date"
-                className="min-w-[100px] rounded-lg border border-dark-border bg-dark-elevated px-2 py-1 text-slate-100"
+                className="min-w-[100px] rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-slate-900 dark:text-slate-100"
               />
               <TextInput
                 value={start_time}
@@ -82,16 +83,16 @@ export function ShiftEditor({
                 placeholder="HH:MM"
                 placeholderTextColor={colors.textMuted}
                 accessibilityLabel="Start time"
-                className="w-16 rounded-lg border border-dark-border bg-dark-elevated px-2 py-1 text-slate-100"
+                className="w-16 rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-slate-900 dark:text-slate-100"
               />
-              <Text className="self-center text-slate-400">–</Text>
+              <Text className="self-center text-slate-600 dark:text-slate-400">–</Text>
               <TextInput
                 value={end_time}
                 onChangeText={(s) => onUpdateRow(index, "end_time", s)}
                 placeholder="HH:MM"
                 placeholderTextColor={colors.textMuted}
                 accessibilityLabel="End time"
-                className="w-16 rounded-lg border border-dark-border bg-dark-elevated px-2 py-1 text-slate-100"
+                className="w-16 rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-slate-900 dark:text-slate-100"
               />
               <View className="flex-row gap-1">
                 {SHIFT_TYPES.map((type) => (
@@ -102,11 +103,11 @@ export function ShiftEditor({
                     accessibilityState={{ checked: displayType === type }}
                     accessibilityLabel={t(`shiftTypes.${type}`)}
                     className={`rounded-full px-2 py-1 ${
-                      displayType === type ? "bg-accent" : "bg-dark-elevated"
+                      displayType === type ? "bg-accent-dark dark:bg-accent" : "bg-app-elevated dark:bg-dark-elevated"
                     }`}
                     style={{ minHeight: 44, justifyContent: "center" }}
                   >
-                    <Text className={displayType === type ? "font-inter-medium text-slate-900" : "text-slate-300"}>
+                    <Text className={displayType === type ? "font-inter-medium text-white dark:text-slate-900" : "text-slate-700 dark:text-slate-300"}>
                       {t(`shiftTypes.${type}`)}
                     </Text>
                   </PressableScale>
@@ -127,9 +128,9 @@ export function ShiftEditor({
       {source === "manual" && (
         <PressableScale
           onPress={onAddRow}
-          className="mb-3 rounded-xl border border-dashed border-dark-border bg-dark-surface py-3"
+          className="mb-3 rounded-xl border border-dashed border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface py-3"
         >
-          <Text className="text-center text-slate-400">{t("components.shiftEditor.addShift")}</Text>
+          <Text className="text-center text-slate-600 dark:text-slate-400">{t("components.shiftEditor.addShift")}</Text>
         </PressableScale>
       )}
 
@@ -147,12 +148,12 @@ export function ShiftEditor({
       </PressableScale>
 
       {expectedPay !== null && (
-        <View className="mt-4 rounded-xl border border-dark-border bg-dark-surface p-4">
-          <Text className="text-lg font-display text-warm">
+        <View className="mt-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
+          <Text className="text-lg font-display text-amber-600 dark:text-warm">
             {t("components.shiftEditor.result", { amount: formatCurrency(expectedPay, locale) })}
           </Text>
-          <View className="mt-2 rounded-lg bg-dark-elevated p-2">
-            <Text className="text-xs text-slate-400">
+          <View className="mt-2 rounded-lg bg-app-elevated dark:bg-dark-elevated p-2">
+            <Text className="text-xs text-slate-600 dark:text-slate-400">
               {t("components.shiftEditor.disclaimer")}
             </Text>
           </View>
@@ -160,12 +161,12 @@ export function ShiftEditor({
             onPress={onSave}
             disabled={saving}
             style={saving ? { opacity: 0.6 } : undefined}
-            className="mt-3 rounded-xl bg-accent py-3"
+            className="mt-3 rounded-xl bg-accent-dark dark:bg-accent py-3"
           >
             {saving ? (
               <ActivityIndicator color={colors.bg} />
             ) : (
-              <Text className="text-center font-inter-semibold text-slate-900">{t("components.shiftEditor.save")}</Text>
+              <Text className="text-center font-inter-semibold text-white dark:text-slate-900">{t("components.shiftEditor.save")}</Text>
             )}
           </PressableScale>
         </View>
@@ -173,7 +174,7 @@ export function ShiftEditor({
 
       {saved && (
         <Text
-          className="mt-3 text-center text-emerald-400"
+          className="mt-3 text-center text-emerald-600 dark:text-emerald-400"
           accessibilityLiveRegion="polite"
         >
           {t("components.shiftEditor.saved")}
@@ -182,9 +183,9 @@ export function ShiftEditor({
 
       <PressableScale
         onPress={onReset}
-        className="mt-4 rounded-xl border border-dark-border py-2"
+        className="mt-4 rounded-xl border border-app-border dark:border-dark-border py-2"
       >
-        <Text className="text-center font-inter-medium text-slate-300">{t("components.shiftEditor.reset")}</Text>
+        <Text className="text-center font-inter-medium text-slate-700 dark:text-slate-300">{t("components.shiftEditor.reset")}</Text>
       </PressableScale>
     </>
   );

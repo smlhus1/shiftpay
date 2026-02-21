@@ -21,7 +21,7 @@ import { ShiftCard } from "../../components/ShiftCard";
 import { PressableScale } from "../../components/PressableScale";
 import { AnimatedCard } from "../../components/AnimatedCard";
 import { useTranslation } from "../../lib/i18n";
-import { colors } from "../../lib/theme";
+import { useThemeColors } from "../../lib/theme-context";
 import * as Haptics from "expo-haptics";
 
 function formatCreated(createdAt: string): string {
@@ -49,6 +49,7 @@ export default function PeriodDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [schedule, setSchedule] = useState<ScheduleRow | null>(null);
@@ -113,7 +114,7 @@ export default function PeriodDetailScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-dark-bg">
+      <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
         <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
@@ -121,13 +122,13 @@ export default function PeriodDetailScreen() {
 
   if (notFound || !id) {
     return (
-      <View className="flex-1 items-center justify-center bg-dark-bg p-6">
-        <Text className="text-center text-slate-400">{t("period.notFound")}</Text>
+      <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg p-6">
+        <Text className="text-center text-slate-600 dark:text-slate-400">{t("period.notFound")}</Text>
         <PressableScale
           onPress={() => router.back()}
-          className="mt-4 rounded-xl bg-accent px-6 py-2"
+          className="mt-4 rounded-xl bg-accent-dark dark:bg-accent px-6 py-2"
         >
-          <Text className="font-inter-semibold text-slate-900">{t("common.back")}</Text>
+          <Text className="font-inter-semibold text-white dark:text-slate-900">{t("common.back")}</Text>
         </PressableScale>
       </View>
     );
@@ -139,32 +140,32 @@ export default function PeriodDetailScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-dark-bg"
+      className="flex-1 bg-app-bg dark:bg-dark-bg"
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
     >
-      <AnimatedCard index={0} className="mb-4 rounded-xl border border-dark-border bg-dark-surface p-4">
-        <Text className="text-lg font-inter-semibold text-slate-100">
+      <AnimatedCard index={0} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
+        <Text className="text-lg font-inter-semibold text-slate-900 dark:text-slate-100">
           {schedule.period_start} – {schedule.period_end}
         </Text>
-        <Text className="mt-1 text-sm text-slate-400">
+        <Text className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           {t("period.source", { source: sourceLabel(schedule.source, t), date: formatCreated(schedule.created_at) })}
         </Text>
         {yearMonth && (
           <PressableScale
             onPress={() => router.push(`/summary/${yearMonth}` as Href)}
-            className="mt-3 rounded-xl border border-sky-400/20 bg-sky-400/10 py-2"
+            className="mt-3 rounded-xl border border-sky-600/20 bg-sky-600/10 dark:border-sky-400/20 dark:bg-sky-400/10 py-2"
           >
-            <Text className="text-center text-sm font-inter-semibold text-accent">
+            <Text className="text-center text-sm font-inter-semibold text-accent-dark dark:text-accent">
               {t("period.viewSummary")}
             </Text>
           </PressableScale>
         )}
       </AnimatedCard>
 
-      <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-slate-400">{t("period.shifts.title")}</Text>
+      <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("period.shifts.title")}</Text>
       {shifts.length === 0 ? (
-        <View className="rounded-xl border border-dark-border bg-dark-surface p-4">
-          <Text className="text-center text-slate-400">{t("period.shifts.empty")}</Text>
+        <View className="rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
+          <Text className="text-center text-slate-600 dark:text-slate-400">{t("period.shifts.empty")}</Text>
         </View>
       ) : (
         shifts.map((shift) => (
@@ -186,7 +187,7 @@ export default function PeriodDetailScreen() {
         {deleting ? (
           <ActivityIndicator color={colors.error} />
         ) : (
-          <Text className="text-center font-inter-semibold text-red-400">{t("period.delete.btn")}</Text>
+          <Text className="text-center font-inter-semibold text-red-600 dark:text-red-400">{t("period.delete.btn")}</Text>
         )}
       </PressableScale>
     </ScrollView>
