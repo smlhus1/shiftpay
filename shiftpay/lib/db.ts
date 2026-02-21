@@ -1,4 +1,5 @@
 import * as SQLite from "expo-sqlite";
+import { getRandomValues } from "expo-crypto";
 import { shiftDurationHours } from "./calculations";
 import { dateToComparable } from "./dates";
 
@@ -215,7 +216,7 @@ const TARIFF_ID = 1;
 
 function generateId(): string {
   const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
+  getRandomValues(bytes);
   bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
   bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 1
   const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
