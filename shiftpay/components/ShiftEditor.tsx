@@ -1,9 +1,11 @@
-import { View, Text, TouchableOpacity, TextInput, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { CsvRowResult } from "../lib/csv";
 import type { Shift, ShiftType } from "../lib/calculations";
 import { useTranslation } from "../lib/i18n";
 import { formatCurrency } from "../lib/format";
+import { PressableScale } from "./PressableScale";
+import { colors } from "../lib/theme";
 
 export type ImportSource = "ocr" | "manual" | "gallery" | "csv";
 
@@ -44,7 +46,7 @@ export function ShiftEditor({
 
   return (
     <>
-      <Text className="mb-2 font-medium text-slate-900">
+      <Text className="mb-2 font-inter-medium text-slate-100">
         {t("components.shiftEditor.header", { source: sourceTag })}
       </Text>
       {rows.map((row, index) => {
@@ -56,12 +58,12 @@ export function ShiftEditor({
         return (
           <View
             key={`row-${index}`}
-            className={`mb-3 rounded-xl border bg-white p-3 ${
-              isError ? "border-l-4 border-l-amber-500 border-stone-200" : "border-stone-200"
+            className={`mb-3 rounded-xl border bg-dark-surface p-3 ${
+              isError ? "border-l-4 border-l-amber-500 border-dark-border" : "border-dark-border"
             }`}
           >
             {isError && (
-              <Text className="mb-2 text-sm text-amber-800">
+              <Text className="mb-2 text-sm text-amber-300">
                 {t("components.shiftEditor.errors.check", { reason: row.reason })}
               </Text>
             )}
@@ -70,117 +72,120 @@ export function ShiftEditor({
                 value={date}
                 onChangeText={(s) => onUpdateRow(index, "date", s)}
                 placeholder="DD.MM.YYYY"
+                placeholderTextColor={colors.textMuted}
                 accessibilityLabel="Date"
-                className="min-w-[100px] rounded-lg border border-stone-200 px-2 py-1 text-slate-900"
+                className="min-w-[100px] rounded-lg border border-dark-border bg-dark-elevated px-2 py-1 text-slate-100"
               />
               <TextInput
                 value={start_time}
                 onChangeText={(s) => onUpdateRow(index, "start_time", s)}
                 placeholder="HH:MM"
+                placeholderTextColor={colors.textMuted}
                 accessibilityLabel="Start time"
-                className="w-16 rounded-lg border border-stone-200 px-2 py-1 text-slate-900"
+                className="w-16 rounded-lg border border-dark-border bg-dark-elevated px-2 py-1 text-slate-100"
               />
               <Text className="self-center text-slate-400">–</Text>
               <TextInput
                 value={end_time}
                 onChangeText={(s) => onUpdateRow(index, "end_time", s)}
                 placeholder="HH:MM"
+                placeholderTextColor={colors.textMuted}
                 accessibilityLabel="End time"
-                className="w-16 rounded-lg border border-stone-200 px-2 py-1 text-slate-900"
+                className="w-16 rounded-lg border border-dark-border bg-dark-elevated px-2 py-1 text-slate-100"
               />
               <View className="flex-row gap-1">
                 {SHIFT_TYPES.map((type) => (
-                  <TouchableOpacity
+                  <PressableScale
                     key={type}
                     onPress={() => onUpdateRow(index, "shift_type", type)}
                     accessibilityRole="radio"
                     accessibilityState={{ checked: displayType === type }}
                     accessibilityLabel={t(`shiftTypes.${type}`)}
                     className={`rounded-full px-2 py-1 ${
-                      displayType === type ? "bg-teal-700" : "bg-stone-200"
+                      displayType === type ? "bg-accent" : "bg-dark-elevated"
                     }`}
                     style={{ minHeight: 44, justifyContent: "center" }}
                   >
-                    <Text className={displayType === type ? "text-white" : "text-slate-700"}>
+                    <Text className={displayType === type ? "font-inter-medium text-slate-900" : "text-slate-300"}>
                       {t(`shiftTypes.${type}`)}
                     </Text>
-                  </TouchableOpacity>
+                  </PressableScale>
                 ))}
               </View>
-              <TouchableOpacity
+              <PressableScale
                 onPress={() => onRemoveRow(index)}
                 className="ml-auto rounded-lg p-2"
                 accessibilityLabel="Remove row"
               >
-                <Ionicons name="trash-outline" size={22} color="#b91c1c" />
-              </TouchableOpacity>
+                <Ionicons name="trash-outline" size={22} color={colors.error} />
+              </PressableScale>
             </View>
           </View>
         );
       })}
 
       {source === "manual" && (
-        <TouchableOpacity
+        <PressableScale
           onPress={onAddRow}
-          className="mb-3 rounded-xl border border-dashed border-stone-300 bg-stone-50 py-3"
+          className="mb-3 rounded-xl border border-dashed border-dark-border bg-dark-surface py-3"
         >
-          <Text className="text-center text-slate-500">{t("components.shiftEditor.addShift")}</Text>
-        </TouchableOpacity>
+          <Text className="text-center text-slate-400">{t("components.shiftEditor.addShift")}</Text>
+        </PressableScale>
       )}
 
-      <TouchableOpacity
+      <PressableScale
         onPress={onCalculate}
         disabled={calculating}
         style={calculating ? { opacity: 0.6 } : undefined}
-        className="mt-2 rounded-xl bg-green-600 py-4"
+        className="mt-2 rounded-xl bg-emerald-500 py-4"
       >
         {calculating ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={colors.textPrimary} />
         ) : (
-          <Text className="text-center font-medium text-white">{t("components.shiftEditor.calculate")}</Text>
+          <Text className="text-center font-inter-semibold text-white">{t("components.shiftEditor.calculate")}</Text>
         )}
-      </TouchableOpacity>
+      </PressableScale>
 
       {expectedPay !== null && (
-        <View className="mt-4 rounded-xl border border-stone-200 bg-white p-4">
-          <Text className="text-lg font-medium text-slate-900">
+        <View className="mt-4 rounded-xl border border-dark-border bg-dark-surface p-4">
+          <Text className="text-lg font-display text-warm">
             {t("components.shiftEditor.result", { amount: formatCurrency(expectedPay, locale) })}
           </Text>
-          <View className="mt-2 rounded-lg bg-stone-100 p-2">
-            <Text className="text-xs text-slate-500">
+          <View className="mt-2 rounded-lg bg-dark-elevated p-2">
+            <Text className="text-xs text-slate-400">
               {t("components.shiftEditor.disclaimer")}
             </Text>
           </View>
-          <TouchableOpacity
+          <PressableScale
             onPress={onSave}
             disabled={saving}
             style={saving ? { opacity: 0.6 } : undefined}
-            className="mt-3 rounded-xl bg-teal-700 py-3"
+            className="mt-3 rounded-xl bg-accent py-3"
           >
             {saving ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.bg} />
             ) : (
-              <Text className="text-center text-white">{t("components.shiftEditor.save")}</Text>
+              <Text className="text-center font-inter-semibold text-slate-900">{t("components.shiftEditor.save")}</Text>
             )}
-          </TouchableOpacity>
+          </PressableScale>
         </View>
       )}
 
       {saved && (
         <Text
-          className="mt-3 text-center text-green-600"
+          className="mt-3 text-center text-emerald-400"
           accessibilityLiveRegion="polite"
         >
           {t("components.shiftEditor.saved")}
         </Text>
       )}
 
-      <TouchableOpacity
+      <PressableScale
         onPress={onReset}
-        className="mt-4 rounded-xl border border-stone-300 py-2"
+        className="mt-4 rounded-xl border border-dark-border py-2"
       >
-        <Text className="text-center text-slate-700">{t("components.shiftEditor.reset")}</Text>
-      </TouchableOpacity>
+        <Text className="text-center font-inter-medium text-slate-300">{t("components.shiftEditor.reset")}</Text>
+      </PressableScale>
     </>
   );
 }

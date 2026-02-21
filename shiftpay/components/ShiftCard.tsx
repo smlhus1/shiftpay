@@ -1,30 +1,26 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { statusLabel, statusColor, shiftTypeLabel } from "../lib/format";
 import type { ShiftRow } from "../lib/db";
 import { useTranslation } from "../lib/i18n";
+import { PressableScale } from "./PressableScale";
+import { colors } from "../lib/theme";
 
 interface ShiftCardProps {
   shift: ShiftRow;
-  /** If provided, shows a "Confirm" button when shift.status === "planned". */
   onConfirm?: (id: string) => void;
-  /** If provided, makes the whole card tappable for non-planned shifts. */
   onEdit?: (id: string) => void;
-  /** If provided, shows a delete button on the card. */
   onDelete?: (id: string) => void;
-  /** Show "+X min overtime" label for overtime shifts. */
   showOvertimeLabel?: boolean;
-  /** Compact layout used on Dashboard (no separate date/time, smaller text). */
   compact?: boolean;
-  /** Show shift_type badge. */
   showShiftType?: boolean;
 }
 
 function shiftTypeBadgeColor(type: string): string {
-  if (type === "tidlig") return "bg-amber-100 text-amber-800";
-  if (type === "mellom") return "bg-blue-100 text-blue-800";
-  if (type === "kveld") return "bg-indigo-100 text-indigo-800";
-  return "bg-slate-200 text-slate-700"; // natt
+  if (type === "tidlig") return "bg-amber-400/15 text-amber-300";
+  if (type === "mellom") return "bg-sky-400/15 text-sky-300";
+  if (type === "kveld") return "bg-indigo-400/15 text-indigo-300";
+  return "bg-slate-400/15 text-slate-400"; // natt
 }
 
 export function ShiftCard({
@@ -39,28 +35,23 @@ export function ShiftCard({
   const { t } = useTranslation();
   const tappable = !!onEdit;
 
-  const compactClass = "mt-2 flex-row flex-wrap items-center gap-2 rounded-xl border border-stone-100 bg-stone-50 p-2";
-  const normalClass = "mb-2 rounded-xl border bg-white p-3";
-  const tappableClass = "mb-2 rounded-xl border border-stone-300 bg-white p-3";
-
   if (compact) {
     return (
-      <View className={compactClass}>
-        <Text className="text-slate-900">
+      <View className="mt-2 flex-row flex-wrap items-center gap-2 rounded-xl border border-dark-border bg-dark-elevated p-2">
+        <Text className="text-slate-100">
           {shift.date} {shift.start_time}–{shift.end_time}
         </Text>
         <View className={`rounded-full px-2 py-0.5 ${statusColor(shift.status)}`}>
-          <Text className="text-xs font-medium">{statusLabel(shift.status, t)}</Text>
+          <Text className="text-xs font-inter-medium">{statusLabel(shift.status, t)}</Text>
         </View>
         {onConfirm && shift.status === "planned" && (
-          <TouchableOpacity
+          <PressableScale
             onPress={() => onConfirm(shift.id)}
-            accessibilityRole="button"
             accessibilityLabel={t("components.shiftCard.confirmA11y", { date: shift.date })}
-            className="rounded-xl bg-teal-700 px-3 py-2"
+            className="rounded-xl bg-accent px-3 py-2"
           >
-            <Text className="text-xs font-medium text-white">{t("components.shiftCard.confirm")}</Text>
-          </TouchableOpacity>
+            <Text className="text-xs font-inter-semibold text-slate-900">{t("components.shiftCard.confirm")}</Text>
+          </PressableScale>
         )}
       </View>
     );
@@ -70,14 +61,14 @@ export function ShiftCard({
     <View className="mt-2 flex-row flex-wrap gap-2">
       {showShiftType && (
         <View className={`rounded-full px-2 py-0.5 ${shiftTypeBadgeColor(shift.shift_type)}`}>
-          <Text className="text-sm">{shiftTypeLabel(shift.shift_type, t)}</Text>
+          <Text className="text-sm font-inter">{shiftTypeLabel(shift.shift_type, t)}</Text>
         </View>
       )}
       <View className={`rounded-full px-2 py-0.5 ${statusColor(shift.status)}`}>
-        <Text className="text-sm">{statusLabel(shift.status, t)}</Text>
+        <Text className="text-sm font-inter">{statusLabel(shift.status, t)}</Text>
       </View>
       {showOvertimeLabel && shift.status === "overtime" && (shift.overtime_minutes ?? 0) > 0 && (
-        <Text className="text-sm text-teal-700">
+        <Text className="text-sm text-accent">
           {t("components.shiftCard.overtime", { minutes: shift.overtime_minutes })}
         </Text>
       )}
@@ -86,68 +77,64 @@ export function ShiftCard({
 
   if (tappable) {
     return (
-      <TouchableOpacity
+      <PressableScale
         onPress={() => onEdit!(shift.id)}
-        activeOpacity={0.75}
-        accessibilityRole="button"
-        className={tappableClass}
+        accessibilityLabel={`${shift.date} ${shift.start_time}–${shift.end_time}`}
+        className="mb-2 rounded-xl border border-dark-border bg-dark-surface p-3"
       >
         <View className="flex-row items-center justify-between">
           <View className="flex-1">
             <View className="flex-row items-center gap-2">
-              <Text className="font-medium text-slate-900">{shift.date}</Text>
-              <Text className="text-slate-500">{shift.start_time} – {shift.end_time}</Text>
+              <Text className="font-inter-medium text-slate-100">{shift.date}</Text>
+              <Text className="text-slate-400">{shift.start_time} – {shift.end_time}</Text>
             </View>
             {badges}
           </View>
           <View className="flex-row items-center gap-1">
             {onDelete && (
-              <TouchableOpacity
+              <PressableScale
                 onPress={() => onDelete(shift.id)}
-                accessibilityRole="button"
                 accessibilityLabel={t("components.shiftCard.deleteA11y", { date: shift.date })}
                 hitSlop={8}
                 className="p-2"
               >
-                <Ionicons name="trash-outline" size={18} color="#ef4444" />
-              </TouchableOpacity>
+                <Ionicons name="trash-outline" size={18} color={colors.error} />
+              </PressableScale>
             )}
-            <Ionicons name="chevron-forward" size={18} color="#94a3b8" style={{ marginLeft: 4 }} importantForAccessibility="no" />
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} style={{ marginLeft: 4 }} importantForAccessibility="no" />
           </View>
         </View>
-      </TouchableOpacity>
+      </PressableScale>
     );
   }
 
   return (
-    <View className={normalClass + " border-stone-200"}>
+    <View className="mb-2 rounded-xl border border-dark-border bg-dark-surface p-3">
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
-          <Text className="font-medium text-slate-900">{shift.date}</Text>
-          <Text className="text-slate-500">{shift.start_time} – {shift.end_time}</Text>
+          <Text className="font-inter-medium text-slate-100">{shift.date}</Text>
+          <Text className="text-slate-400">{shift.start_time} – {shift.end_time}</Text>
         </View>
         {onDelete && (
-          <TouchableOpacity
+          <PressableScale
             onPress={() => onDelete(shift.id)}
-            accessibilityRole="button"
             accessibilityLabel={t("components.shiftCard.deleteA11y", { date: shift.date })}
             hitSlop={8}
             className="p-2"
           >
-            <Ionicons name="trash-outline" size={18} color="#ef4444" />
-          </TouchableOpacity>
+            <Ionicons name="trash-outline" size={18} color={colors.error} />
+          </PressableScale>
         )}
       </View>
       {badges}
       {onConfirm && shift.status === "planned" && (
-        <TouchableOpacity
+        <PressableScale
           onPress={() => onConfirm(shift.id)}
-          accessibilityRole="button"
           accessibilityLabel={t("components.shiftCard.confirmA11y", { date: shift.date })}
-          className="mt-2 self-start rounded-xl bg-teal-700 px-3 py-2"
+          className="mt-2 self-start rounded-xl bg-accent px-3 py-2"
         >
-          <Text className="text-sm font-medium text-white">{t("components.shiftCard.confirm")}</Text>
-        </TouchableOpacity>
+          <Text className="text-sm font-inter-semibold text-slate-900">{t("components.shiftCard.confirm")}</Text>
+        </PressableScale>
       )}
     </View>
   );
