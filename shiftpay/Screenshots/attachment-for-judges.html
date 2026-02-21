@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShiftPay — Technical Attachment for Judges</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --teal: #0f766e;
+    --teal-light: #14b8a6;
+    --dark: #0f172a;
+    --darker: #020617;
+    --card: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --dim: #64748b;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.7;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* --- LAYOUT --- */
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+
+  .page-break { break-after: page; page-break-after: always; }
+
+  /* --- HEADER --- */
+  .doc-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+    margin-bottom: 48px;
+  }
+
+  .doc-header .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--teal-light);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .doc-header h1 {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  .doc-header .subtitle {
+    font-size: 16px;
+    color: var(--muted);
+  }
+
+  .doc-header .meta {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--dim);
+  }
+
+  /* --- SECTIONS --- */
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin: 48px 0 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  h2 .num {
+    color: var(--teal-light);
+    margin-right: 8px;
+  }
+
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 28px 0 12px;
+    color: var(--text);
+  }
+
+  p { margin-bottom: 14px; color: var(--muted); font-size: 15px; }
+  p strong { color: var(--text); font-weight: 600; }
+
+  /* --- CARDS --- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+  }
+
+  .card.teal {
+    border-color: var(--teal);
+    background: rgba(20, 184, 166, 0.06);
+  }
+
+  .card.warn {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.06);
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title .icon { font-size: 18px; }
+
+  .card p { margin-bottom: 8px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* --- GRID --- */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  /* --- TABLE --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+
+  th {
+    text-align: left;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--dim);
+  }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--muted);
+  }
+
+  td:first-child { color: var(--text); font-weight: 500; }
+
+  /* --- CODE --- */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: rgba(255,255,255,0.06);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: var(--teal-light);
+  }
+
+  pre {
+    background: var(--darker);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  /* --- LIST --- */
+  ul, ol { margin: 12px 0 12px 20px; color: var(--muted); font-size: 15px; }
+  li { margin-bottom: 6px; }
+  li strong { color: var(--text); }
+
+  /* --- DIAGRAM --- */
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+
+  .flow-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: center;
+    min-width: 100px;
+  }
+
+  .flow-box .f-icon { font-size: 22px; margin-bottom: 4px; }
+  .flow-box .f-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .flow-box .f-sub { font-size: 11px; color: var(--dim); margin-top: 2px; }
+
+  .flow-box.safe { border-color: var(--teal); background: rgba(20, 184, 166, 0.08); }
+  .flow-box.danger { border-color: #ef4444; }
+
+  .flow-arr { color: var(--dim); font-size: 20px; }
+
+  /* --- BADGES --- */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge.green { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .badge.yellow { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .badge.red { background: rgba(239,68,68,0.15); color: #f87171; }
+  .badge.teal { background: rgba(20,184,166,0.15); color: var(--teal-light); }
+
+  /* --- CHECKLIST --- */
+  .checklist { list-style: none; margin-left: 0; }
+  .checklist li { padding-left: 28px; position: relative; margin-bottom: 10px; }
+  .checklist li::before {
+    content: '\2713';
+    position: absolute;
+    left: 0;
+    color: var(--teal-light);
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  /* --- PRINT --- */
+  @media print {
+    body { background: var(--dark) !important; }
+    .page { padding: 40px 30px; }
+    .card, .flow-box, pre { background-color: var(--card) !important; border: 1px solid var(--border) !important; }
+    .card.teal { background-color: rgba(20, 184, 166, 0.06) !important; }
+    th { background-color: rgba(255,255,255,0.04) !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="doc-header">
+    <div class="label">Technical Attachment for Judges</div>
+    <h1>ShiftPay</h1>
+    <div class="subtitle">Design decisions, security architecture, and privacy compliance</div>
+    <div class="meta">The Vibe Coding Games 2026 &mdash; Stian Melhus &mdash; February 2026</div>
+  </div>
+
+  <!-- 1. DESIGN PHILOSOPHY -->
+  <h2><span class="num">01</span> Design Philosophy</h2>
+
+  <p>ShiftPay was born from a real problem: my wife works night shifts in healthcare and has no way to verify her pay. The payroll system shows one month of history, and complex supplements (night, weekend, holiday) make manual calculation impossible.</p>
+
+  <p>Every design decision optimizes for <strong>one thing: minimum friction for a tired shift worker</strong>.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon">&#128247;</span> Photo-first import</div>
+      <p>Most shift workers have a printed or posted schedule. Taking a photo is faster than typing 20 shifts manually. AI handles the tedious part.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">&#9998;</span> Human-in-the-loop</div>
+      <p>AI isn't perfect. Every parsed shift is editable before saving. The user always has final say. Trust but verify.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">&#128276;</span> Passive tracking</div>
+      <p>After import, the app works for you. Push notifications at shift end: "Did you complete it?" One tap. No daily logging habit required.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon">&#128274;</span> No account needed</div>
+      <p>Zero signup friction. No email, no password, no verification. Open the app and start. Privacy is the default, not an option.</p>
+    </div>
+  </div>
+
+  <h3>Key UX decisions</h3>
+  <table>
+    <tr><th>Decision</th><th>Choice</th><th>Why</th></tr>
+    <tr><td>Import method</td><td>Photo first, CSV/manual as fallback</td><td>Matches how schedules exist in the real world</td></tr>
+    <tr><td>Edit before save</td><td>Always show parsed shifts for review</td><td>AI confidence varies; user must trust the data</td></tr>
+    <tr><td>Shift confirmation</td><td>Push notification + 3 options</td><td>Captures reality (completed/missed/overtime) with one tap</td></tr>
+    <tr><td>Expected pay</td><td>Show at overview level, not per-shift</td><td>Users care about the total, not individual shift math</td></tr>
+    <tr><td>Language</td><td>English with i18n (NO/EN/SV/DA)</td><td>International reach; shift work is universal</td></tr>
+    <tr><td>Onboarding</td><td>Modal on first launch &rarr; settings</td><td>Must set rates before anything is useful</td></tr>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- 2. ARCHITECTURE -->
+  <h2><span class="num">02</span> Architecture</h2>
+
+  <p>ShiftPay follows a <strong>local-first architecture</strong>. The only network call is OCR &mdash; everything else runs on-device.</p>
+
+  <div class="flow-diagram">
+    <div class="flow-box">
+      <div class="f-icon">&#128247;</div>
+      <div class="f-label">Camera / Gallery</div>
+      <div class="f-sub">User's photo</div>
+    </div>
+    <div class="flow-arr">&rarr;</div>
+    <div class="flow-box">
+      <div class="f-icon">&#128225;</div>
+      <div class="f-label">HTTPS + API Key</div>
+      <div class="f-sub">Encrypted transit</div>
+    </div>
+    <div class="flow-arr">&rarr;</div>
+    <div class="flow-box">
+      <div class="f-icon">&#129302;</div>
+      <div class="f-label">Claude Vision</div>
+      <div class="f-sub">Stateless OCR</div>
+    </div>
+    <div class="flow-arr">&rarr;</div>
+    <div class="flow-box">
+      <div class="f-icon">&#128203;</div>
+      <div class="f-label">Validated JSON</div>
+      <div class="f-sub">Schema-checked</div>
+    </div>
+    <div class="flow-arr">&rarr;</div>
+    <div class="flow-box safe">
+      <div class="f-icon">&#128274;</div>
+      <div class="f-label">Local SQLite</div>
+      <div class="f-sub">On-device only</div>
+    </div>
+  </div>
+
+  <h3>Tech stack</h3>
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Why this choice</th></tr>
+    <tr><td>App framework</td><td>Expo SDK 54 + React Native</td><td>Cross-platform with native performance, rapid iteration</td></tr>
+    <tr><td>Routing</td><td>Expo Router (file-based)</td><td>Deep linking for notifications, clean navigation</td></tr>
+    <tr><td>Styling</td><td>NativeWind (Tailwind CSS)</td><td>Consistent design system, fast prototyping</td></tr>
+    <tr><td>Storage</td><td>expo-sqlite</td><td>Local-only, no sync complexity, privacy by default</td></tr>
+    <tr><td>Notifications</td><td>expo-notifications</td><td>Local scheduling, deep link to confirm screen</td></tr>
+    <tr><td>OCR backend</td><td>Supabase Edge Function (Deno)</td><td>Serverless, zero cold start, auto-scaling</td></tr>
+    <tr><td>AI model</td><td>Claude Haiku 4.5 Vision</td><td>Fast, accurate, cost-effective for OCR tasks</td></tr>
+    <tr><td>Build</td><td>EAS Build</td><td>Play Store ready, internal testing track</td></tr>
+  </table>
+
+  <h3>Database design</h3>
+  <p>Three tables in local SQLite. Simple, normalized, no ORMs.</p>
+  <pre>tariff_rates (1 row)     &mdash; base_rate + 5 supplement types
+schedules    (per import) &mdash; period_start, period_end, source
+shifts       (per shift)  &mdash; date, times, type, status, overtime_minutes</pre>
+  <p>All IDs are <strong>cryptographic UUIDs</strong> via <code>crypto.getRandomValues()</code>. Tariff rates use upsert pattern (single row, id=1). Shifts reference schedules via foreign key.</p>
+
+  <div class="page-break"></div>
+
+  <!-- 3. SECURITY -->
+  <h2><span class="num">03</span> Security</h2>
+
+  <p>We ran a <strong>full security evaluation</strong> (OWASP API Security + Mobile Top 10, STRIDE threat modeling) and fixed all findings before submission. The full report is available at <code>security/SECURITY-EVAL-2026-02-20.md</code>.</p>
+
+  <div class="card teal">
+    <div class="card-title"><span class="icon">&#128737;</span> Security audit result after fixes</div>
+    <p><span class="badge green">0 Critical</span> &nbsp; <span class="badge green">0 High</span> &nbsp; <span class="badge yellow">0 Medium (code)</span> &nbsp; All findings resolved in code</p>
+  </div>
+
+  <h3>OCR endpoint protection</h3>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">API key authentication</div>
+      <p>Every request requires <code>X-API-Key</code> header matching a server-side secret. Rejects unauthorized requests with 401.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Origin-based CORS</div>
+      <p>No wildcard <code>*</code>. CORS headers are only sent for whitelisted origins. Mobile apps (no Origin header) are unaffected.</p>
+    </div>
+  </div>
+
+  <h3>LLM output validation (defense-in-depth)</h3>
+  <p>Claude Vision returns JSON parsed from images. Since LLM output is inherently unpredictable, we validate at <strong>two layers</strong>:</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Server-side (Edge Function)</div>
+      <p>Regex validation on dates (<code>DD.MM.YYYY</code>), times (<code>HH:MM</code>), and enum check on shift types. Malformed entries are silently dropped.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Client-side (lib/api.ts)</div>
+      <p>Full shape validation + same format checks. If the server returns garbage, the client catches it before it reaches SQLite.</p>
+    </div>
+  </div>
+
+  <p>This protects against <strong>prompt injection via timesheet images</strong> &mdash; a realistic attack where a crafted image tricks the LLM into returning malicious data.</p>
+
+  <h3>Application hardening</h3>
+  <ul class="checklist">
+    <li><strong>Cryptographic UUIDs</strong> &mdash; <code>crypto.getRandomValues()</code> replaces <code>Math.random()</code> for all identifiers</li>
+    <li><strong>Deep link validation</strong> &mdash; Notification <code>shiftId</code> is validated against UUID v4 regex before routing or DB queries</li>
+    <li><strong>Input clamping</strong> &mdash; Tariff rates enforced &ge; 0 at both UI layer and database layer</li>
+    <li><strong>Error sanitization</strong> &mdash; Internal error details never reach users in production (<code>__DEV__</code> guards on all error exposure)</li>
+    <li><strong>No production fallbacks</strong> &mdash; Missing <code>EXPO_PUBLIC_API_URL</code> throws in production instead of silently falling back to localhost</li>
+    <li><strong>Parameterized SQL</strong> &mdash; All database queries use parameterized statements, zero string concatenation</li>
+    <li><strong>.env excluded from git</strong> &mdash; API keys and secrets are never committed</li>
+  </ul>
+
+  <h3>Threat model summary</h3>
+  <table>
+    <tr><th>Threat</th><th>Mitigation</th><th>Status</th></tr>
+    <tr><td>API cost abuse (DoS)</td><td>API key auth + billing cap</td><td><span class="badge green">Fixed</span></td></tr>
+    <tr><td>Prompt injection via image</td><td>Schema validation (server + client)</td><td><span class="badge green">Fixed</span></td></tr>
+    <tr><td>Error information leakage</td><td>Generic errors in production</td><td><span class="badge green">Fixed</span></td></tr>
+    <tr><td>Predictable IDs</td><td>Cryptographic UUID generation</td><td><span class="badge green">Fixed</span></td></tr>
+    <tr><td>Deep link injection</td><td>UUID format validation</td><td><span class="badge green">Fixed</span></td></tr>
+    <tr><td>Negative rate manipulation</td><td>Input clamping at two layers</td><td><span class="badge green">Fixed</span></td></tr>
+    <tr><td>CORS abuse</td><td>Origin-based allowlist</td><td><span class="badge green">Fixed</span></td></tr>
+    <tr><td>Rate limiting</td><td>Planned for v2 (Supabase limitation)</td><td><span class="badge yellow">Planned</span></td></tr>
+    <tr><td>SQLite encryption</td><td>Planned for v2 (sqlcipher)</td><td><span class="badge yellow">Planned</span></td></tr>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- 4. GDPR & PRIVACY -->
+  <h2><span class="num">04</span> GDPR &amp; Privacy Compliance</h2>
+
+  <p>ShiftPay was designed with <strong>privacy as a core architectural constraint</strong>, not an afterthought. The result: GDPR compliance is almost trivially achieved.</p>
+
+  <div class="card teal">
+    <div class="card-title"><span class="icon">&#128274;</span> The fundamental principle</div>
+    <p><strong>All personal data stays on the user's device. Period.</strong> No accounts, no cloud storage, no analytics, no tracking. The only network call (OCR) is stateless and stores nothing.</p>
+  </div>
+
+  <h3>Data flow analysis</h3>
+  <table>
+    <tr><th>Data type</th><th>Where stored</th><th>Retention</th><th>Shared with</th></tr>
+    <tr><td>Tariff rates</td><td>Local SQLite</td><td>Until user deletes app</td><td>Nobody</td></tr>
+    <tr><td>Shift schedules</td><td>Local SQLite</td><td>Until user deletes app</td><td>Nobody</td></tr>
+    <tr><td>Shift confirmations</td><td>Local SQLite</td><td>Until user deletes app</td><td>Nobody</td></tr>
+    <tr><td>Timesheet photo</td><td>Transient (in-memory during OCR)</td><td>Seconds (request duration)</td><td>Anthropic API (for OCR only)</td></tr>
+    <tr><td>User preferences</td><td>AsyncStorage (device)</td><td>Until user deletes app</td><td>Nobody</td></tr>
+  </table>
+
+  <h3>GDPR article compliance</h3>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Art. 5 &mdash; Data minimization</div>
+      <p>We collect <strong>zero personal data</strong> in any backend system. No name, email, phone, or device identifiers. The OCR function receives an image and returns structured text &mdash; nothing is logged or stored.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Art. 6 &mdash; Lawful basis</div>
+      <p>No consent mechanism is needed because <strong>we don't process personal data server-side</strong>. Local device storage falls outside GDPR scope (household exemption, Recital 18).</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Art. 17 &mdash; Right to erasure</div>
+      <p>Users delete all their data by uninstalling the app. There is no server-side data to request deletion of. Complete user control.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Art. 25 &mdash; Privacy by design</div>
+      <p>Local-first architecture was chosen specifically to avoid data protection complexity. The most private data is data that never leaves the device.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Art. 32 &mdash; Security of processing</div>
+      <p>OCR endpoint is authenticated (API key), encrypted (HTTPS), and stateless. See Security section for full hardening details.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Art. 44 &mdash; International transfers</div>
+      <p>Timesheet images are sent to Anthropic's API for OCR (US-based). This is transient processing with no storage. For full compliance, we would add a privacy notice informing users of this transfer.</p>
+    </div>
+  </div>
+
+  <h3>What about the timesheet image?</h3>
+
+  <div class="card warn">
+    <div class="card-title"><span class="icon">&#9888;</span> Honest assessment</div>
+    <p>The one GDPR consideration is the <strong>timesheet photo sent to Anthropic for OCR</strong>. This image may contain personal data (names, employee IDs). Our mitigations:</p>
+    <ul style="margin-top: 8px;">
+      <li>Image is sent over HTTPS and processed in-memory</li>
+      <li>Anthropic's API does not store input data (per their data policy)</li>
+      <li>Our Edge Function does not log, cache, or store the image</li>
+      <li>For v2: add explicit user consent dialog before first OCR use</li>
+    </ul>
+  </div>
+
+  <h3>Google Play data safety declaration</h3>
+  <table>
+    <tr><th>Question</th><th>Answer</th></tr>
+    <tr><td>Does your app collect user data?</td><td>No</td></tr>
+    <tr><td>Does your app share user data with third parties?</td><td>No (transient OCR only, no storage)</td></tr>
+    <tr><td>Does your app use encryption?</td><td>Yes (HTTPS for OCR, local SQLite)</td></tr>
+    <tr><td>Can users request data deletion?</td><td>Yes (uninstall removes all data)</td></tr>
+  </table>
+
+  <div class="page-break"></div>
+
+  <!-- 5. WHAT WE'D DO NEXT -->
+  <h2><span class="num">05</span> What We'd Do Next</h2>
+
+  <p>ShiftPay was built in 5 days. Here's what a production release would add:</p>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Rate limiting</div>
+      <p>Per-device throttling on OCR endpoint. Supabase doesn't support this natively &mdash; would add Cloudflare Workers as a proxy.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">SQLite encryption</div>
+      <p>Encrypt local database with sqlcipher. Protects against physical device access.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Certificate pinning</div>
+      <p>Pin the Supabase TLS certificate to prevent MITM attacks on the OCR endpoint.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Optional cloud backup</div>
+      <p>Opt-in sync via Supabase Auth (Google Sign-In). User explicitly chooses to enable. Off by default.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">PDF export</div>
+      <p>"Here's proof I was underpaid in March" &mdash; export a verified shift report for your employer or union.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Privacy consent dialog</div>
+      <p>Explicit consent before first OCR use, explaining that the image is sent to Anthropic for processing.</p>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- 6. TOOLING -->
+  <h2><span class="num">06</span> Development Tooling</h2>
+
+  <p>ShiftPay was built in 5 days using two AI-powered development tools in tandem. Each has a distinct role in the workflow.</p>
+
+  <div class="grid-2">
+    <div class="card" style="border-color: var(--teal);">
+      <div class="card-title" style="font-size: 18px;">Claude Code <span style="font-size: 12px; color: var(--dim); font-weight: 400; margin-left: 8px;">CLI</span></div>
+      <p>Anthropic's terminal-based AI coding agent. Used for <strong>architecture, multi-file refactoring, security pipelines, and deep work</strong> that requires understanding the full codebase.</p>
+    </div>
+    <div class="card" style="border-color: #8b5cf6;">
+      <div class="card-title" style="font-size: 18px;">Cursor <span style="font-size: 12px; color: var(--dim); font-weight: 400; margin-left: 8px;">IDE</span></div>
+      <p>AI-powered code editor. Used for <strong>fast component iteration, styling, and bug fixes</strong> where inline context and quick feedback loops matter.</p>
+    </div>
+  </div>
+
+  <h3>Claude Code pipelines in detail</h3>
+
+  <p>Claude Code's strength is orchestrating <strong>multi-agent pipelines</strong> &mdash; custom slash commands that spawn specialized agents in sequence, each building on the output of the previous phase.</p>
+
+  <div class="card">
+    <div class="card-title"><code>/sec-eval</code> &mdash; Security evaluation pipeline</div>
+    <p>A 6-phase automated security audit that produced the findings described in Section 03.</p>
+    <table style="margin-top: 12px;">
+      <tr><th>Phase</th><th>Agent</th><th>Output</th></tr>
+      <tr><td>1. Reconnaissance</td><td>Main agent (reads codebase)</td><td>Threat model, scope, attack surface</td></tr>
+      <tr><td>2. Static code audit</td><td><code>security-auditor</code></td><td>14 findings with STRIDE tags, file:line references</td></tr>
+      <tr><td>3. Dependency scan</td><td><code>dep-config-scanner</code></td><td>npm audit, secrets scan, config review</td></tr>
+      <tr><td>4. Attack scenarios</td><td><code>attack-scenario-builder</code></td><td>5 scenarios + 3 multi-vulnerability chains</td></tr>
+      <tr><td>5. Final report</td><td>Main agent (synthesizes)</td><td>Prioritized report with action plan</td></tr>
+      <tr><td>6. Self-eval</td><td>Main agent (scores itself)</td><td>Quality scores + learnings for next run</td></tr>
+    </table>
+    <p style="margin-top: 12px;">The pipeline then <strong>fixed all 10 actionable findings</strong> in a single session: API auth, CORS, schema validation, UUID generation, input clamping, error sanitization. Each fix was committed as a conventional commit.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><code>/refactor</code> &mdash; Structured refactoring</div>
+    <p>Analyze &rarr; plan &rarr; implement &rarr; verify cycle. Used for:</p>
+    <ul style="margin-top: 8px;">
+      <li>Extracting shared date utilities (<code>lib/dates.ts</code>) from duplicated parsing logic across 6 files</li>
+      <li>Replacing <code>as any</code> routing casts with typed <code>Href</code> from expo-router</li>
+      <li>Extracting month key constants to eliminate magic strings</li>
+    </ul>
+    <p style="margin-top: 8px;">Each refactor was verified by the agent reading the changed files, checking for type errors, and confirming no behavioral changes.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><code>/design-review</code> &mdash; Design &amp; accessibility audit</div>
+    <p>Spawns the <code>accessibility-auditor</code> agent for a WCAG-compliant review of every screen:</p>
+    <ul style="margin-top: 8px;">
+      <li><strong>28 findings</strong> across 4 severity levels (4 critical, 8 high, 9 medium, 7 low)</li>
+      <li>Screen reader compatibility (missing <code>accessibilityLabel</code>, <code>accessibilityRole</code>)</li>
+      <li>Touch target sizes (minimum 44pt/48dp violations)</li>
+      <li>Color contrast analysis (found teal-200 on teal-700 at 2.8:1 &mdash; fails WCAG AA)</li>
+      <li>Modal focus trapping, live region announcements, heading hierarchy</li>
+    </ul>
+    <p style="margin-top: 8px;">Every finding includes the specific file:line, WCAG reference, who is affected, and a concrete code fix.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><code>/commit</code> &mdash; Smart commit workflow</div>
+    <p>Before staging any code:</p>
+    <ul style="margin-top: 8px;">
+      <li>Scans diff for <strong>debug code</strong> (console.log, debugger statements)</li>
+      <li>Scans for <strong>hardcoded secrets</strong> (API keys, passwords in strings)</li>
+      <li>Checks for <strong>merge conflict markers</strong></li>
+      <li>Flags new <strong>TODOs/FIXMEs</strong></li>
+      <li>Generates conventional commit message from the actual diff (not guessed from filenames)</li>
+    </ul>
+  </div>
+
+  <h3>Cursor workflows</h3>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Component development</div>
+      <p>Rapid iteration on React Native components with inline AI assistance. ShiftTable, ShiftCard, PaySummary, CameraCapture &mdash; all built with Cursor's contextual completions and quick edit cycles.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">NativeWind styling</div>
+      <p>Quick Tailwind class iteration for the teal design system. Color palette, spacing, border-radius consistency across all components.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Bug fixes</div>
+      <p>Camera API migration (expo-camera v17), SQLite stale connection handling, DD.MM.YYYY date sorting &mdash; fast debugging with full file context.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">i18n implementation</div>
+      <p>Translation setup for NO/EN/SV/DA with context-aware string extraction across all screens and components.</p>
+    </div>
+  </div>
+
+  <h3>The split</h3>
+  <table>
+    <tr><th>Task type</th><th>Tool</th><th>Why</th></tr>
+    <tr><td>Security audit + fixes</td><td>Claude Code</td><td>Multi-agent pipeline, needs full codebase context</td></tr>
+    <tr><td>Refactoring across files</td><td>Claude Code</td><td>Understands dependencies, verifies no regressions</td></tr>
+    <tr><td>Architecture decisions</td><td>Claude Code</td><td>Can research, plan, and execute in one session</td></tr>
+    <tr><td>New components</td><td>Cursor</td><td>Fast visual iteration with inline previews</td></tr>
+    <tr><td>Styling / design</td><td>Cursor</td><td>Quick Tailwind class tweaking</td></tr>
+    <tr><td>Single-file bug fixes</td><td>Cursor</td><td>Faster feedback loop for isolated changes</td></tr>
+    <tr><td>Git operations</td><td>Claude Code</td><td>Smart commit, PR creation, branch management</td></tr>
+    <tr><td>Documentation</td><td>Claude Code</td><td>Reads codebase to generate accurate docs</td></tr>
+  </table>
+
+  <p style="margin-top: 24px;"><strong>The key insight:</strong> AI doesn't replace the developer. It removes the tedious parts (boilerplate, auditing, formatting) so the human can focus on what matters: understanding the problem, making design decisions, and validating with real users.</p>
+
+  <!-- CLOSING -->
+  <div style="margin-top: 60px; padding-top: 32px; border-top: 1px solid var(--border); text-align: center;">
+    <p style="color: var(--dim); font-size: 14px;">
+      Built with Expo, Claude Code, Cursor, and local-first principles.<br>
+      Full security evaluation, source code, and audit reports available on request.<br><br>
+      <strong style="color: var(--text);">ShiftPay &mdash; The Vibe Coding Games 2026</strong>
+    </p>
+  </div>
+
+</div>
+
+</body>
+</html>
