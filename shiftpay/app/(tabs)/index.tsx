@@ -25,7 +25,7 @@ import { ShiftCard } from "../../components/ShiftCard";
 import { PressableScale } from "../../components/PressableScale";
 import { AnimatedCard } from "../../components/AnimatedCard";
 import { useTranslation } from "../../lib/i18n";
-import { colors } from "../../lib/theme";
+import { useThemeColors } from "../../lib/theme-context";
 
 function getWeekRange(): { from: string; to: string } {
   const now = new Date();
@@ -65,6 +65,7 @@ function countdownToShift(shift: ShiftRow, t: (key: string, opts?: object) => st
 export default function DashboardScreen() {
   const router = useRouter();
   const { t, locale } = useTranslation();
+  const colors = useThemeColors();
   const [monthsList, setMonthsList] = useState<Array<{ year: number; month: number }>>([]);
   const [nextShift, setNextShift] = useState<ShiftRow | null>(null);
   const [weekShifts, setWeekShifts] = useState<ShiftRow[]>([]);
@@ -147,7 +148,7 @@ export default function DashboardScreen() {
 
   if (loading && monthsList.length === 0 && !nextShift && dueConfirmation.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center bg-dark-bg">
+      <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
         <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
@@ -155,8 +156,8 @@ export default function DashboardScreen() {
 
   if (loadError) {
     return (
-      <View className="flex-1 items-center justify-center bg-dark-bg p-6">
-        <Text className="text-center text-slate-400">{loadError}</Text>
+      <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg p-6">
+        <Text className="text-center text-slate-600 dark:text-slate-400">{loadError}</Text>
         <PressableScale
           onPress={() => {
             setLoadError(null);
@@ -164,9 +165,9 @@ export default function DashboardScreen() {
             load();
           }}
           accessibilityLabel={t("dashboard.error.retry")}
-          className="mt-6 rounded-xl bg-accent px-6 py-4"
+          className="mt-6 rounded-xl bg-accent-dark dark:bg-accent px-6 py-4"
         >
-          <Text className="font-inter-semibold text-slate-900">{t("dashboard.error.retry")}</Text>
+          <Text className="font-inter-semibold text-white dark:text-slate-900">{t("dashboard.error.retry")}</Text>
         </PressableScale>
       </View>
     );
@@ -176,7 +177,7 @@ export default function DashboardScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-dark-bg"
+      className="flex-1 bg-app-bg dark:bg-dark-bg"
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
       refreshControl={
         <RefreshControl
@@ -190,101 +191,98 @@ export default function DashboardScreen() {
     >
       {empty && (
         <View className="flex-1 items-center justify-center py-12">
-          <Text className="text-lg font-inter-semibold text-slate-100">{t("dashboard.empty.title")}</Text>
-          <Text className="mt-2 text-center text-slate-400">
+          <Text className="text-lg font-inter-semibold text-slate-900 dark:text-slate-100">{t("dashboard.empty.title")}</Text>
+          <Text className="mt-2 text-center text-slate-600 dark:text-slate-400">
             {t("dashboard.empty.description")}
           </Text>
           <PressableScale
             onPress={() => router.push("/(tabs)/import")}
             accessibilityLabel={t("dashboard.empty.cta")}
-            className="mt-6 rounded-xl bg-accent px-6 py-4"
+            className="mt-6 rounded-xl bg-accent-dark dark:bg-accent px-6 py-4"
           >
-            <Text className="font-inter-semibold text-slate-900">{t("dashboard.empty.cta")}</Text>
+            <Text className="font-inter-semibold text-white dark:text-slate-900">{t("dashboard.empty.cta")}</Text>
           </PressableScale>
         </View>
       )}
 
       {/* Next shift — full width */}
       {nextShift && (
-        <AnimatedCard index={0} className="mb-4 rounded-xl bg-dark-surface p-5">
-          <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-400">{t("dashboard.nextShift.title")}</Text>
-          <Text className="mt-1 text-xl font-inter-semibold text-slate-100">
+        <AnimatedCard index={0} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-5">
+          <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("dashboard.nextShift.title")}</Text>
+          <Text className="mt-1 text-xl font-inter-semibold text-slate-900 dark:text-slate-100">
             {nextShift.date} · {nextShift.start_time}–{nextShift.end_time}
           </Text>
-          <Text className="mt-1 text-sm text-accent">{countdownToShift(nextShift, t)}</Text>
+          <Text className="mt-1 text-sm text-accent-dark dark:text-accent">{countdownToShift(nextShift, t)}</Text>
           {isShiftEndPassed(nextShift) && (
             <PressableScale
               onPress={() => onPressConfirm(nextShift.id)}
-              className="mt-3 self-start rounded-xl bg-accent px-4 py-2"
+              className="mt-3 self-start rounded-xl bg-accent-dark dark:bg-accent px-4 py-2"
             >
-              <Text className="text-sm font-inter-semibold text-slate-900">{t("dashboard.nextShift.confirm")}</Text>
+              <Text className="text-sm font-inter-semibold text-white dark:text-slate-900">{t("dashboard.nextShift.confirm")}</Text>
             </PressableScale>
           )}
         </AnimatedCard>
       )}
 
-      {/* Bento: two-column row — Expected pay + Unconfirmed */}
-      {(monthSummary || dueConfirmation.length > 0) && (
-        <AnimatedCard index={1} className="mb-4 flex-row gap-3">
-          {/* Expected pay tile */}
-          {monthSummary && (monthSummary.plannedHours > 0 || monthSummary.actualHours > 0) ? (
-            <PressableScale
-              onPress={onPressSummary}
-              accessibilityLabel={t("dashboard.month.title")}
-              className="flex-1 rounded-xl bg-dark-surface p-4"
-            >
-              <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-400">{t("dashboard.month.title")}</Text>
-              <Text className="mt-1 font-display text-2xl text-warm">
-                {formatCurrency(monthSummary.expectedPay, locale)}
-              </Text>
+      {/* Expected pay — full width */}
+      {monthSummary && (monthSummary.plannedHours > 0 || monthSummary.actualHours > 0) && (
+        <AnimatedCard index={1} className="mb-4">
+          <PressableScale
+            onPress={onPressSummary}
+            accessibilityLabel={t("dashboard.month.title")}
+            className="flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-5"
+          >
+            <View>
+              <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("dashboard.month.title")}</Text>
               <Text className="mt-1 text-xs text-slate-500">
                 {t("dashboard.month.actual", { hours: monthSummary.actualHours.toFixed(1) })}
               </Text>
-            </PressableScale>
-          ) : (
-            <View className="flex-1" />
-          )}
+            </View>
+            <Text className="font-display text-3xl text-amber-600 dark:text-warm">
+              {formatCurrency(monthSummary.expectedPay, locale)}
+            </Text>
+          </PressableScale>
+        </AnimatedCard>
+      )}
 
-          {/* Unconfirmed tile */}
-          {dueConfirmation.length > 0 ? (
-            <PressableScale
-              onPress={() => onPressConfirm(dueConfirmation[0].id)}
-              className="flex-1 rounded-xl bg-dark-surface p-4"
-            >
-              <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-400">{t("dashboard.pending.title")}</Text>
-              <Text className="mt-1 font-display text-2xl text-red-400">
-                {dueConfirmation.length}
-              </Text>
-              <Text className="mt-1 text-xs text-slate-500">
-                {t("dashboard.pending.confirmBtn")}
-              </Text>
-            </PressableScale>
-          ) : (
-            <View className="flex-1" />
-          )}
+      {/* Unconfirmed tile — full width */}
+      {dueConfirmation.length > 0 && (
+        <AnimatedCard index={2} className="mb-4">
+          <PressableScale
+            onPress={() => onPressConfirm(dueConfirmation[0].id)}
+            className="rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-5"
+          >
+            <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("dashboard.pending.title")}</Text>
+            <Text className="mt-1 font-display text-2xl text-red-600 dark:text-red-400">
+              {dueConfirmation.length}
+            </Text>
+            <Text className="mt-1 text-xs text-slate-500">
+              {t("dashboard.pending.confirmBtn")}
+            </Text>
+          </PressableScale>
         </AnimatedCard>
       )}
 
       {/* Pending confirmation list (if more than visible in tile) */}
       {dueConfirmation.length > 1 && (
-        <AnimatedCard index={2} className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
-          <Text className="text-xs font-inter-medium uppercase tracking-wider text-amber-300">
+        <AnimatedCard index={3} className="mb-4 rounded-xl border border-amber-600/20 bg-amber-600/10 dark:border-amber-500/20 dark:bg-amber-500/10 p-4">
+          <Text className="text-xs font-inter-medium uppercase tracking-wider text-amber-700 dark:text-amber-300">
             {t("dashboard.pending.title")} ({dueConfirmation.length})
           </Text>
           {dueConfirmation.slice(0, 3).map((s) => (
             <PressableScale
               key={s.id}
               onPress={() => onPressConfirm(s.id)}
-              className="mt-2 flex-row items-center justify-between rounded-xl border border-dark-border bg-dark-surface p-3"
+              className="mt-2 flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-3"
             >
-              <Text className="text-slate-100">
+              <Text className="text-slate-900 dark:text-slate-100">
                 {s.date} {s.start_time}–{s.end_time}
               </Text>
-              <Text className="text-sm font-inter-medium text-accent">{t("dashboard.pending.confirmBtn")}</Text>
+              <Text className="text-sm font-inter-medium text-accent-dark dark:text-accent">{t("dashboard.pending.confirmBtn")}</Text>
             </PressableScale>
           ))}
           {dueConfirmation.length > 3 && (
-            <Text className="mt-2 text-sm text-amber-300">
+            <Text className="mt-2 text-sm text-amber-700 dark:text-amber-300">
               {t("dashboard.pending.more", { count: dueConfirmation.length - 3 })}
             </Text>
           )}
@@ -293,8 +291,8 @@ export default function DashboardScreen() {
 
       {/* This week */}
       {weekShifts.length > 0 && (
-        <AnimatedCard index={3} className="mb-4 rounded-xl border border-dark-border bg-dark-surface p-4">
-          <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-400">{t("dashboard.week.title")}</Text>
+        <AnimatedCard index={4} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
+          <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("dashboard.week.title")}</Text>
           {weekShifts.slice(0, 7).map((s) => (
             <ShiftCard
               key={s.id}
@@ -309,7 +307,7 @@ export default function DashboardScreen() {
       {/* History */}
       {monthsList.length > 0 && (
         <>
-          <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-slate-400" accessibilityRole="header">{t("dashboard.history.title")}</Text>
+          <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400" accessibilityRole="header">{t("dashboard.history.title")}</Text>
           {monthsList.map(({ year, month }) => {
             const key = toYearMonthKey(year, month);
             const monthKey = MONTH_KEYS[month - 1] ?? "jan";
@@ -318,10 +316,10 @@ export default function DashboardScreen() {
                 key={key}
                 onPress={() => router.push(`/summary/${key}` as Href)}
                 accessibilityLabel={`${t(`months.${monthKey}`)} ${year}`}
-                className="mb-3 rounded-xl border border-dark-border bg-dark-surface p-4"
+                className="mb-3 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4"
               >
                 <View className="flex-row items-center justify-between">
-                  <Text className="font-inter-medium text-slate-100">
+                  <Text className="font-inter-medium text-slate-900 dark:text-slate-100">
                     {t(`months.${monthKey}`)} {year}
                   </Text>
                   <Ionicons name="chevron-forward" size={20} color={colors.textMuted} importantForAccessibility="no" />

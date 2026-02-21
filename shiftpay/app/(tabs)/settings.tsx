@@ -15,7 +15,7 @@ import Constants from "expo-constants";
 import { getTariffRates, setTariffRates, type TariffRatesInput } from "../../lib/db";
 import { useTranslation, SUPPORTED_LOCALES, type Locale } from "../../lib/i18n";
 import { PressableScale } from "../../components/PressableScale";
-import { colors } from "../../lib/theme";
+import { useTheme, useThemeColors, type ThemePreference } from "../../lib/theme-context";
 
 const defaultRates: TariffRatesInput = {
   base_rate: 0,
@@ -42,8 +42,16 @@ const LOCALE_OPTIONS: { code: Locale; label: string }[] = [
   { code: "da", label: "Dansk" },
 ];
 
+const THEME_OPTIONS: { value: ThemePreference; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { value: "system", icon: "phone-portrait-outline" },
+  { value: "light", icon: "sunny-outline" },
+  { value: "dark", icon: "moon-outline" },
+];
+
 export default function SettingsScreen() {
   const { t, locale, setLocale } = useTranslation();
+  const { preference, setPreference } = useTheme();
+  const colors = useThemeColors();
   const [rates, setRates] = useState<TariffRatesInput>(defaultRates);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -90,7 +98,7 @@ export default function SettingsScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-dark-bg">
+      <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
         <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
@@ -99,10 +107,10 @@ export default function SettingsScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className="flex-1 bg-dark-bg"
+      className="flex-1 bg-app-bg dark:bg-dark-bg"
     >
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
-        <Text className="mb-4 text-sm text-slate-400">
+        <Text className="mb-4 text-sm text-slate-600 dark:text-slate-400">
           {t("settings.description")}
         </Text>
 
@@ -153,18 +161,18 @@ export default function SettingsScreen() {
           accessibilityLabel={t("settings.save")}
           accessibilityState={{ disabled: saving }}
           style={saving ? { opacity: 0.6 } : undefined}
-          className="mt-6 rounded-xl bg-accent py-4"
+          className="mt-6 rounded-xl bg-accent-dark dark:bg-accent py-4"
         >
           {saving ? (
             <ActivityIndicator color={colors.bg} />
           ) : (
-            <Text className="text-center font-inter-semibold text-slate-900">{t("settings.save")}</Text>
+            <Text className="text-center font-inter-semibold text-white dark:text-slate-900">{t("settings.save")}</Text>
           )}
         </PressableScale>
 
         {saved && (
           <Text
-            className="mt-3 text-center text-emerald-400"
+            className="mt-3 text-center text-emerald-600 dark:text-emerald-400"
             accessibilityLiveRegion="polite"
           >
             {t("settings.saved")}
@@ -173,16 +181,16 @@ export default function SettingsScreen() {
 
         {/* Language picker */}
         <View className="mt-8" accessibilityRole="radiogroup" accessibilityLabel={t("settings.language.title")}>
-          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-slate-400" accessibilityRole="header">{t("settings.language.title")}</Text>
+          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400" accessibilityRole="header">{t("settings.language.title")}</Text>
           {LOCALE_OPTIONS.map((opt) => (
             <PressableScale
               key={opt.code}
               onPress={() => setLocale(opt.code)}
               accessibilityRole="radio"
               accessibilityState={{ checked: locale === opt.code }}
-              className="mb-2 flex-row items-center justify-between rounded-xl border border-dark-border bg-dark-surface px-4 py-3"
+              className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3"
             >
-              <Text className="text-slate-100">{opt.label}</Text>
+              <Text className="text-slate-900 dark:text-slate-100">{opt.label}</Text>
               {locale === opt.code && (
                 <Ionicons name="checkmark" size={20} color={colors.accent} />
               )}
@@ -190,11 +198,33 @@ export default function SettingsScreen() {
           ))}
         </View>
 
+        {/* Theme picker */}
+        <View className="mt-8" accessibilityRole="radiogroup" accessibilityLabel={t("settings.theme.title")}>
+          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400" accessibilityRole="header">{t("settings.theme.title")}</Text>
+          {THEME_OPTIONS.map((opt) => (
+            <PressableScale
+              key={opt.value}
+              onPress={() => setPreference(opt.value)}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: preference === opt.value }}
+              className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3"
+            >
+              <View className="flex-row items-center gap-3">
+                <Ionicons name={opt.icon} size={20} color={colors.textSecondary} />
+                <Text className="text-slate-900 dark:text-slate-100">{t(`settings.theme.${opt.value}`)}</Text>
+              </View>
+              {preference === opt.value && (
+                <Ionicons name="checkmark" size={20} color={colors.accent} />
+              )}
+            </PressableScale>
+          ))}
+        </View>
+
         {/* About section */}
-        <View className="mt-8 rounded-xl border border-dark-border bg-dark-surface p-4">
-          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-slate-400" accessibilityRole="header">{t("settings.about.title")}</Text>
-          <Text className="mb-3 text-sm text-slate-400">{t("settings.about.description")}</Text>
-          <Text className="mb-3 text-sm text-slate-400">{t("settings.about.privacy")}</Text>
+        <View className="mt-8 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
+          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400" accessibilityRole="header">{t("settings.about.title")}</Text>
+          <Text className="mb-3 text-sm text-slate-600 dark:text-slate-400">{t("settings.about.description")}</Text>
+          <Text className="mb-3 text-sm text-slate-600 dark:text-slate-400">{t("settings.about.privacy")}</Text>
           <PressableScale
             onPress={() => Linking.openURL("https://github.com/smlhus/shiftpay").catch(() => {})}
             accessibilityRole="link"
@@ -203,7 +233,7 @@ export default function SettingsScreen() {
             style={{ minHeight: 48 }}
           >
             <Ionicons name="logo-github" size={18} color={colors.accent} />
-            <Text className="text-sm text-accent">GitHub</Text>
+            <Text className="text-sm text-accent-dark dark:text-accent">GitHub</Text>
           </PressableScale>
           <PressableScale
             onPress={() => Linking.openURL("mailto:shiftpay@smlhus.com").catch(() => {})}
@@ -213,7 +243,7 @@ export default function SettingsScreen() {
             style={{ minHeight: 48 }}
           >
             <Ionicons name="mail-outline" size={18} color={colors.accent} />
-            <Text className="text-sm text-accent">shiftpay@smlhus.com</Text>
+            <Text className="text-sm text-accent-dark dark:text-accent">shiftpay@smlhus.com</Text>
           </PressableScale>
           <Text className="text-xs text-slate-500">ShiftPay v{Constants.expoConfig?.version ?? "1.0.0"}</Text>
         </View>
@@ -231,9 +261,10 @@ function RateField({
   value: string;
   onChangeText: (s: string) => void;
 }) {
+  const colors = useThemeColors();
   return (
     <View className="mb-4">
-      <Text className="mb-1.5 text-sm font-inter-medium text-slate-300">{label}</Text>
+      <Text className="mb-1.5 text-sm font-inter-medium text-slate-700 dark:text-slate-300">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -241,7 +272,7 @@ function RateField({
         placeholder="0"
         placeholderTextColor={colors.textMuted}
         accessibilityLabel={label}
-        className="min-h-[48px] rounded-xl border border-dark-border bg-dark-surface px-4 py-3 text-slate-100"
+        className="min-h-[48px] rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3 text-slate-900 dark:text-slate-100"
       />
     </View>
   );

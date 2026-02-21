@@ -21,18 +21,18 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError && this.state.error) {
       return (
-        <View className="flex-1 items-center justify-center bg-dark-bg p-6">
-          <Text className="text-lg font-inter-semibold text-slate-100">{getTranslation("errorBoundary.title")}</Text>
-          <Text className="mt-2 text-center text-sm text-slate-400">
+        <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg p-6">
+          <Text className="text-lg font-inter-semibold text-slate-900 dark:text-slate-100">{getTranslation("errorBoundary.title")}</Text>
+          <Text className="mt-2 text-center text-sm text-slate-600 dark:text-slate-400">
             {__DEV__ ? this.state.error.message : "Please restart the app."}
           </Text>
           <Pressable
             onPress={() => this.setState({ hasError: false, error: null })}
             accessibilityRole="button"
             accessibilityLabel={getTranslation("errorBoundary.retry")}
-            className="mt-6 rounded-xl bg-accent px-6 py-3"
+            className="mt-6 rounded-xl bg-accent-dark dark:bg-accent px-6 py-3"
           >
-            <Text className="font-inter-semibold text-slate-900">{getTranslation("errorBoundary.retry")}</Text>
+            <Text className="font-inter-semibold text-white dark:text-slate-900">{getTranslation("errorBoundary.retry")}</Text>
           </Pressable>
         </View>
       );

@@ -11,7 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initDb, getTariffRates } from "../lib/db";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { LocaleProvider, useTranslation } from "../lib/i18n";
-import { colors } from "../lib/theme";
+import { ThemeProvider, useTheme } from "../lib/theme-context";
 
 const ONBOARDING_DONE_KEY = "shiftpay_onboarding_done";
 
@@ -23,6 +23,7 @@ if (Platform.OS !== "web") {
 function RootLayoutInner() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { theme, colors } = useTheme();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
 
@@ -79,7 +80,7 @@ function RootLayoutInner() {
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style={theme === "dark" ? "light" : "dark"} />
       <ErrorBoundary>
         <Stack
           screenOptions={{
@@ -108,14 +109,14 @@ function RootLayoutInner() {
       {Platform.OS !== "web" && initError && (
         <Modal visible transparent animationType="fade">
           <View className="flex-1 justify-center bg-black/50 px-6">
-            <View className="rounded-xl bg-dark-surface p-6">
-              <Text className="text-lg font-inter-semibold text-slate-100">{t("initError.title")}</Text>
-              <Text className="mt-2 text-slate-400">{initError}</Text>
+            <View className="rounded-xl bg-app-surface dark:bg-dark-surface p-6">
+              <Text className="text-lg font-inter-semibold text-slate-900 dark:text-slate-100">{t("initError.title")}</Text>
+              <Text className="mt-2 text-slate-600 dark:text-slate-400">{initError}</Text>
               <Pressable
                 onPress={() => runInit()}
-                className="mt-6 rounded-xl bg-accent py-3"
+                className="mt-6 rounded-xl bg-accent-dark dark:bg-accent py-3"
               >
-                <Text className="text-center font-inter-semibold text-slate-900">{t("initError.retry")}</Text>
+                <Text className="text-center font-inter-semibold text-white dark:text-slate-900">{t("initError.retry")}</Text>
               </Pressable>
             </View>
           </View>
@@ -124,18 +125,18 @@ function RootLayoutInner() {
       {Platform.OS !== "web" && showOnboarding && !initError && (
         <Modal visible transparent animationType="fade">
           <View className="flex-1 justify-center bg-black/50 px-6">
-            <View className="rounded-xl bg-dark-surface p-6">
-              <Text className="text-lg font-inter-semibold text-slate-100">
+            <View className="rounded-xl bg-app-surface dark:bg-dark-surface p-6">
+              <Text className="text-lg font-inter-semibold text-slate-900 dark:text-slate-100">
                 {t("onboarding.title")}
               </Text>
-              <Text className="mt-2 text-slate-400">
+              <Text className="mt-2 text-slate-600 dark:text-slate-400">
                 {t("onboarding.description")}
               </Text>
               <Pressable
                 onPress={dismissOnboarding}
-                className="mt-6 rounded-xl bg-accent py-3"
+                className="mt-6 rounded-xl bg-accent-dark dark:bg-accent py-3"
               >
-                <Text className="text-center font-inter-semibold text-slate-900">{t("onboarding.cta")}</Text>
+                <Text className="text-center font-inter-semibold text-white dark:text-slate-900">{t("onboarding.cta")}</Text>
               </Pressable>
             </View>
           </View>
@@ -148,7 +149,9 @@ function RootLayoutInner() {
 export default function RootLayout() {
   return (
     <LocaleProvider>
-      <RootLayoutInner />
+      <ThemeProvider>
+        <RootLayoutInner />
+      </ThemeProvider>
     </LocaleProvider>
   );
 }

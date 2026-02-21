@@ -33,7 +33,7 @@ import { ShiftEditor } from "../../components/ShiftEditor";
 import { PressableScale } from "../../components/PressableScale";
 import { AnimatedCard } from "../../components/AnimatedCard";
 import { useTranslation } from "../../lib/i18n";
-import { colors } from "../../lib/theme";
+import { useThemeColors } from "../../lib/theme-context";
 
 function ocrShiftToShift(s: OcrShift): Shift {
   return {
@@ -83,6 +83,7 @@ function getValidShifts(rows: CsvRowResult[]): Shift[] {
 export default function ImportScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const colors = useThemeColors();
   const [showCamera, setShowCamera] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -351,10 +352,10 @@ export default function ImportScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-dark-bg" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+    <ScrollView className="flex-1 bg-app-bg dark:bg-dark-bg" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
       {error && (
-        <View className="mb-4 rounded-xl bg-red-500/10 p-3">
-          <Text className="text-red-400">{error}</Text>
+        <View className="mb-4 rounded-xl bg-red-50 dark:bg-red-500/10 p-3">
+          <Text className="text-red-600 dark:text-red-400">{error}</Text>
         </View>
       )}
 
@@ -363,23 +364,23 @@ export default function ImportScreen() {
           {baseRateZero && (
             <PressableScale
               onPress={() => router.push("/(tabs)/settings")}
-              className="mb-4 flex-row items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3"
+              className="mb-4 flex-row items-center gap-2 rounded-xl border border-amber-600/20 bg-amber-600/10 dark:border-amber-500/20 dark:bg-amber-500/10 p-3"
             >
-              <Text className="flex-1 text-sm text-amber-300">
+              <Text className="flex-1 text-sm text-amber-700 dark:text-amber-300">
                 {t("import.rateZero")}
               </Text>
-              <Text className="font-inter-semibold text-amber-400">{t("import.rateZeroCta")}</Text>
+              <Text className="font-inter-semibold text-amber-700 dark:text-amber-400">{t("import.rateZeroCta")}</Text>
             </PressableScale>
           )}
-          <AnimatedCard index={0} className="mb-4 rounded-xl bg-dark-surface p-3">
-            <Text className="text-sm text-slate-400">
+          <AnimatedCard index={0} className="mb-4 rounded-xl bg-app-surface dark:bg-dark-surface p-3">
+            <Text className="text-sm text-slate-600 dark:text-slate-400">
               {t("import.disclaimer")}
             </Text>
           </AnimatedCard>
           {/* Primary: camera */}
           <AnimatedCard index={1}>
-            <PressableScale onPress={openCamera} className="rounded-xl bg-accent py-4">
-              <Text className="text-center text-base font-inter-semibold text-slate-900">{t("import.cameraBtn")}</Text>
+            <PressableScale onPress={openCamera} className="rounded-xl bg-accent-dark dark:bg-accent py-4">
+              <Text className="text-center text-base font-inter-semibold text-white dark:text-slate-900">{t("import.cameraBtn")}</Text>
             </PressableScale>
           </AnimatedCard>
           {/* Secondary: gallery/files */}
@@ -392,9 +393,9 @@ export default function ImportScreen() {
                   { text: t("import.fileAlert.cancel"), style: "cancel" },
                 ])
               }
-              className="mt-3 rounded-xl border-2 border-dark-border bg-dark-surface py-4"
+              className="mt-3 rounded-xl border-2 border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface py-4"
             >
-              <Text className="text-center text-base font-inter-medium text-slate-300">{t("import.fileBtn")}</Text>
+              <Text className="text-center text-base font-inter-medium text-slate-700 dark:text-slate-300">{t("import.fileBtn")}</Text>
             </PressableScale>
           </AnimatedCard>
           {/* Tertiary: more options toggle */}
@@ -413,13 +414,13 @@ export default function ImportScreen() {
                 onPress={pickCSV}
                 className="mt-1 py-2"
               >
-                <Text className="text-center text-sm font-inter-medium text-accent">{t("import.csvBtn")}</Text>
+                <Text className="text-center text-sm font-inter-medium text-accent-dark dark:text-accent">{t("import.csvBtn")}</Text>
               </PressableScale>
               <PressableScale
                 onPress={addShiftManually}
                 className="mt-2 py-2"
               >
-                <Text className="text-center text-sm font-inter-medium text-accent">{t("import.manualBtn")}</Text>
+                <Text className="text-center text-sm font-inter-medium text-accent-dark dark:text-accent">{t("import.manualBtn")}</Text>
               </PressableScale>
             </>
           )}
@@ -429,7 +430,7 @@ export default function ImportScreen() {
       {loading && (
         <View className="py-8">
           <ActivityIndicator size="large" color={colors.accent} />
-          <Text className="mt-2 text-center text-slate-400">
+          <Text className="mt-2 text-center text-slate-600 dark:text-slate-400">
             {ocrProgress ?? t("import.loading")}
           </Text>
         </View>

@@ -104,6 +104,12 @@ const nb = {
       sv: "🇸🇪 Svenska",
       da: "🇩🇰 Dansk",
     },
+    theme: {
+      title: "Tema",
+      system: "System",
+      light: "Lyst",
+      dark: "Mørkt",
+    },
     about: {
       title: "Om ShiftPay",
       description: "ShiftPay hjelper skiftarbeidere med å sjekke om de har fått riktig lønn. Ta bilde av timelisten, legg inn satsene dine, og sammenlign med lønnsslippen.",

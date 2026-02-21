@@ -106,6 +106,12 @@ const en: TranslationShape = {
       sv: "🇸🇪 Svenska",
       da: "🇩🇰 Dansk",
     },
+    theme: {
+      title: "Theme",
+      system: "System",
+      light: "Light",
+      dark: "Dark",
+    },
     about: {
       title: "About ShiftPay",
       description: "ShiftPay helps shift workers check if they've been paid correctly. Take a photo of your timesheet, enter your rates, and compare with your payslip.",
