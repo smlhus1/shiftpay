@@ -72,13 +72,14 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ detail: "Method not allowed" }, 405, req);
   }
 
-  // API key authentication — reject requests without valid key
+  // API key authentication — fail closed: reject if secret not configured or key mismatch
   const appApiKey = Deno.env.get("SHIFTPAY_API_KEY");
-  if (appApiKey) {
-    const provided = req.headers.get("x-api-key");
-    if (provided !== appApiKey) {
-      return jsonResponse({ detail: "Unauthorized" }, 401, req);
-    }
+  if (!appApiKey) {
+    return jsonResponse({ detail: "Service unavailable" }, 503, req);
+  }
+  const provided = req.headers.get("x-api-key");
+  if (provided !== appApiKey) {
+    return jsonResponse({ detail: "Unauthorized" }, 401, req);
   }
 
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
