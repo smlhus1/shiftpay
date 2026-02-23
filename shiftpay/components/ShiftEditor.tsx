@@ -17,7 +17,6 @@ interface ShiftEditorProps {
   expectedPay: number | null;
   saving: boolean;
   calculating: boolean;
-  saved: boolean;
   onUpdateRow: (index: number, field: keyof Shift, value: string) => void;
   onRemoveRow: (index: number) => void;
   onAddRow: () => void;
@@ -32,7 +31,6 @@ export function ShiftEditor({
   expectedPay,
   saving,
   calculating,
-  saved,
   onUpdateRow,
   onRemoveRow,
   onAddRow,
@@ -56,6 +54,7 @@ export function ShiftEditor({
         const start_time = row.ok ? row.shift.start_time : row.start_time;
         const end_time = row.ok ? row.shift.end_time : row.end_time;
         const displayType = row.ok ? row.shift.shift_type : row.shift_type || "tidlig";
+        const rowLabel = t("components.shiftEditor.shiftRow") + " " + (index + 1);
         return (
           <View
             key={`row-${index}`}
@@ -68,58 +67,67 @@ export function ShiftEditor({
                 {t("components.shiftEditor.errors.check", { reason: row.reason })}
               </Text>
             )}
-            <View className="flex-row flex-wrap items-center gap-2">
+            {/* Row 1: Date, times, delete */}
+            <View className="flex-row items-center gap-2">
               <TextInput
                 value={date}
                 onChangeText={(s) => onUpdateRow(index, "date", s)}
                 placeholder="DD.MM.YYYY"
                 placeholderTextColor={colors.textMuted}
-                accessibilityLabel="Date"
-                className="min-w-[100px] rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-slate-900 dark:text-slate-100"
+                accessibilityLabel={t("confirm.editFields.date") + ", " + rowLabel}
+                className="min-w-[100px] flex-1 rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-slate-900 dark:text-slate-100"
+                style={{ minHeight: 44 }}
               />
               <TextInput
                 value={start_time}
                 onChangeText={(s) => onUpdateRow(index, "start_time", s)}
                 placeholder="HH:MM"
                 placeholderTextColor={colors.textMuted}
-                accessibilityLabel="Start time"
-                className="w-16 rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-slate-900 dark:text-slate-100"
+                accessibilityLabel={t("confirm.editFields.start") + ", " + rowLabel}
+                className="w-[72px] rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-slate-900 dark:text-slate-100"
+                style={{ minHeight: 44 }}
               />
-              <Text className="self-center text-slate-600 dark:text-slate-400">–</Text>
+              <Text className="text-slate-600 dark:text-slate-400">{"\u2013"}</Text>
               <TextInput
                 value={end_time}
                 onChangeText={(s) => onUpdateRow(index, "end_time", s)}
                 placeholder="HH:MM"
                 placeholderTextColor={colors.textMuted}
-                accessibilityLabel="End time"
-                className="w-16 rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-slate-900 dark:text-slate-100"
+                accessibilityLabel={t("confirm.editFields.end") + ", " + rowLabel}
+                className="w-[72px] rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-slate-900 dark:text-slate-100"
+                style={{ minHeight: 44 }}
               />
-              <View className="flex-row gap-1">
-                {SHIFT_TYPES.map((type) => (
-                  <PressableScale
-                    key={type}
-                    onPress={() => onUpdateRow(index, "shift_type", type)}
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: displayType === type }}
-                    accessibilityLabel={t(`shiftTypes.${type}`)}
-                    className={`rounded-full px-2 py-1 ${
-                      displayType === type ? "bg-accent-dark dark:bg-accent" : "bg-app-elevated dark:bg-dark-elevated"
-                    }`}
-                    style={{ minHeight: 44, justifyContent: "center" }}
-                  >
-                    <Text className={displayType === type ? "font-inter-medium text-white dark:text-slate-900" : "text-slate-700 dark:text-slate-300"}>
-                      {t(`shiftTypes.${type}`)}
-                    </Text>
-                  </PressableScale>
-                ))}
-              </View>
               <PressableScale
                 onPress={() => onRemoveRow(index)}
                 className="ml-auto rounded-lg p-2"
-                accessibilityLabel="Remove row"
+                accessibilityLabel={t("components.shiftCard.deleteA11y", { date })}
               >
                 <Ionicons name="trash-outline" size={22} color={colors.error} />
               </PressableScale>
+            </View>
+            {/* Row 2: Shift type pills */}
+            <View
+              className="mt-2 flex-row gap-1"
+              accessibilityRole="radiogroup"
+              accessibilityLabel={t("shiftTypes.label")}
+            >
+              {SHIFT_TYPES.map((type) => (
+                <PressableScale
+                  key={type}
+                  onPress={() => onUpdateRow(index, "shift_type", type)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: displayType === type }}
+                  accessibilityLabel={t(`shiftTypes.${type}`)}
+                  className={`flex-1 items-center rounded-full px-2 py-1 ${
+                    displayType === type ? "bg-accent-dark dark:bg-accent" : "bg-app-elevated dark:bg-dark-elevated"
+                  }`}
+                  style={{ minHeight: 44, justifyContent: "center" }}
+                >
+                  <Text className={displayType === type ? "font-inter-medium text-white dark:text-slate-900" : "text-slate-700 dark:text-slate-300"}>
+                    {t(`shiftTypes.${type}`)}
+                  </Text>
+                </PressableScale>
+              ))}
             </View>
           </View>
         );
@@ -134,19 +142,37 @@ export function ShiftEditor({
         </PressableScale>
       )}
 
+      {/* Primary CTA: Save & calculate */}
       <PressableScale
-        onPress={onCalculate}
-        disabled={calculating}
-        style={calculating ? { opacity: 0.6 } : undefined}
-        className="mt-2 rounded-xl bg-emerald-500 py-4"
+        onPress={onSave}
+        disabled={saving}
+        accessibilityLabel={t("components.shiftEditor.saveAndCalculate")}
+        style={saving ? { opacity: 0.6 } : undefined}
+        className="mt-2 rounded-xl bg-accent-dark dark:bg-accent py-4"
       >
-        {calculating ? (
-          <ActivityIndicator color={colors.textPrimary} />
+        {saving ? (
+          <ActivityIndicator color={colors.bg} accessibilityLabel={t("common.loading")} />
         ) : (
-          <Text className="text-center font-inter-semibold text-white">{t("components.shiftEditor.calculate")}</Text>
+          <Text className="text-center font-inter-semibold text-white dark:text-slate-900">{t("components.shiftEditor.saveAndCalculate")}</Text>
         )}
       </PressableScale>
 
+      {/* Secondary: Calculate preview */}
+      <PressableScale
+        onPress={onCalculate}
+        disabled={calculating}
+        accessibilityLabel={t("components.shiftEditor.calculate")}
+        style={calculating ? { opacity: 0.6 } : undefined}
+        className="mt-3 rounded-xl border border-app-border dark:border-dark-border py-4"
+      >
+        {calculating ? (
+          <ActivityIndicator color={colors.textPrimary} accessibilityLabel={t("common.loading")} />
+        ) : (
+          <Text className="text-center font-inter-medium text-slate-700 dark:text-slate-300">{t("components.shiftEditor.calculate")}</Text>
+        )}
+      </PressableScale>
+
+      {/* Result panel (no Save button inside) */}
       {expectedPay !== null && (
         <View className="mt-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
           <Text className="text-lg font-display text-amber-600 dark:text-warm">
@@ -157,32 +183,13 @@ export function ShiftEditor({
               {t("components.shiftEditor.disclaimer")}
             </Text>
           </View>
-          <PressableScale
-            onPress={onSave}
-            disabled={saving}
-            style={saving ? { opacity: 0.6 } : undefined}
-            className="mt-3 rounded-xl bg-accent-dark dark:bg-accent py-3"
-          >
-            {saving ? (
-              <ActivityIndicator color={colors.bg} />
-            ) : (
-              <Text className="text-center font-inter-semibold text-white dark:text-slate-900">{t("components.shiftEditor.save")}</Text>
-            )}
-          </PressableScale>
         </View>
       )}
 
-      {saved && (
-        <Text
-          className="mt-3 text-center text-emerald-600 dark:text-emerald-400"
-          accessibilityLiveRegion="polite"
-        >
-          {t("components.shiftEditor.saved")}
-        </Text>
-      )}
-
+      {/* Tertiary: Start over */}
       <PressableScale
         onPress={onReset}
+        accessibilityLabel={t("components.shiftEditor.reset")}
         className="mt-4 rounded-xl border border-app-border dark:border-dark-border py-2"
       >
         <Text className="text-center font-inter-medium text-slate-700 dark:text-slate-300">{t("components.shiftEditor.reset")}</Text>

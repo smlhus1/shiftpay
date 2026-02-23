@@ -25,7 +25,7 @@ import { ShiftCard } from "../../components/ShiftCard";
 import { PressableScale } from "../../components/PressableScale";
 import { AnimatedCard } from "../../components/AnimatedCard";
 import { useTranslation } from "../../lib/i18n";
-import { useThemeColors } from "../../lib/theme-context";
+import { useTheme, useThemeColors } from "../../lib/theme-context";
 
 function getWeekRange(): { from: string; to: string } {
   const now = new Date();
@@ -65,8 +65,10 @@ function countdownToShift(shift: ShiftRow, t: (key: string, opts?: object) => st
 export default function DashboardScreen() {
   const router = useRouter();
   const { t, currency } = useTranslation();
+  const { theme } = useTheme();
   const colors = useThemeColors();
   const [monthsList, setMonthsList] = useState<Array<{ year: number; month: number }>>([]);
+  const [monthSummaries, setMonthSummaries] = useState<Map<string, { shiftCount: number; expectedPay: number }>>(new Map());
   const [nextShift, setNextShift] = useState<ShiftRow | null>(null);
   const [weekShifts, setWeekShifts] = useState<ShiftRow[]>([]);
   const [dueConfirmation, setDueConfirmation] = useState<ShiftRow[]>([]);
@@ -94,9 +96,10 @@ export default function DashboardScreen() {
       const week = await getShiftsInDateRange(weekRange.from, weekRange.to);
       setWeekShifts(week);
 
+      const rates = await getTariffRates();
+
       const now = new Date();
       const sum = await getMonthSummary(now.getFullYear(), now.getMonth() + 1);
-      const rates = await getTariffRates();
       const completedForPay = sum.shifts.filter(
         (s) => s.status === "completed" || s.status === "overtime"
       );
@@ -108,6 +111,23 @@ export default function DashboardScreen() {
         actualHours: sum.actualHours,
         expectedPay: Math.round(pay * 100) / 100,
       });
+
+      // History mini-summaries
+      const summaries = new Map<string, { shiftCount: number; expectedPay: number }>();
+      for (const { year, month } of months) {
+        const ms = await getMonthSummary(year, month);
+        const completed = ms.shifts.filter(
+          (s) => s.status === "completed" || s.status === "overtime"
+        );
+        const forPay: Shift[] = completed.map(shiftRowToShift);
+        let msPay = calculateExpectedPay(forPay, rates);
+        msPay += calculateOvertimePay(completed, rates);
+        summaries.set(toYearMonthKey(year, month), {
+          shiftCount: ms.shifts.length,
+          expectedPay: Math.round(msPay * 100) / 100,
+        });
+      }
+      setMonthSummaries(summaries);
       setLoadError(null);
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : t("dashboard.error.message"));
@@ -149,7 +169,7 @@ export default function DashboardScreen() {
   if (loading && monthsList.length === 0 && !nextShift && dueConfirmation.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.accent} accessibilityLabel={t("common.loading")} />
       </View>
     );
   }
@@ -191,15 +211,22 @@ export default function DashboardScreen() {
     >
       {empty && (
         <View className="flex-1 items-center justify-center py-12">
+          <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-500/15">
+            <Ionicons name="wallet-outline" size={48} color={theme === "dark" ? "#F59E0B" : "#D97706"} />
+          </View>
           <Text className="text-lg font-inter-semibold text-slate-900 dark:text-slate-100">{t("dashboard.empty.title")}</Text>
           <Text className="mt-2 text-center text-slate-600 dark:text-slate-400">
+            {t("dashboard.empty.subtitle")}
+          </Text>
+          <Text className="mt-1 text-center text-sm text-slate-500 dark:text-slate-500">
             {t("dashboard.empty.description")}
           </Text>
           <PressableScale
             onPress={() => router.push("/(tabs)/import")}
             accessibilityLabel={t("dashboard.empty.cta")}
-            className="mt-6 rounded-xl bg-accent-dark dark:bg-accent px-6 py-4"
+            className="mt-6 flex-row items-center gap-2 rounded-xl bg-accent-dark dark:bg-accent px-6 py-4"
           >
+            <Ionicons name="camera-outline" size={20} color={theme === "dark" ? "#0F172A" : "#FFFFFF"} />
             <Text className="font-inter-semibold text-white dark:text-slate-900">{t("dashboard.empty.cta")}</Text>
           </PressableScale>
         </View>
@@ -216,6 +243,7 @@ export default function DashboardScreen() {
           {isShiftEndPassed(nextShift) && (
             <PressableScale
               onPress={() => onPressConfirm(nextShift.id)}
+              accessibilityLabel={t("dashboard.nextShift.confirm") + " " + nextShift.date}
               className="mt-3 self-start rounded-xl bg-accent-dark dark:bg-accent px-4 py-2"
             >
               <Text className="text-sm font-inter-semibold text-white dark:text-slate-900">{t("dashboard.nextShift.confirm")}</Text>
@@ -250,6 +278,7 @@ export default function DashboardScreen() {
         <AnimatedCard index={2} className="mb-4">
           <PressableScale
             onPress={() => onPressConfirm(dueConfirmation[0].id)}
+            accessibilityLabel={t("dashboard.pending.title") + " " + dueConfirmation.length}
             className="rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-5"
           >
             <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("dashboard.pending.title")}</Text>
@@ -273,6 +302,7 @@ export default function DashboardScreen() {
             <PressableScale
               key={s.id}
               onPress={() => onPressConfirm(s.id)}
+              accessibilityLabel={s.date + " " + s.start_time + "\u2013" + s.end_time + ", " + t("dashboard.pending.confirmBtn")}
               className="mt-2 flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-3"
             >
               <Text className="text-slate-900 dark:text-slate-100">
@@ -311,17 +341,25 @@ export default function DashboardScreen() {
           {monthsList.map(({ year, month }) => {
             const key = toYearMonthKey(year, month);
             const monthKey = MONTH_KEYS[month - 1] ?? "jan";
+            const mini = monthSummaries.get(key);
             return (
               <PressableScale
                 key={key}
                 onPress={() => router.push(`/summary/${key}` as Href)}
-                accessibilityLabel={`${t(`months.${monthKey}`)} ${year}`}
+                accessibilityLabel={`${t(`months.${monthKey}`)} ${year}${mini ? ", " + t("dashboard.history.miniSummary", { shifts: mini.shiftCount, pay: formatCurrency(mini.expectedPay, currency) }) : ""}`}
                 className="mb-3 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4"
               >
                 <View className="flex-row items-center justify-between">
-                  <Text className="font-inter-medium text-slate-900 dark:text-slate-100">
-                    {t(`months.${monthKey}`)} {year}
-                  </Text>
+                  <View className="flex-1">
+                    <Text className="font-inter-medium text-slate-900 dark:text-slate-100">
+                      {t(`months.${monthKey}`)} {year}
+                    </Text>
+                    {mini && (
+                      <Text className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                        {t("dashboard.history.miniSummary", { shifts: mini.shiftCount, pay: formatCurrency(mini.expectedPay, currency) })}
+                      </Text>
+                    )}
+                  </View>
                   <Ionicons name="chevron-forward" size={20} color={colors.textMuted} importantForAccessibility="no" />
                 </View>
               </PressableScale>

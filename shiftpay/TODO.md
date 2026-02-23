@@ -102,33 +102,33 @@ Full rapport: `design/ux-review-shiftpay-2026-02-23.md`
 
 ### Fase 1: Kritisk UX
 
-- [ ] **OCR loading state — erstatt spinner med skeleton**
+- [x] **OCR loading state — erstatt spinner med skeleton**
   `app/(tabs)/import.tsx` linje 430-437. OCR tar 10-30s og brukeren ser bare en ActivityIndicator
   på tom bakgrunn. Erstatt med: roterende skan-ikon (Ionicons `scan-outline` + MotiView rotate),
   "Reading your timesheet..." overskrift, 2-3 skeleton shift-kort (MotiView opacity-puls),
   og fremdriftstekst ("Image 1 of 3..."). Ref: Linear skeleton loading.
 
-- [ ] **ShiftEditor — to-rads layout for shift-rader**
+- [x] **ShiftEditor — to-rads layout for shift-rader**
   `components/ShiftEditor.tsx` linje 60-126. Nåværende flex-wrap-rad med dato + 2 tids-inputs +
   4 shift-type pills + slett-ikon knekker på skjermer <380px. Refaktorer til to rader per shift:
   Rad 1: dato (flex-1) + start (w-[72px]) + "–" + slutt (w-[72px]) + slett-ikon.
   Rad 2: 4 shift-type pills med `flex-1` (jevnt fordelt). Legg til `min-h-[44px]` på alle
   TextInput for å møte WCAG 2.5.8 touch target minimum.
 
-- [ ] **Settings — gruppering, enhetshint, eksempelverdier**
+- [x] **Settings — gruppering, enhetshint, eksempelverdier**
   `app/(tabs)/settings.tsx`. 6 identiske TextInput uten kontekst. Brukeren vet ikke om
   "Night supplement" er kr/t eller %. Endre til 3 seksjoner med overskrifter:
   "Grunnlønn" (base_rate med suffix "kr/t"), "Tillegg per time" (evening/night/weekend/holiday
   med suffix "kr/t"), "Overtid" (overtime_supplement med suffix "%"). Bruk eksempelverdier
   som placeholder ("e.g. 250") i stedet for "0".
 
-- [ ] **Etter-save — suksess-skjerm med navigasjon**
+- [x] **Etter-save — suksess-skjerm med navigasjon**
   `app/(tabs)/import.tsx` linje 314-318. Etter saveTimesheet() vises "Saved!" i 2s, deretter
   tom skjerm. Erstatt med en suksess-view: checkmark-ikon, "X shifts saved for [period]",
   "View schedule" knapp (→ period/[scheduleId]), "Import more" knapp (reset state).
   Behold auto-redirect til dashboard etter 3s som fallback.
 
-- [ ] **A11y: Modaler med accessibilityViewIsModal + labels**
+- [x] **A11y: Modaler med accessibilityViewIsModal + labels**
   `app/_layout.tsx` linje 110-144. Både onboarding- og feilmodalen mangler
   `accessibilityViewIsModal={true}` på `<Modal>`, `accessibilityRole="alert"` på wrapper-View,
   `accessibilityRole="header"` på tittel, og `accessibilityRole="button"` +
@@ -137,41 +137,21 @@ Full rapport: `design/ux-review-shiftpay-2026-02-23.md`
 
 ### Fase 2: Viktig UX
 
-- [ ] **Historikk med mini-summary**
-  `app/(tabs)/index.tsx` linje 308-331. Historikk-kortene viser bare "February 2026 >"
-  uten nyttig info. Legg til antall vakter og beregnet lønn per måned, f.eks.
-  "February 2026 — 12 shifts, kr 34,500". Krever ny DB-funksjon `getMonthMiniSummary(year, month)`
-  som returnerer count + total pay. Ref: Vipps transaksjonshistorikk.
+- [x] **Historikk med mini-summary** ✓
+  Historikk-kort viser nå antall vakter og beregnet lønn per måned.
 
-- [ ] **Empty state med personlighet**
-  `app/(tabs)/index.tsx` linje 192-206. Nåværende er generisk tekst uten visuell hook.
-  Bytt til: stort ikon (wallet-outline i amber-bg sirkel), varm overskrift ("Ready to check
-  your pay?"), forklarende undertekst, kamera-CTA med ikon ("Scan your first timesheet").
-  Ref: Things 3 empty inbox.
+- [x] **Empty state med personlighet** ✓
+  Wallet-ikon, varm overskrift, undertekst, kamera-CTA med ikon.
 
-- [ ] **A11y: Live regions på feil og loading**
-  `app/(tabs)/import.tsx` linje 356-359 (error) og 430-437 (loading). Feilmeldinger og
-  loading-tilstand annonseres ikke til skjermlesere. Legg til `accessibilityRole="alert"` +
-  `accessibilityLiveRegion="assertive"` på error-View, og `accessibilityLiveRegion="polite"`
-  på loading-View. WCAG 4.1.3.
+- [x] **A11y: Live regions på feil og loading** ✓
+  Error-View har `accessibilityRole="alert"` + `accessibilityLiveRegion="assertive"`.
+  Loading-View har `accessibilityLiveRegion="polite"`.
 
-- [ ] **A11y: Alle manglende accessibilityLabels**
-  Spredt over mange filer. Viktigst:
-  - `(tabs)/index.tsx:217-223` — next-shift confirm-knapp: `accessibilityLabel={\`Confirm ${date}\`}`
-  - `(tabs)/index.tsx:249-283` — pending-tile og listelementer: labels med dato/tid
-  - `CameraCapture.tsx` — `accessibilityElementsHidden` på CameraView, `importantForAccessibility="no"` på overlegg, labels på capture/cancel-knapper
-  - `ShiftEditor.tsx:72-96` — lokaliserte labels med radnummer (`"Date, shift 1"`)
-  - `period/[id].tsx:154,181` — "View summary" og "Delete" knapper
-  - `summary/[yearMonth].tsx:148-177` — prev/next måned-navigasjon
-  - Alle ActivityIndicator (5 skjermer): `accessibilityLabel={t("common.loading")}`
-  - `(tabs)/import.tsx:382-426` — kamera, galleri, CSV, manuell, "More options" knapper
-  - `(tabs)/import.tsx:365-374` — rate-zero-varsel: `accessibilityRole="link"`
-  WCAG 4.1.2.
+- [x] **A11y: Alle manglende accessibilityLabels** ✓
+  Labels lagt til på alle knapper, ActivityIndicators, navigasjon, CameraView skjult fra skjermleser.
 
-- [ ] **Slå sammen Calculate + Save**
-  `components/ShiftEditor.tsx` linje 137-171. Brukeren må trykke Calculate, deretter Save —
-  3 trykk for lønn + lagring. Enten: la Save automatisk beregne og vise resultatet, eller
-  gjør Calculate til preview med "Save & calculate" som primær-CTA.
+- [x] **Slå sammen Calculate + Save** ✓
+  "Lagre og beregn" er primær-CTA. Calculate er sekundær preview. Save auto-beregner lønn.
 
 ### Fase 3: Polering
 

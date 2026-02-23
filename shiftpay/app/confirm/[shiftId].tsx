@@ -143,7 +143,7 @@ export default function ConfirmShiftScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.accent} accessibilityLabel={t("common.loading")} />
       </View>
     );
   }
@@ -256,7 +256,7 @@ export default function ConfirmShiftScreen() {
               style={savingEdit ? { opacity: 0.6 } : undefined}
             >
               {savingEdit ? (
-                <ActivityIndicator color={colors.bg} />
+                <ActivityIndicator color={colors.bg} accessibilityLabel={t("common.loading")} />
               ) : (
                 <Text className="text-center text-sm font-inter-semibold text-white dark:text-slate-900">{t("confirm.editFields.save")}</Text>
               )}
@@ -335,7 +335,7 @@ export default function ConfirmShiftScreen() {
               style={submitting ? { opacity: 0.6 } : undefined}
             >
               {submitting ? (
-                <ActivityIndicator color={colors.bg} />
+                <ActivityIndicator color={colors.bg} accessibilityLabel={t("common.loading")} />
               ) : (
                 <Text className="text-center font-inter-semibold text-white dark:text-slate-900">{t("confirm.saveOvertime")}</Text>
               )}

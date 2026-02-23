@@ -5,6 +5,7 @@ const nb = {
     save: "Lagre",
     cancel: "Avbryt",
     retry: "Prøv igjen",
+    loading: "Laster...",
   },
   tabs: {
     overview: "Oversikt",
@@ -13,9 +14,10 @@ const nb = {
   },
   dashboard: {
     empty: {
-      title: "Ingen vaktplaner ennå",
+      title: "Klar til å sjekke lønnen?",
       description: "Importer fra Import-fanen eller legg inn skift manuelt.",
-      cta: "Gå til Import",
+      subtitle: "Ta bilde av timelisten din for å komme i gang",
+      cta: "Skann din første timeliste",
     },
     nextShift: {
       title: "Neste vakt",
@@ -41,6 +43,7 @@ const nb = {
     },
     history: {
       title: "Historikk",
+      miniSummary: "%{shifts} vakter · %{pay}",
     },
     countdown: {
       now: "Nå",
@@ -82,18 +85,29 @@ const nb = {
       csvError: "Noen rader ble ikke med (manglende eller ugyldig dato/tid). Retting eller fjern rader som må rettes.",
       saveError: "Kunne ikke lagre",
     },
+    saved: {
+      title: "Lagret!",
+      description: "%{count} vakter lagret for %{start} – %{end}",
+      viewSchedule: "Se vaktplan",
+      importMore: "Importer flere",
+    },
     calculate: "Beregn lønn",
     save: "Lagre timeliste",
   },
   settings: {
     description: "Satser per time. Tillegg legges oppå grunnlønnen.",
     labels: {
-      base: "Grunnlønn (kr/time)",
-      evening: "Kveldstillegg (kr/time)",
-      night: "Nattillegg (kr/time)",
-      weekend: "Helgetillegg (kr/time)",
-      holiday: "Helligdagstillegg (kr/time)",
-      overtime: "Overtidstillegg (%)",
+      base: "Grunnlønn",
+      evening: "Kveldstillegg",
+      night: "Nattillegg",
+      weekend: "Helgetillegg",
+      holiday: "Helligdagstillegg",
+      overtime: "Overtidstillegg",
+    },
+    sections: {
+      basePay: "Grunnlønn",
+      supplements: "Tillegg per time",
+      overtime: "Overtid",
     },
     save: "Lagre",
     saved: "Lagret.",
@@ -145,6 +159,7 @@ const nb = {
     missingColumns: "CSV må ha kolonner: date, start_time, end_time (og valgfritt shift_type).",
   },
   shiftTypes: {
+    label: "Vakttype",
     tidlig: "Tidlig",
     mellom: "Mellom",
     kveld: "Kveld",
@@ -247,7 +262,9 @@ const nb = {
         "Beregningen er veiledende og basert på dine egne satser. Kontroller mot original timeliste.",
       save: "Lagre timeliste",
       saved: "Lagret. Du kan importere en ny.",
+      shiftRow: "vakt",
       reset: "Start på nytt",
+      saveAndCalculate: "Lagre og beregn",
     },
     shiftCard: {
       confirm: "Bekreft",

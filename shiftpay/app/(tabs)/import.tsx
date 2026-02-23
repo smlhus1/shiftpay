@@ -3,13 +3,21 @@ import {
   View,
   Text,
   ScrollView,
-  ActivityIndicator,
   Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
 import { useCameraPermissions } from "expo-camera";
+import { Ionicons } from "@expo/vector-icons";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  Easing,
+} from "react-native-reanimated";
+import { MotiView } from "moti";
 import { postOcr } from "../../lib/api";
 import type { OcrShift } from "../../lib/api";
 import {
@@ -34,6 +42,125 @@ import { PressableScale } from "../../components/PressableScale";
 import { AnimatedCard } from "../../components/AnimatedCard";
 import { useTranslation } from "../../lib/i18n";
 import { useThemeColors } from "../../lib/theme-context";
+
+function SkeletonCard({ delay }: { delay: number }) {
+  return (
+    <MotiView
+      from={{ opacity: 0.3 }}
+      animate={{ opacity: 0.7 }}
+      transition={{ loop: true, type: "timing", duration: 1000, delay }}
+      className="mb-3 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-3"
+    >
+      <View className="flex-row items-center gap-2">
+        <View className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700" />
+        <View className="h-4 w-14 rounded bg-slate-200 dark:bg-slate-700" />
+        <View className="h-4 w-14 rounded bg-slate-200 dark:bg-slate-700" />
+      </View>
+      <View className="mt-2 flex-row gap-1">
+        <View className="h-8 flex-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+        <View className="h-8 flex-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+        <View className="h-8 flex-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+        <View className="h-8 flex-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+      </View>
+    </MotiView>
+  );
+}
+
+function OcrLoadingState({ progress }: { progress: string | null }) {
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const rotation = useSharedValue(0);
+
+  useEffect(() => {
+    rotation.value = withRepeat(
+      withTiming(360, { duration: 2000, easing: Easing.linear }),
+      -1,
+      false
+    );
+  }, [rotation]);
+
+  const spinStyle = useAnimatedStyle(() => ({
+    transform: [{ rotateZ: `${rotation.value}deg` }],
+  }));
+
+  return (
+    <View className="py-8" accessibilityLiveRegion="polite">
+      <View className="items-center mb-6">
+        <Animated.View style={spinStyle}>
+          <Ionicons name="scan-outline" size={48} color={colors.accent} />
+        </Animated.View>
+        <Text className="mt-3 text-lg font-inter-semibold text-slate-900 dark:text-slate-100">
+          {t("import.loading")}
+        </Text>
+        {progress && (
+          <Text className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            {progress}
+          </Text>
+        )}
+      </View>
+      <SkeletonCard delay={0} />
+      <SkeletonCard delay={200} />
+      <SkeletonCard delay={400} />
+    </View>
+  );
+}
+
+function SavedSuccessView({
+  savedResult,
+  onViewSchedule,
+  onImportMore,
+}: {
+  savedResult: { scheduleId: string; shiftCount: number; periodStart: string; periodEnd: string };
+  onViewSchedule: () => void;
+  onImportMore: () => void;
+}) {
+  const { t } = useTranslation();
+  const colors = useThemeColors();
+  const router = useRouter();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.replace("/(tabs)");
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [router]);
+
+  return (
+    <View className="items-center py-12">
+      <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/15">
+        <Ionicons name="checkmark-circle" size={40} color={colors.success} />
+      </View>
+      <Text className="text-xl font-inter-semibold text-slate-900 dark:text-slate-100">
+        {t("import.saved.title")}
+      </Text>
+      <Text className="mt-2 text-center text-slate-600 dark:text-slate-400">
+        {t("import.saved.description", {
+          count: savedResult.shiftCount,
+          start: savedResult.periodStart,
+          end: savedResult.periodEnd,
+        })}
+      </Text>
+      <PressableScale
+        onPress={onViewSchedule}
+        accessibilityLabel={t("import.saved.viewSchedule")}
+        className="mt-6 w-full rounded-xl bg-accent-dark dark:bg-accent py-4"
+      >
+        <Text className="text-center font-inter-semibold text-white dark:text-slate-900">
+          {t("import.saved.viewSchedule")}
+        </Text>
+      </PressableScale>
+      <PressableScale
+        onPress={onImportMore}
+        accessibilityLabel={t("import.saved.importMore")}
+        className="mt-3 w-full rounded-xl border border-app-border dark:border-dark-border py-3"
+      >
+        <Text className="text-center font-inter-medium text-slate-700 dark:text-slate-300">
+          {t("import.saved.importMore")}
+        </Text>
+      </PressableScale>
+    </View>
+  );
+}
 
 function ocrShiftToShift(s: OcrShift): Shift {
   return {
@@ -89,7 +216,10 @@ export default function ImportScreen() {
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<CsvRowResult[]>([]);
   const [expectedPay, setExpectedPay] = useState<number | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [savedResult, setSavedResult] = useState<{
+    scheduleId: string; shiftCount: number;
+    periodStart: string; periodEnd: string;
+  } | null>(null);
   const [saving, setSaving] = useState(false);
   const [calculating, setCalculating] = useState(false);
   const [source, setSource] = useState<"ocr" | "manual" | "gallery" | "csv">("ocr");
@@ -278,6 +408,11 @@ export default function ImportScreen() {
     const sourceStr = source === "gallery" ? "gallery" : source === "csv" ? "csv" : source === "ocr" ? "ocr" : "manual";
     setSaving(true);
     try {
+      // Auto-calculate expected pay before saving
+      const rates = await getTariffRates();
+      const pay = calculateExpectedPay(validShifts, rates);
+      setExpectedPay(pay);
+
       await requestNotificationPermission();
       if (__DEV__) {
         console.log("[ShiftPay] saveTimesheet: period", periodStart, "–", periodEnd, "shifts:", validShifts.length);
@@ -312,10 +447,14 @@ export default function ImportScreen() {
         // Shift data is already saved; do not fail the whole save
       }
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      setSaved(true);
+      setSavedResult({
+        scheduleId,
+        shiftCount: inserted.length,
+        periodStart,
+        periodEnd,
+      });
       setRows([]);
       setExpectedPay(null);
-      setTimeout(() => setSaved(false), 2000);
     } catch (e) {
       Alert.alert(t("common.error"), e instanceof Error ? e.message : t("import.alerts.saveError"));
     } finally {
@@ -354,16 +493,22 @@ export default function ImportScreen() {
   return (
     <ScrollView className="flex-1 bg-app-bg dark:bg-dark-bg" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
       {error && (
-        <View className="mb-4 rounded-xl bg-red-50 dark:bg-red-500/10 p-3">
+        <View
+          className="mb-4 rounded-xl bg-red-50 dark:bg-red-500/10 p-3"
+          accessibilityRole="alert"
+          accessibilityLiveRegion="assertive"
+        >
           <Text className="text-red-600 dark:text-red-400">{error}</Text>
         </View>
       )}
 
-      {rows.length === 0 && !loading && (
+      {rows.length === 0 && !loading && !savedResult && (
         <>
           {baseRateZero && (
             <PressableScale
               onPress={() => router.push("/(tabs)/settings")}
+              accessibilityRole="link"
+              accessibilityLabel={t("import.rateZero") + ". " + t("import.rateZeroCta")}
               className="mb-4 flex-row items-center gap-2 rounded-xl border border-amber-600/20 bg-amber-600/10 dark:border-amber-500/20 dark:bg-amber-500/10 p-3"
             >
               <Text className="flex-1 text-sm text-amber-700 dark:text-amber-300">
@@ -379,7 +524,7 @@ export default function ImportScreen() {
           </AnimatedCard>
           {/* Primary: camera */}
           <AnimatedCard index={1}>
-            <PressableScale onPress={openCamera} className="rounded-xl bg-accent-dark dark:bg-accent py-4">
+            <PressableScale onPress={openCamera} accessibilityLabel={t("import.cameraBtn")} className="rounded-xl bg-accent-dark dark:bg-accent py-4">
               <Text className="text-center text-base font-inter-semibold text-white dark:text-slate-900">{t("import.cameraBtn")}</Text>
             </PressableScale>
           </AnimatedCard>
@@ -393,6 +538,7 @@ export default function ImportScreen() {
                   { text: t("import.fileAlert.cancel"), style: "cancel" },
                 ])
               }
+              accessibilityLabel={t("import.fileBtn")}
               className="mt-3 rounded-xl border-2 border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface py-4"
             >
               <Text className="text-center text-base font-inter-medium text-slate-700 dark:text-slate-300">{t("import.fileBtn")}</Text>
@@ -401,6 +547,7 @@ export default function ImportScreen() {
           {/* Tertiary: more options toggle */}
           <PressableScale
             onPress={() => setShowMore((v) => !v)}
+            accessibilityLabel={t("import.moreOptions")}
             className="mt-3 py-2"
             haptic={false}
           >
@@ -412,12 +559,14 @@ export default function ImportScreen() {
             <>
               <PressableScale
                 onPress={pickCSV}
+                accessibilityLabel={t("import.csvBtn")}
                 className="mt-1 py-2"
               >
                 <Text className="text-center text-sm font-inter-medium text-accent-dark dark:text-accent">{t("import.csvBtn")}</Text>
               </PressableScale>
               <PressableScale
                 onPress={addShiftManually}
+                accessibilityLabel={t("import.manualBtn")}
                 className="mt-2 py-2"
               >
                 <Text className="text-center text-sm font-inter-medium text-accent-dark dark:text-accent">{t("import.manualBtn")}</Text>
@@ -428,22 +577,29 @@ export default function ImportScreen() {
       )}
 
       {loading && (
-        <View className="py-8">
-          <ActivityIndicator size="large" color={colors.accent} />
-          <Text className="mt-2 text-center text-slate-600 dark:text-slate-400">
-            {ocrProgress ?? t("import.loading")}
-          </Text>
-        </View>
+        <OcrLoadingState
+          progress={ocrProgress}
+        />
       )}
 
-      {rows.length > 0 && !loading && (
+      {savedResult && !loading && (
+        <SavedSuccessView
+          savedResult={savedResult}
+          onViewSchedule={() => {
+            setSavedResult(null);
+            router.push(`/period/${savedResult.scheduleId}` as any);
+          }}
+          onImportMore={() => setSavedResult(null)}
+        />
+      )}
+
+      {rows.length > 0 && !loading && !savedResult && (
         <ShiftEditor
           rows={rows}
           source={source}
           expectedPay={expectedPay}
           saving={saving}
           calculating={calculating}
-          saved={saved}
           onUpdateRow={updateRow}
           onRemoveRow={removeRow}
           onAddRow={() => setRows((prev) => [...prev, { ok: true as const, shift: emptyShift() }])}

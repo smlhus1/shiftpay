@@ -107,7 +107,7 @@ export default function SettingsScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.accent} accessibilityLabel={t("common.loading")} />
       </View>
     );
   }
@@ -122,17 +122,26 @@ export default function SettingsScreen() {
           {t("settings.description")}
         </Text>
 
+        {/* Base pay section */}
+        <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400" accessibilityRole="header">{t("settings.sections.basePay")}</Text>
         <RateField
           label={t("settings.labels.base")}
           value={toStr(rates.base_rate)}
           onChangeText={(s) => setRates((r) => ({ ...r, base_rate: toNum(s) }))}
+          suffix="kr/t"
+          placeholder="250"
         />
+
+        {/* Supplements section */}
+        <Text className="mb-3 mt-4 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400" accessibilityRole="header">{t("settings.sections.supplements")}</Text>
         <RateField
           label={t("settings.labels.evening")}
           value={toStr(rates.evening_supplement)}
           onChangeText={(s) =>
             setRates((r) => ({ ...r, evening_supplement: toNum(s) }))
           }
+          suffix="kr/t"
+          placeholder="56"
         />
         <RateField
           label={t("settings.labels.night")}
@@ -140,6 +149,8 @@ export default function SettingsScreen() {
           onChangeText={(s) =>
             setRates((r) => ({ ...r, night_supplement: toNum(s) }))
           }
+          suffix="kr/t"
+          placeholder="75"
         />
         <RateField
           label={t("settings.labels.weekend")}
@@ -147,6 +158,8 @@ export default function SettingsScreen() {
           onChangeText={(s) =>
             setRates((r) => ({ ...r, weekend_supplement: toNum(s) }))
           }
+          suffix="kr/t"
+          placeholder="50"
         />
         <RateField
           label={t("settings.labels.holiday")}
@@ -154,13 +167,20 @@ export default function SettingsScreen() {
           onChangeText={(s) =>
             setRates((r) => ({ ...r, holiday_supplement: toNum(s) }))
           }
+          suffix="kr/t"
+          placeholder="133"
         />
+
+        {/* Overtime section */}
+        <Text className="mb-3 mt-4 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400" accessibilityRole="header">{t("settings.sections.overtime")}</Text>
         <RateField
           label={t("settings.labels.overtime")}
           value={toStr(rates.overtime_supplement)}
           onChangeText={(s) =>
             setRates((r) => ({ ...r, overtime_supplement: toNum(s) }))
           }
+          suffix="%"
+          placeholder="40"
         />
 
         <PressableScale
@@ -172,7 +192,7 @@ export default function SettingsScreen() {
           className="mt-6 rounded-xl bg-accent-dark dark:bg-accent py-4"
         >
           {saving ? (
-            <ActivityIndicator color={colors.bg} />
+            <ActivityIndicator color={colors.bg} accessibilityLabel={t("common.loading")} />
           ) : (
             <Text className="text-center font-inter-semibold text-white dark:text-slate-900">{t("settings.save")}</Text>
           )}
@@ -283,24 +303,33 @@ function RateField({
   label,
   value,
   onChangeText,
+  suffix,
+  placeholder,
 }: {
   label: string;
   value: string;
   onChangeText: (s: string) => void;
+  suffix?: string;
+  placeholder?: string;
 }) {
   const colors = useThemeColors();
   return (
     <View className="mb-4">
       <Text className="mb-1.5 text-sm font-inter-medium text-slate-700 dark:text-slate-300">{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        keyboardType="decimal-pad"
-        placeholder="0"
-        placeholderTextColor={colors.textMuted}
-        accessibilityLabel={label}
-        className="min-h-[48px] rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3 text-slate-900 dark:text-slate-100"
-      />
+      <View className="flex-row items-center">
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          keyboardType="decimal-pad"
+          placeholder={placeholder ?? "0"}
+          placeholderTextColor={colors.textMuted}
+          accessibilityLabel={label + (suffix ? " (" + suffix + ")" : "")}
+          className="min-h-[48px] flex-1 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3 text-slate-900 dark:text-slate-100"
+        />
+        {suffix && (
+          <Text className="ml-2 text-sm text-slate-500 dark:text-slate-400">{suffix}</Text>
+        )}
+      </View>
     </View>
   );
 }

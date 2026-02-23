@@ -7,6 +7,7 @@ const en: TranslationShape = {
     save: "Save",
     cancel: "Cancel",
     retry: "Try again",
+    loading: "Loading...",
   },
   tabs: {
     overview: "Overview",
@@ -15,9 +16,10 @@ const en: TranslationShape = {
   },
   dashboard: {
     empty: {
-      title: "No schedules yet",
+      title: "Ready to check your pay?",
       description: "Import from the Import tab or add shifts manually.",
-      cta: "Go to Import",
+      subtitle: "Take a photo of your timesheet to get started",
+      cta: "Scan your first timesheet",
     },
     nextShift: {
       title: "Next shift",
@@ -43,6 +45,7 @@ const en: TranslationShape = {
     },
     history: {
       title: "History",
+      miniSummary: "%{shifts} shifts · %{pay}",
     },
     countdown: {
       now: "Now",
@@ -84,18 +87,29 @@ const en: TranslationShape = {
       csvError: "Some rows were skipped (missing or invalid date/time). Fix or remove the error rows.",
       saveError: "Could not save",
     },
+    saved: {
+      title: "Saved!",
+      description: "%{count} shifts saved for %{start} – %{end}",
+      viewSchedule: "View schedule",
+      importMore: "Import more",
+    },
     calculate: "Calculate pay",
     save: "Save timesheet",
   },
   settings: {
     description: "Per-hour rates. Supplements are added on top of base rate.",
     labels: {
-      base: "Base rate (per hour)",
-      evening: "Evening supplement (per hour)",
-      night: "Night supplement (per hour)",
-      weekend: "Weekend supplement (per hour)",
-      holiday: "Holiday supplement (per hour)",
-      overtime: "Overtime supplement (%)",
+      base: "Base rate",
+      evening: "Evening supplement",
+      night: "Night supplement",
+      weekend: "Weekend supplement",
+      holiday: "Holiday supplement",
+      overtime: "Overtime supplement",
+    },
+    sections: {
+      basePay: "Base pay",
+      supplements: "Supplements per hour",
+      overtime: "Overtime",
     },
     save: "Save",
     saved: "Saved.",
@@ -147,6 +161,7 @@ const en: TranslationShape = {
     missingColumns: "CSV must have columns: date, start_time, end_time (and optionally shift_type).",
   },
   shiftTypes: {
+    label: "Shift type",
     tidlig: "Early",
     mellom: "Mid-day",
     kveld: "Evening",
@@ -249,7 +264,9 @@ const en: TranslationShape = {
         "This calculation is indicative and based on your own rates. Verify against original timesheet.",
       save: "Save timesheet",
       saved: "Saved. You can import a new one.",
+      shiftRow: "shift",
       reset: "Start over",
+      saveAndCalculate: "Save & calculate",
     },
     shiftCard: {
       confirm: "Confirm",

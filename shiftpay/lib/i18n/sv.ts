@@ -7,6 +7,7 @@ const sv: TranslationShape = {
     save: "Spara",
     cancel: "Avbryt",
     retry: "Försök igen",
+    loading: "Laddar...",
   },
   tabs: {
     overview: "Översikt",
@@ -15,9 +16,10 @@ const sv: TranslationShape = {
   },
   dashboard: {
     empty: {
-      title: "Inga scheman ännu",
+      title: "Redo att kolla lönen?",
       description: "Importera från fliken Importera eller lägg till skift manuellt.",
-      cta: "Gå till Importera",
+      subtitle: "Ta foto av din tidlista för att komma igång",
+      cta: "Skanna din första tidlista",
     },
     nextShift: {
       title: "Nästa skift",
@@ -43,6 +45,7 @@ const sv: TranslationShape = {
     },
     history: {
       title: "Historik",
+      miniSummary: "%{shifts} skift · %{pay}",
     },
     countdown: {
       now: "Nu",
@@ -84,18 +87,29 @@ const sv: TranslationShape = {
       csvError: "Vissa rader hoppades över (saknat eller ogiltigt datum/tid). Rätta eller ta bort felraderna.",
       saveError: "Kunde inte spara",
     },
+    saved: {
+      title: "Sparat!",
+      description: "%{count} skift sparade för %{start} – %{end}",
+      viewSchedule: "Visa schema",
+      importMore: "Importera fler",
+    },
     calculate: "Beräkna lön",
     save: "Spara tidlista",
   },
   settings: {
     description: "Taxor per timme. Tillägg läggs ovanpå grundlönen.",
     labels: {
-      base: "Grundlön (per timme)",
-      evening: "Kvällstillägg (per timme)",
-      night: "Natttillägg (per timme)",
-      weekend: "Helgtillägg (per timme)",
-      holiday: "Helgdagstillägg (per timme)",
-      overtime: "Övertidstillägg (%)",
+      base: "Grundlön",
+      evening: "Kvällstillägg",
+      night: "Natttillägg",
+      weekend: "Helgtillägg",
+      holiday: "Helgdagstillägg",
+      overtime: "Övertidstillägg",
+    },
+    sections: {
+      basePay: "Grundlön",
+      supplements: "Tillägg per timme",
+      overtime: "Övertid",
     },
     save: "Spara",
     saved: "Sparat.",
@@ -147,6 +161,7 @@ const sv: TranslationShape = {
     missingColumns: "CSV måste ha kolumner: date, start_time, end_time (och valfritt shift_type).",
   },
   shiftTypes: {
+    label: "Passtyp",
     tidlig: "Tidig",
     mellom: "Mitt på dagen",
     kveld: "Kväll",
@@ -249,7 +264,9 @@ const sv: TranslationShape = {
         "Beräkningen är vägledande och baseras på dina egna taxor. Kontrollera mot originaltidlistan.",
       save: "Spara tidlista",
       saved: "Sparat. Du kan importera en ny.",
+      shiftRow: "pass",
       reset: "Börja om",
+      saveAndCalculate: "Spara & beräkna",
     },
     shiftCard: {
       confirm: "Bekräfta",

@@ -115,7 +115,7 @@ export default function PeriodDetailScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.accent} accessibilityLabel={t("common.loading")} />
       </View>
     );
   }
@@ -153,6 +153,7 @@ export default function PeriodDetailScreen() {
         {yearMonth && (
           <PressableScale
             onPress={() => router.push(`/summary/${yearMonth}` as Href)}
+            accessibilityLabel={t("period.viewSummary")}
             className="mt-3 rounded-xl border border-sky-600/20 bg-sky-600/10 dark:border-sky-400/20 dark:bg-sky-400/10 py-2"
           >
             <Text className="text-center text-sm font-inter-semibold text-accent-dark dark:text-accent">
@@ -181,11 +182,12 @@ export default function PeriodDetailScreen() {
       <PressableScale
         onPress={handleDelete}
         disabled={deleting}
+        accessibilityLabel={t("period.delete.btn")}
         style={deleting ? { opacity: 0.6 } : undefined}
         className="mt-6 rounded-xl border border-red-500/20 bg-red-500/10 py-3"
       >
         {deleting ? (
-          <ActivityIndicator color={colors.error} />
+          <ActivityIndicator color={colors.error} accessibilityLabel={t("common.loading")} />
         ) : (
           <Text className="text-center font-inter-semibold text-red-600 dark:text-red-400">{t("period.delete.btn")}</Text>
         )}

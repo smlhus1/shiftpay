@@ -7,6 +7,7 @@ const da: TranslationShape = {
     save: "Gem",
     cancel: "Annuller",
     retry: "Prøv igen",
+    loading: "Indlæser...",
   },
   tabs: {
     overview: "Oversigt",
@@ -15,9 +16,10 @@ const da: TranslationShape = {
   },
   dashboard: {
     empty: {
-      title: "Ingen vagtplaner endnu",
+      title: "Klar til at tjekke lønnen?",
       description: "Importer fra fanen Importer eller tilføj vagter manuelt.",
-      cta: "Gå til Importer",
+      subtitle: "Tag foto af din timeseddel for at komme i gang",
+      cta: "Scan din første timeseddel",
     },
     nextShift: {
       title: "Næste vagt",
@@ -43,6 +45,7 @@ const da: TranslationShape = {
     },
     history: {
       title: "Historik",
+      miniSummary: "%{shifts} vagter · %{pay}",
     },
     countdown: {
       now: "Nu",
@@ -84,18 +87,29 @@ const da: TranslationShape = {
       csvError: "Nogle rækker blev sprunget over (manglende eller ugyldig dato/tid). Ret eller fjern fejlrækkerne.",
       saveError: "Kunne ikke gemme",
     },
+    saved: {
+      title: "Gemt!",
+      description: "%{count} vagter gemt for %{start} – %{end}",
+      viewSchedule: "Se vagtplan",
+      importMore: "Importer flere",
+    },
     calculate: "Beregn løn",
     save: "Gem timeseddel",
   },
   settings: {
     description: "Satser per time. Tillæg lægges oven på grundlønnen.",
     labels: {
-      base: "Grundløn (pr. time)",
-      evening: "Aftentillæg (pr. time)",
-      night: "Nattillæg (pr. time)",
-      weekend: "Weekendtillæg (pr. time)",
-      holiday: "Helligdagstillæg (pr. time)",
-      overtime: "Overarbejdstillæg (%)",
+      base: "Grundløn",
+      evening: "Aftentillæg",
+      night: "Nattillæg",
+      weekend: "Weekendtillæg",
+      holiday: "Helligdagstillæg",
+      overtime: "Overarbejdstillæg",
+    },
+    sections: {
+      basePay: "Grundløn",
+      supplements: "Tillæg pr. time",
+      overtime: "Overarbejde",
     },
     save: "Gem",
     saved: "Gemt.",
@@ -147,6 +161,7 @@ const da: TranslationShape = {
     missingColumns: "CSV skal have kolonnerne: date, start_time, end_time (og eventuelt shift_type).",
   },
   shiftTypes: {
+    label: "Vagttype",
     tidlig: "Tidlig",
     mellom: "Midt på dagen",
     kveld: "Aften",
@@ -249,7 +264,9 @@ const da: TranslationShape = {
         "Beregningen er vejledende og baseret på dine egne satser. Kontroller mod den originale timeseddel.",
       save: "Gem timeseddel",
       saved: "Gemt. Du kan importere en ny.",
+      shiftRow: "vagt",
       reset: "Start forfra",
+      saveAndCalculate: "Gem & beregn",
     },
     shiftCard: {
       confirm: "Bekræft",

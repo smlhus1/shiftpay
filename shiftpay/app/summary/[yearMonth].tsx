@@ -115,7 +115,7 @@ export default function SummaryScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.accent} accessibilityLabel={t("common.loading")} />
       </View>
     );
   }
@@ -151,6 +151,7 @@ export default function SummaryScreen() {
               const p = adjacentMonths.prev!;
               router.replace(`/summary/${toYearMonthKey(p.year, p.month)}` as Href);
             }}
+            accessibilityLabel={t(`months.${MONTH_KEYS[(adjacentMonths.prev.month - 1)] ?? "jan"}`)}
             className="flex-row items-center gap-1"
           >
             <Ionicons name="chevron-back" size={18} color={colors.accent} />
@@ -166,6 +167,7 @@ export default function SummaryScreen() {
               const n = adjacentMonths.next!;
               router.replace(`/summary/${toYearMonthKey(n.year, n.month)}` as Href);
             }}
+            accessibilityLabel={t(`months.${MONTH_KEYS[(adjacentMonths.next.month - 1)] ?? "jan"}`)}
             className="flex-row items-center gap-1"
           >
             <Text className="text-sm font-inter-medium text-accent-dark dark:text-accent">
