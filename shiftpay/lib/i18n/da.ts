@@ -76,7 +76,9 @@ const da: TranslationShape = {
     manualBtn: "Tilføj vagt manuelt",
     loading: "Behandler...",
     progress: "Behandler %{current} af %{total} billeder...",
+    cameraPermissionError: "Kameratilladelse kræves for at tage foto.",
     alerts: {
+      ocrFailed: "OCR fejlede",
       missingData: "Manglende data",
       missingDataSave:
         "Udfyld dato, starttid og sluttid for mindst én vagt for at gemme.",

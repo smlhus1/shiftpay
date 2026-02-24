@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { Pressable, type ViewStyle } from "react-native";
+import { Pressable, type ViewStyle, type AccessibilityRole } from "react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
@@ -14,7 +14,7 @@ interface PressableScaleProps {
   disabled?: boolean;
   haptic?: boolean;
   hapticStyle?: Haptics.ImpactFeedbackStyle;
-  accessibilityRole?: "button" | "link" | "radio";
+  accessibilityRole?: AccessibilityRole;
   accessibilityLabel?: string;
   accessibilityState?: Record<string, unknown>;
   hitSlop?: number;

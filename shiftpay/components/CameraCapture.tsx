@@ -31,7 +31,7 @@ export function CameraCapture({ cameraRef, onCancel, onCapture }: CameraCaptureP
           <Text className="font-inter-medium text-white">{t("components.camera.cancel")}</Text>
         </PressableScale>
         <PressableScale onPress={onCapture} accessibilityLabel={t("components.camera.capture")} className="rounded-xl bg-accent px-6 py-3">
-          <Text className="font-inter-medium text-slate-900">{t("components.camera.capture")}</Text>
+          <Text className="font-inter-medium text-stone-900">{t("components.camera.capture")}</Text>
         </PressableScale>
       </View>
     </View>

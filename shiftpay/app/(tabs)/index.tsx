@@ -177,7 +177,7 @@ export default function DashboardScreen() {
   if (loadError) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg p-6">
-        <Text className="text-center text-slate-600 dark:text-slate-400">{loadError}</Text>
+        <Text className="text-center text-stone-600 dark:text-stone-400">{loadError}</Text>
         <PressableScale
           onPress={() => {
             setLoadError(null);
@@ -187,7 +187,7 @@ export default function DashboardScreen() {
           accessibilityLabel={t("dashboard.error.retry")}
           className="mt-6 rounded-xl bg-accent-dark dark:bg-accent px-6 py-4"
         >
-          <Text className="font-inter-semibold text-white dark:text-slate-900">{t("dashboard.error.retry")}</Text>
+          <Text className="font-inter-semibold text-white dark:text-stone-900">{t("dashboard.error.retry")}</Text>
         </PressableScale>
       </View>
     );
@@ -214,11 +214,11 @@ export default function DashboardScreen() {
           <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-500/15">
             <Ionicons name="wallet-outline" size={48} color={theme === "dark" ? "#F59E0B" : "#D97706"} />
           </View>
-          <Text className="text-lg font-inter-semibold text-slate-900 dark:text-slate-100">{t("dashboard.empty.title")}</Text>
-          <Text className="mt-2 text-center text-slate-600 dark:text-slate-400">
+          <Text className="text-lg font-inter-semibold text-stone-900 dark:text-stone-100">{t("dashboard.empty.title")}</Text>
+          <Text className="mt-2 text-center text-stone-600 dark:text-stone-400">
             {t("dashboard.empty.subtitle")}
           </Text>
-          <Text className="mt-1 text-center text-sm text-slate-500 dark:text-slate-500">
+          <Text className="mt-1 text-center text-sm text-stone-500 dark:text-stone-500">
             {t("dashboard.empty.description")}
           </Text>
           <PressableScale
@@ -226,8 +226,8 @@ export default function DashboardScreen() {
             accessibilityLabel={t("dashboard.empty.cta")}
             className="mt-6 flex-row items-center gap-2 rounded-xl bg-accent-dark dark:bg-accent px-6 py-4"
           >
-            <Ionicons name="camera-outline" size={20} color={theme === "dark" ? "#0F172A" : "#FFFFFF"} />
-            <Text className="font-inter-semibold text-white dark:text-slate-900">{t("dashboard.empty.cta")}</Text>
+            <Ionicons name="camera-outline" size={20} color={theme === "dark" ? "#1C1917" : "#FFFFFF"} />
+            <Text className="font-inter-semibold text-white dark:text-stone-900">{t("dashboard.empty.cta")}</Text>
           </PressableScale>
         </View>
       )}
@@ -235,8 +235,8 @@ export default function DashboardScreen() {
       {/* Next shift — full width */}
       {nextShift && (
         <AnimatedCard index={0} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-5">
-          <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("dashboard.nextShift.title")}</Text>
-          <Text className="mt-1 text-xl font-inter-semibold text-slate-900 dark:text-slate-100">
+          <Text className="text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400">{t("dashboard.nextShift.title")}</Text>
+          <Text className="mt-1 text-xl font-inter-semibold text-stone-900 dark:text-stone-100">
             {nextShift.date} · {nextShift.start_time}–{nextShift.end_time}
           </Text>
           <Text className="mt-1 text-sm text-accent-dark dark:text-accent">{countdownToShift(nextShift, t)}</Text>
@@ -246,7 +246,7 @@ export default function DashboardScreen() {
               accessibilityLabel={t("dashboard.nextShift.confirm") + " " + nextShift.date}
               className="mt-3 self-start rounded-xl bg-accent-dark dark:bg-accent px-4 py-2"
             >
-              <Text className="text-sm font-inter-semibold text-white dark:text-slate-900">{t("dashboard.nextShift.confirm")}</Text>
+              <Text className="text-sm font-inter-semibold text-white dark:text-stone-900">{t("dashboard.nextShift.confirm")}</Text>
             </PressableScale>
           )}
         </AnimatedCard>
@@ -261,12 +261,12 @@ export default function DashboardScreen() {
             className="flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-5"
           >
             <View>
-              <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("dashboard.month.title")}</Text>
-              <Text className="mt-1 text-xs text-slate-500">
+              <Text className="text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400">{t("dashboard.month.title")}</Text>
+              <Text className="mt-1 text-xs text-stone-500">
                 {t("dashboard.month.actual", { hours: monthSummary.actualHours.toFixed(1) })}
               </Text>
             </View>
-            <Text className="font-display text-3xl text-amber-600 dark:text-warm">
+            <Text className="font-display text-3xl text-amber-700 dark:text-warm">
               {formatCurrency(monthSummary.expectedPay, currency)}
             </Text>
           </PressableScale>
@@ -281,11 +281,11 @@ export default function DashboardScreen() {
             accessibilityLabel={t("dashboard.pending.title") + " " + dueConfirmation.length}
             className="rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-5"
           >
-            <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("dashboard.pending.title")}</Text>
+            <Text className="text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400">{t("dashboard.pending.title")}</Text>
             <Text className="mt-1 font-display text-2xl text-red-600 dark:text-red-400">
               {dueConfirmation.length}
             </Text>
-            <Text className="mt-1 text-xs text-slate-500">
+            <Text className="mt-1 text-xs text-stone-500">
               {t("dashboard.pending.confirmBtn")}
             </Text>
           </PressableScale>
@@ -305,7 +305,7 @@ export default function DashboardScreen() {
               accessibilityLabel={s.date + " " + s.start_time + "\u2013" + s.end_time + ", " + t("dashboard.pending.confirmBtn")}
               className="mt-2 flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-3"
             >
-              <Text className="text-slate-900 dark:text-slate-100">
+              <Text className="text-stone-900 dark:text-stone-100">
                 {s.date} {s.start_time}–{s.end_time}
               </Text>
               <Text className="text-sm font-inter-medium text-accent-dark dark:text-accent">{t("dashboard.pending.confirmBtn")}</Text>
@@ -322,7 +322,7 @@ export default function DashboardScreen() {
       {/* This week */}
       {weekShifts.length > 0 && (
         <AnimatedCard index={4} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
-          <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("dashboard.week.title")}</Text>
+          <Text className="text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("dashboard.week.title")}</Text>
           {weekShifts.slice(0, 7).map((s) => (
             <ShiftCard
               key={s.id}
@@ -337,7 +337,7 @@ export default function DashboardScreen() {
       {/* History */}
       {monthsList.length > 0 && (
         <>
-          <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400" accessibilityRole="header">{t("dashboard.history.title")}</Text>
+          <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("dashboard.history.title")}</Text>
           {monthsList.map(({ year, month }) => {
             const key = toYearMonthKey(year, month);
             const monthKey = MONTH_KEYS[month - 1] ?? "jan";
@@ -351,11 +351,11 @@ export default function DashboardScreen() {
               >
                 <View className="flex-row items-center justify-between">
                   <View className="flex-1">
-                    <Text className="font-inter-medium text-slate-900 dark:text-slate-100">
+                    <Text className="font-inter-medium text-stone-900 dark:text-stone-100">
                       {t(`months.${monthKey}`)} {year}
                     </Text>
                     {mini && (
-                      <Text className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                      <Text className="mt-0.5 text-sm text-stone-500 dark:text-stone-400">
                         {t("dashboard.history.miniSummary", { shifts: mini.shiftCount, pay: formatCurrency(mini.expectedPay, currency) })}
                       </Text>
                     )}

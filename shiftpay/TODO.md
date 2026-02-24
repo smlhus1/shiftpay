@@ -155,23 +155,23 @@ Full rapport: `design/ux-review-shiftpay-2026-02-23.md`
 
 ### Fase 3: Polering
 
-- [ ] **Accent-farge: sky-blue → dypere blå**
+- [x] **Accent-farge: sky-blue → dypere blå** ✓
   `tailwind.config.js` og `lib/theme.ts`. Nåværende sky-400 (#38BDF8) / sky-700 (#0284C7)
   er Tailwind-default brukt i halvparten av AI-genererte apper. Bytt til blue-700 (#1D4ED8)
   for light mode og blue-500 (#3B82F6) for dark mode. Oppdater `accent` og `accent-dark`
   tokens i theme. Gir mer autoritet og skiller appen fra generisk AI-estetikk.
 
-- [ ] **AnimatedCard: respekter reduce-motion**
+- [x] **AnimatedCard: respekter reduce-motion** ✓
   `components/AnimatedCard.tsx`. Animasjonen kjører alltid uavhengig av systempreferanse.
   Importer `useReducedMotion` fra `react-native-reanimated` (allerede en dependency).
   Hvis aktiv: render vanlig `<View>` uten animasjon. WCAG 2.3.3.
 
-- [ ] **Confirm auto-redirect økt + back-knapp**
+- [x] **Confirm auto-redirect økt + back-knapp** ✓
   `app/confirm/[shiftId].tsx` linje 89-90 og 102-103. Auto-navigasjon etter 1.5s er for
   kort for skjermleserbrukere. Øk timeout til 3s og legg til eksplisitt "Back to overview"
   PressableScale-knapp i confirmed-view. WCAG 2.2.1.
 
-- [ ] **Varmere nøytraler: slate → stone**
+- [x] **Varmere nøytraler: slate → stone** ✓
   `tailwind.config.js` og `lib/theme.ts`. Slate-farger gir en kald, teknisk følelse.
   Bytt til stone for varmere grå: bg-light #FAFAF9 (stone-50), text #1C1917 (stone-900),
   bg-dark #0C0A09 (stone-950), surface-dark #1C1917 (stone-900). Oppdater alle tema-tokens.
@@ -182,38 +182,38 @@ Full rapport: `design/ux-review-shiftpay-2026-02-23.md`
   i SQLite, ny kolonne eller tabell). Vis differansen prominent: grønn hvis positiv,
   rød hvis negativ. Kan utsettes til v1.1 men er kjerne-brukscaset.
 
-- [ ] **A11y: Section-overskrifter med header-rolle**
+- [x] **A11y: Section-overskrifter med header-rolle** ✓
   `app/(tabs)/index.tsx` linje 211, 255, 295 + `period/[id].tsx` linje 165 +
   `summary/[yearMonth].tsx` linje 224. Section-titler ("Next shift", "This week", etc.)
   mangler `accessibilityRole="header"`. Skjermleserbrukere navigerer via overskrifter —
   uten denne rollen er flyten flat. WCAG 1.3.1, 2.4.6.
 
-- [ ] **A11y: ShiftEditor radiogroup-wrapper**
+- [x] **A11y: ShiftEditor radiogroup-wrapper** ✓
   `components/ShiftEditor.tsx` linje 97-115. Shift-type pills har `accessibilityRole="radio"`
   men parent View mangler `accessibilityRole="radiogroup"`. TalkBack annonserer ikke
   "1 of 4" etc. Legg til wrapper + `accessibilityLabel={t("shiftTypes.label")}`.
   Ny i18n-nøkkel: `shiftTypes.label: "Shift type"` / `"Vakttype"`. WCAG 1.3.1.
 
-- [ ] **A11y: PressableScale — utvid accessibilityRole-typer**
+- [x] **A11y: PressableScale — utvid accessibilityRole-typer** ✓
   `components/PressableScale.tsx` linje 17. Type er begrenset til `"button" | "link" | "radio"`.
   Bytt til `AccessibilityRole` fra `react-native` for å tillate `"tab"`, `"checkbox"`, etc.
 
-- [ ] **A11y: Amber fargekontrast**
+- [x] **A11y: Amber fargekontrast** ✓
   `text-amber-600` (#D97706) på hvit bg gir ~3.4:1 kontrast. Greit for `text-3xl`/`text-4xl`
   bold (>3:1), men `text-lg` i ShiftEditor.tsx linje 152 er på grensen. Bytt til
   `text-amber-700` (#B45309, ~4.8:1) for trygg AA-compliance overalt. WCAG 1.4.3.
 
-- [ ] **i18n: Hardkodede engelske feilmeldinger**
+- [x] **i18n: Hardkodede engelske feilmeldinger** ✓
   `app/(tabs)/import.tsx` linje 217: `"Camera permission required to take a photo."` og
   linje 235: `"OCR failed"`. Erstatt med `t("import.cameraPermissionError")` og
   `t("import.alerts.ocrFailed")`. Legg til nøklene i alle 4 locale-filer (nb/en/sv/da).
 
-- [ ] **StatBox samlet accessibilityLabel**
+- [x] **StatBox samlet accessibilityLabel** ✓
   `app/summary/[yearMonth].tsx` linje 24-31. Hvert stat-element leses som to separate
   tekster. Legg til `accessible={true}` + `accessibilityLabel={\`${value}: ${label}\`}` på
   wrapper-View, og `importantForAccessibility="no"` på begge Text-barn.
 
-- [ ] **Confirm: collapse redigeringsfelt**
+- [x] **Confirm: collapse redigeringsfelt** ✓
   `app/confirm/[shiftId].tsx` linje 214-265. Dato/tid-redigeringsfeltene vises alltid
   men er kun relevante når noe er feil. Skjul bak en "Edit shift details" expander
   (PressableScale med expanded state) for å redusere visuell støy.

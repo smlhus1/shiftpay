@@ -10,18 +10,18 @@ module.exports = {
     extend: {
       colors: {
         dark: {
-          bg: '#0F172A',
-          surface: '#1E293B',
-          elevated: '#334155',
+          bg: '#0C0A09',
+          surface: '#1C1917',
+          elevated: '#292524',
         },
         app: {
-          bg: '#F8FAFC',
+          bg: '#FAFAF9',
           surface: '#FFFFFF',
-          elevated: '#F1F5F9',
-          border: '#E2E8F0',
+          elevated: '#F5F5F4',
+          border: '#E7E5E4',
         },
-        accent: '#38BDF8',
-        'accent-dark': '#0284C7',
+        accent: '#3B82F6',
+        'accent-dark': '#1D4ED8',
         warm: '#F59E0B',
         'dark-border': 'rgba(255,255,255,0.08)',
       },

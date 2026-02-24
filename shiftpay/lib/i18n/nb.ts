@@ -74,7 +74,9 @@ const nb = {
     manualBtn: "Legg til skift manuelt",
     loading: "Behandler...",
     progress: "Behandler %{current} av %{total} bilder...",
+    cameraPermissionError: "Kameratilgang kreves for å ta bilde.",
     alerts: {
+      ocrFailed: "OCR feilet",
       missingData: "Manglende data",
       missingDataSave:
         "Fyll inn dato, starttid og sluttid for minst ett skift for å lagre.",

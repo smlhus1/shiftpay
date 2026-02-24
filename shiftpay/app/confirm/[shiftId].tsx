@@ -43,6 +43,7 @@ export default function ConfirmShiftScreen() {
   const [editEnd, setEditEnd] = useState("");
   const [editDirty, setEditDirty] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [showEditFields, setShowEditFields] = useState(false);
 
   const load = useCallback(async () => {
     if (!shiftId || !UUID_RE.test(shiftId)) {
@@ -87,7 +88,7 @@ export default function ConfirmShiftScreen() {
           await confirmShift(shiftId, "overtime", mins);
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           setConfirmed(true);
-          setTimeout(() => router.back(), 1500);
+          setTimeout(() => router.back(), 3000);
         } catch (e) {
           Alert.alert(t("common.error"), e instanceof Error ? e.message : t("confirm.errors.saveError"));
         } finally {
@@ -100,7 +101,7 @@ export default function ConfirmShiftScreen() {
         await confirmShift(shiftId, status);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         setConfirmed(true);
-        setTimeout(() => router.back(), 1500);
+        setTimeout(() => router.back(), 3000);
       } catch (e) {
         Alert.alert(t("common.error"), e instanceof Error ? e.message : t("confirm.errors.saveError"));
       } finally {
@@ -151,12 +152,12 @@ export default function ConfirmShiftScreen() {
   if (notFound || !shiftId) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg p-6">
-        <Text className="text-center text-slate-600 dark:text-slate-400">{t("confirm.errors.notFound")}</Text>
+        <Text className="text-center text-stone-600 dark:text-stone-400">{t("confirm.errors.notFound")}</Text>
         <PressableScale
           onPress={() => router.back()}
           className="mt-4 rounded-xl bg-accent-dark dark:bg-accent px-6 py-2"
         >
-          <Text className="font-inter-semibold text-white dark:text-slate-900">{t("confirm.backBtnLabel")}</Text>
+          <Text className="font-inter-semibold text-white dark:text-stone-900">{t("confirm.backBtnLabel")}</Text>
         </PressableScale>
       </View>
     );
@@ -165,12 +166,12 @@ export default function ConfirmShiftScreen() {
   if (!shift) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg p-6">
-        <Text className="text-center text-slate-600 dark:text-slate-400">{t("confirm.errors.loadError")}</Text>
+        <Text className="text-center text-stone-600 dark:text-stone-400">{t("confirm.errors.loadError")}</Text>
         <PressableScale
           onPress={() => router.back()}
           className="mt-4 rounded-xl bg-accent-dark dark:bg-accent px-6 py-2"
         >
-          <Text className="font-inter-semibold text-white dark:text-slate-900">{t("confirm.backBtnLabel")}</Text>
+          <Text className="font-inter-semibold text-white dark:text-stone-900">{t("confirm.backBtnLabel")}</Text>
         </PressableScale>
       </View>
     );
@@ -184,8 +185,15 @@ export default function ConfirmShiftScreen() {
             <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/15" importantForAccessibility="no">
               <Ionicons name="checkmark-circle" size={40} color={colors.success} />
             </View>
-            <Text className="text-xl font-inter-semibold text-slate-900 dark:text-slate-100">{t("confirm.success")}</Text>
-            <Text className="mt-2 text-center text-slate-600 dark:text-slate-400">{formatShiftLabel(shift)}</Text>
+            <Text className="text-xl font-inter-semibold text-stone-900 dark:text-stone-100">{t("confirm.success")}</Text>
+            <Text className="mt-2 text-center text-stone-600 dark:text-stone-400">{formatShiftLabel(shift)}</Text>
+            <PressableScale
+              onPress={() => router.back()}
+              accessibilityLabel={t("confirm.backBtnLabel")}
+              className="mt-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-6 py-3"
+            >
+              <Text className="text-center font-inter-medium text-stone-700 dark:text-stone-300">{t("confirm.backBtnLabel")}</Text>
+            </PressableScale>
           </View>
         </AnimatedCard>
       </View>
@@ -204,63 +212,75 @@ export default function ConfirmShiftScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <AnimatedCard index={0} className="mb-6 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
-          <Text className="text-lg font-inter-semibold text-slate-900 dark:text-slate-100">
+          <Text className="text-lg font-inter-semibold text-stone-900 dark:text-stone-100">
             {isEdit ? t("confirm.editQuestion") : t("confirm.question")}
           </Text>
-          <Text className="mt-2 text-slate-600 dark:text-slate-400">{formatShiftLabel(shift)}</Text>
+          <Text className="mt-2 text-stone-600 dark:text-stone-400">{formatShiftLabel(shift)}</Text>
         </AnimatedCard>
 
-        {/* Editable date/time fields */}
-        <AnimatedCard index={1} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
-          <Text className="mb-2 text-sm font-inter-medium text-slate-700 dark:text-slate-300">{t("confirm.editFields.title")}</Text>
-          <View className="mb-2">
-            <Text className="mb-1 text-xs text-slate-500">{t("confirm.editFields.date")}</Text>
-            <TextInput
-              value={editDate}
-              onChangeText={(v) => { setEditDate(v); setEditDirty(true); }}
-              placeholder="DD.MM.YYYY"
-              placeholderTextColor={colors.textMuted}
-              accessibilityLabel={t("confirm.editFields.date")}
-              className="rounded-xl border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-4 py-3 text-slate-900 dark:text-slate-100"
-            />
-          </View>
-          <View className="flex-row gap-3">
-            <View className="flex-1">
-              <Text className="mb-1 text-xs text-slate-500">{t("confirm.editFields.start")}</Text>
-              <TextInput
-                value={editStart}
-                onChangeText={(v) => { setEditStart(v); setEditDirty(true); }}
-                placeholder="HH:MM"
-                placeholderTextColor={colors.textMuted}
-                accessibilityLabel={t("confirm.editFields.start")}
-                className="rounded-xl border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-4 py-3 text-slate-900 dark:text-slate-100"
-              />
-            </View>
-            <View className="flex-1">
-              <Text className="mb-1 text-xs text-slate-500">{t("confirm.editFields.end")}</Text>
-              <TextInput
-                value={editEnd}
-                onChangeText={(v) => { setEditEnd(v); setEditDirty(true); }}
-                placeholder="HH:MM"
-                placeholderTextColor={colors.textMuted}
-                accessibilityLabel={t("confirm.editFields.end")}
-                className="rounded-xl border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-4 py-3 text-slate-900 dark:text-slate-100"
-              />
-            </View>
-          </View>
-          {editDirty && (
-            <PressableScale
-              onPress={handleSaveEdit}
-              disabled={savingEdit}
-              className="mt-3 rounded-xl bg-accent-dark dark:bg-accent py-3"
-              style={savingEdit ? { opacity: 0.6 } : undefined}
-            >
-              {savingEdit ? (
-                <ActivityIndicator color={colors.bg} accessibilityLabel={t("common.loading")} />
-              ) : (
-                <Text className="text-center text-sm font-inter-semibold text-white dark:text-slate-900">{t("confirm.editFields.save")}</Text>
+        {/* Editable date/time fields — collapsed by default */}
+        <AnimatedCard index={1} className="mb-4">
+          <PressableScale
+            onPress={() => setShowEditFields((v) => !v)}
+            accessibilityLabel={t("confirm.editFields.title")}
+            accessibilityState={{ expanded: showEditFields }}
+            className="flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4"
+          >
+            <Text className="text-sm font-inter-medium text-stone-700 dark:text-stone-300">{t("confirm.editFields.title")}</Text>
+            <Ionicons name={showEditFields ? "chevron-up" : "chevron-down"} size={18} color={colors.textMuted} />
+          </PressableScale>
+          {showEditFields && (
+            <View className="mt-2 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
+              <View className="mb-2">
+                <Text className="mb-1 text-xs text-stone-500">{t("confirm.editFields.date")}</Text>
+                <TextInput
+                  value={editDate}
+                  onChangeText={(v) => { setEditDate(v); setEditDirty(true); }}
+                  placeholder="DD.MM.YYYY"
+                  placeholderTextColor={colors.textMuted}
+                  accessibilityLabel={t("confirm.editFields.date")}
+                  className="rounded-xl border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-4 py-3 text-stone-900 dark:text-stone-100"
+                />
+              </View>
+              <View className="flex-row gap-3">
+                <View className="flex-1">
+                  <Text className="mb-1 text-xs text-stone-500">{t("confirm.editFields.start")}</Text>
+                  <TextInput
+                    value={editStart}
+                    onChangeText={(v) => { setEditStart(v); setEditDirty(true); }}
+                    placeholder="HH:MM"
+                    placeholderTextColor={colors.textMuted}
+                    accessibilityLabel={t("confirm.editFields.start")}
+                    className="rounded-xl border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-4 py-3 text-stone-900 dark:text-stone-100"
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text className="mb-1 text-xs text-stone-500">{t("confirm.editFields.end")}</Text>
+                  <TextInput
+                    value={editEnd}
+                    onChangeText={(v) => { setEditEnd(v); setEditDirty(true); }}
+                    placeholder="HH:MM"
+                    placeholderTextColor={colors.textMuted}
+                    accessibilityLabel={t("confirm.editFields.end")}
+                    className="rounded-xl border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-4 py-3 text-stone-900 dark:text-stone-100"
+                  />
+                </View>
+              </View>
+              {editDirty && (
+                <PressableScale
+                  onPress={handleSaveEdit}
+                  disabled={savingEdit}
+                  className="mt-3 rounded-xl bg-accent-dark dark:bg-accent py-3"
+                  style={savingEdit ? { opacity: 0.6 } : undefined}
+                >
+                  {savingEdit ? (
+                    <ActivityIndicator color={colors.bg} accessibilityLabel={t("common.loading")} />
+                  ) : (
+                    <Text className="text-center text-sm font-inter-semibold text-white dark:text-stone-900">{t("confirm.editFields.save")}</Text>
+                  )}
+                </PressableScale>
               )}
-            </PressableScale>
+            </View>
           )}
         </AnimatedCard>
 
@@ -284,14 +304,14 @@ export default function ConfirmShiftScreen() {
               className="mb-3 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface py-4"
               style={submitting ? { opacity: 0.6 } : undefined}
             >
-              <Text className="text-center font-inter-medium text-slate-700 dark:text-slate-300">{t("confirm.missed")}</Text>
+              <Text className="text-center font-inter-medium text-stone-700 dark:text-stone-300">{t("confirm.missed")}</Text>
             </PressableScale>
             <PressableScale
               onPress={() => setShowOvertime(true)}
               disabled={submitting}
               accessibilityLabel={t("confirm.overtime")}
               accessibilityState={{ disabled: submitting }}
-              className="mb-3 rounded-xl border border-sky-600/20 bg-sky-600/10 dark:border-sky-400/20 dark:bg-sky-400/10 py-4"
+              className="mb-3 rounded-xl border border-blue-600/20 bg-blue-600/10 dark:border-blue-400/20 dark:bg-blue-400/10 py-4"
               style={submitting ? { opacity: 0.6 } : undefined}
             >
               <Text className="text-center font-inter-medium text-accent-dark dark:text-accent">{t("confirm.overtime")}</Text>
@@ -299,10 +319,10 @@ export default function ConfirmShiftScreen() {
           </AnimatedCard>
         ) : (
           <>
-            <Text className="mb-2 font-inter-medium text-slate-900 dark:text-slate-100">{t("confirm.overtimeLabel")}</Text>
+            <Text className="mb-2 font-inter-medium text-stone-900 dark:text-stone-100">{t("confirm.overtimeLabel")}</Text>
             <View className="mb-4 flex-row gap-3">
               <View className="flex-1">
-                <Text className="mb-1 text-xs text-slate-500">{t("confirm.overtimeHoursLabel")}</Text>
+                <Text className="mb-1 text-xs text-stone-500">{t("confirm.overtimeHoursLabel")}</Text>
                 <TextInput
                   value={overtimeHours}
                   onChangeText={setOvertimeHours}
@@ -310,11 +330,11 @@ export default function ConfirmShiftScreen() {
                   placeholderTextColor={colors.textMuted}
                   keyboardType="number-pad"
                   accessibilityLabel={t("confirm.overtimeHoursLabel")}
-                  className="rounded-xl border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-4 py-3 text-slate-900 dark:text-slate-100"
+                  className="rounded-xl border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-4 py-3 text-stone-900 dark:text-stone-100"
                 />
               </View>
               <View className="flex-1">
-                <Text className="mb-1 text-xs text-slate-500">{t("confirm.overtimeMinsLabel")}</Text>
+                <Text className="mb-1 text-xs text-stone-500">{t("confirm.overtimeMinsLabel")}</Text>
                 <TextInput
                   value={overtimeMins}
                   onChangeText={setOvertimeMins}
@@ -322,7 +342,7 @@ export default function ConfirmShiftScreen() {
                   placeholderTextColor={colors.textMuted}
                   keyboardType="number-pad"
                   accessibilityLabel={t("confirm.overtimeMinsLabel")}
-                  className="rounded-xl border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-4 py-3 text-slate-900 dark:text-slate-100"
+                  className="rounded-xl border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-4 py-3 text-stone-900 dark:text-stone-100"
                 />
               </View>
             </View>
@@ -337,7 +357,7 @@ export default function ConfirmShiftScreen() {
               {submitting ? (
                 <ActivityIndicator color={colors.bg} accessibilityLabel={t("common.loading")} />
               ) : (
-                <Text className="text-center font-inter-semibold text-white dark:text-slate-900">{t("confirm.saveOvertime")}</Text>
+                <Text className="text-center font-inter-semibold text-white dark:text-stone-900">{t("confirm.saveOvertime")}</Text>
               )}
             </PressableScale>
             <PressableScale
@@ -345,7 +365,7 @@ export default function ConfirmShiftScreen() {
               accessibilityLabel={t("confirm.backBtn")}
               className="rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface py-3"
             >
-              <Text className="text-center font-inter-medium text-slate-600 dark:text-slate-400">{t("confirm.backBtn")}</Text>
+              <Text className="text-center font-inter-medium text-stone-600 dark:text-stone-400">{t("confirm.backBtn")}</Text>
             </PressableScale>
           </>
         )}

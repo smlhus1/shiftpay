@@ -52,15 +52,15 @@ function SkeletonCard({ delay }: { delay: number }) {
       className="mb-3 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-3"
     >
       <View className="flex-row items-center gap-2">
-        <View className="h-4 w-24 rounded bg-slate-200 dark:bg-slate-700" />
-        <View className="h-4 w-14 rounded bg-slate-200 dark:bg-slate-700" />
-        <View className="h-4 w-14 rounded bg-slate-200 dark:bg-slate-700" />
+        <View className="h-4 w-24 rounded bg-stone-200 dark:bg-stone-700" />
+        <View className="h-4 w-14 rounded bg-stone-200 dark:bg-stone-700" />
+        <View className="h-4 w-14 rounded bg-stone-200 dark:bg-stone-700" />
       </View>
       <View className="mt-2 flex-row gap-1">
-        <View className="h-8 flex-1 rounded-full bg-slate-200 dark:bg-slate-700" />
-        <View className="h-8 flex-1 rounded-full bg-slate-200 dark:bg-slate-700" />
-        <View className="h-8 flex-1 rounded-full bg-slate-200 dark:bg-slate-700" />
-        <View className="h-8 flex-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+        <View className="h-8 flex-1 rounded-full bg-stone-200 dark:bg-stone-700" />
+        <View className="h-8 flex-1 rounded-full bg-stone-200 dark:bg-stone-700" />
+        <View className="h-8 flex-1 rounded-full bg-stone-200 dark:bg-stone-700" />
+        <View className="h-8 flex-1 rounded-full bg-stone-200 dark:bg-stone-700" />
       </View>
     </MotiView>
   );
@@ -89,11 +89,11 @@ function OcrLoadingState({ progress }: { progress: string | null }) {
         <Animated.View style={spinStyle}>
           <Ionicons name="scan-outline" size={48} color={colors.accent} />
         </Animated.View>
-        <Text className="mt-3 text-lg font-inter-semibold text-slate-900 dark:text-slate-100">
+        <Text className="mt-3 text-lg font-inter-semibold text-stone-900 dark:text-stone-100">
           {t("import.loading")}
         </Text>
         {progress && (
-          <Text className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <Text className="mt-1 text-sm text-stone-600 dark:text-stone-400">
             {progress}
           </Text>
         )}
@@ -130,10 +130,10 @@ function SavedSuccessView({
       <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/15">
         <Ionicons name="checkmark-circle" size={40} color={colors.success} />
       </View>
-      <Text className="text-xl font-inter-semibold text-slate-900 dark:text-slate-100">
+      <Text className="text-xl font-inter-semibold text-stone-900 dark:text-stone-100">
         {t("import.saved.title")}
       </Text>
-      <Text className="mt-2 text-center text-slate-600 dark:text-slate-400">
+      <Text className="mt-2 text-center text-stone-600 dark:text-stone-400">
         {t("import.saved.description", {
           count: savedResult.shiftCount,
           start: savedResult.periodStart,
@@ -145,7 +145,7 @@ function SavedSuccessView({
         accessibilityLabel={t("import.saved.viewSchedule")}
         className="mt-6 w-full rounded-xl bg-accent-dark dark:bg-accent py-4"
       >
-        <Text className="text-center font-inter-semibold text-white dark:text-slate-900">
+        <Text className="text-center font-inter-semibold text-white dark:text-stone-900">
           {t("import.saved.viewSchedule")}
         </Text>
       </PressableScale>
@@ -154,7 +154,7 @@ function SavedSuccessView({
         accessibilityLabel={t("import.saved.importMore")}
         className="mt-3 w-full rounded-xl border border-app-border dark:border-dark-border py-3"
       >
-        <Text className="text-center font-inter-medium text-slate-700 dark:text-slate-300">
+        <Text className="text-center font-inter-medium text-stone-700 dark:text-stone-300">
           {t("import.saved.importMore")}
         </Text>
       </PressableScale>
@@ -249,7 +249,7 @@ export default function ImportScreen() {
           allRows.push({ ok: true as const, shift: ocrShiftToShift(s) });
         }
       } catch (e) {
-        errors.push(`Image ${i + 1}: ${e instanceof Error ? e.message : "OCR failed"}`);
+        errors.push(`Image ${i + 1}: ${e instanceof Error ? e.message : t("import.alerts.ocrFailed")}`);
       }
     }
     // Deduplicate: same date + start_time + end_time = same shift
@@ -344,7 +344,7 @@ export default function ImportScreen() {
     if (!permission?.granted) {
       const { granted } = await requestPermission();
       if (!granted) {
-        setError("Camera permission required to take a photo.");
+        setError(t("import.cameraPermissionError"));
         return;
       }
     }
@@ -362,7 +362,7 @@ export default function ImportScreen() {
       setRows(result.shifts.map((s) => ({ ok: true as const, shift: ocrShiftToShift(s) })));
       setExpectedPay(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "OCR failed");
+      setError(e instanceof Error ? e.message : t("import.alerts.ocrFailed"));
     } finally {
       setLoading(false);
     }
@@ -518,14 +518,14 @@ export default function ImportScreen() {
             </PressableScale>
           )}
           <AnimatedCard index={0} className="mb-4 rounded-xl bg-app-surface dark:bg-dark-surface p-3">
-            <Text className="text-sm text-slate-600 dark:text-slate-400">
+            <Text className="text-sm text-stone-600 dark:text-stone-400">
               {t("import.disclaimer")}
             </Text>
           </AnimatedCard>
           {/* Primary: camera */}
           <AnimatedCard index={1}>
             <PressableScale onPress={openCamera} accessibilityLabel={t("import.cameraBtn")} className="rounded-xl bg-accent-dark dark:bg-accent py-4">
-              <Text className="text-center text-base font-inter-semibold text-white dark:text-slate-900">{t("import.cameraBtn")}</Text>
+              <Text className="text-center text-base font-inter-semibold text-white dark:text-stone-900">{t("import.cameraBtn")}</Text>
             </PressableScale>
           </AnimatedCard>
           {/* Secondary: gallery/files */}
@@ -541,7 +541,7 @@ export default function ImportScreen() {
               accessibilityLabel={t("import.fileBtn")}
               className="mt-3 rounded-xl border-2 border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface py-4"
             >
-              <Text className="text-center text-base font-inter-medium text-slate-700 dark:text-slate-300">{t("import.fileBtn")}</Text>
+              <Text className="text-center text-base font-inter-medium text-stone-700 dark:text-stone-300">{t("import.fileBtn")}</Text>
             </PressableScale>
           </AnimatedCard>
           {/* Tertiary: more options toggle */}
@@ -551,7 +551,7 @@ export default function ImportScreen() {
             className="mt-3 py-2"
             haptic={false}
           >
-            <Text className="text-center text-sm text-slate-500">
+            <Text className="text-center text-sm text-stone-500">
               {t("import.moreOptions")} {showMore ? "▲" : "▼"}
             </Text>
           </PressableScale>

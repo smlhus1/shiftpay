@@ -23,9 +23,13 @@ import { useThemeColors } from "../../lib/theme-context";
 
 function StatBox({ value, label }: { value: string; label: string }) {
   return (
-    <View className="flex-1 items-center rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-3">
-      <Text className="font-display text-2xl text-slate-900 dark:text-slate-100">{value}</Text>
-      <Text className="mt-0.5 text-center text-xs text-slate-600 dark:text-slate-400">{label}</Text>
+    <View
+      className="flex-1 items-center rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-3"
+      accessible={true}
+      accessibilityLabel={`${value}: ${label}`}
+    >
+      <Text className="font-display text-2xl text-stone-900 dark:text-stone-100" importantForAccessibility="no">{value}</Text>
+      <Text className="mt-0.5 text-center text-xs text-stone-600 dark:text-stone-400" importantForAccessibility="no">{label}</Text>
     </View>
   );
 }
@@ -123,12 +127,12 @@ export default function SummaryScreen() {
   if (invalid || !summary) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg p-6">
-        <Text className="text-center text-slate-600 dark:text-slate-400">{t("summary.invalid")}</Text>
+        <Text className="text-center text-stone-600 dark:text-stone-400">{t("summary.invalid")}</Text>
         <PressableScale
           onPress={() => router.back()}
           className="mt-4 rounded-xl bg-accent-dark dark:bg-accent px-6 py-3"
         >
-          <Text className="font-inter-semibold text-white dark:text-slate-900">{t("summary.back")}</Text>
+          <Text className="font-inter-semibold text-white dark:text-stone-900">{t("summary.back")}</Text>
         </PressableScale>
       </View>
     );
@@ -178,17 +182,17 @@ export default function SummaryScreen() {
         ) : <View />}
       </View>
 
-      <Text className="mb-4 text-xl font-inter-semibold text-slate-900 dark:text-slate-100" accessibilityRole="header">
+      <Text className="mb-4 text-xl font-inter-semibold text-stone-900 dark:text-stone-100" accessibilityRole="header">
         {monthName} {y}
       </Text>
 
       {/* Dominant pay card */}
       <AnimatedCard index={0} className="mb-4 rounded-xl bg-app-surface dark:bg-dark-surface p-5">
-        <Text className="text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("summary.expectedPay.title")}</Text>
-        <Text className="mt-1 font-display text-4xl text-amber-600 dark:text-warm">
+        <Text className="text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400">{t("summary.expectedPay.title")}</Text>
+        <Text className="mt-1 font-display text-4xl text-amber-700 dark:text-warm">
           {formatCurrency(expectedPay, currency)}
         </Text>
-        <Text className="mt-1 text-xs text-slate-500">{t("summary.expectedPay.subtitle")}</Text>
+        <Text className="mt-1 text-xs text-stone-500">{t("summary.expectedPay.subtitle")}</Text>
       </AnimatedCard>
 
       {/* Stat boxes */}
@@ -209,12 +213,12 @@ export default function SummaryScreen() {
 
       {/* Hours detail */}
       <AnimatedCard index={2} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
-        <Text className="font-inter-medium text-slate-900 dark:text-slate-100">{t("summary.shifts.title")}</Text>
+        <Text className="font-inter-medium text-stone-900 dark:text-stone-100">{t("summary.shifts.title")}</Text>
         <View className="mt-2 flex-row flex-wrap gap-3">
-          <Text className="text-slate-600 dark:text-slate-400">
+          <Text className="text-stone-600 dark:text-stone-400">
             {t("summary.shifts.actual", { hours: summary.actualHours.toFixed(1) })}
           </Text>
-          <Text className="text-slate-600 dark:text-slate-400">
+          <Text className="text-stone-600 dark:text-stone-400">
             {t("summary.shifts.missed", { count: summary.missedShifts })}
           </Text>
           {summary.overtimeHours > 0 && (
@@ -223,9 +227,9 @@ export default function SummaryScreen() {
         </View>
       </AnimatedCard>
 
-      <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("summary.list.title")}</Text>
+      <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("summary.list.title")}</Text>
       {summary.shifts.length === 0 ? (
-        <Text className="rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4 text-slate-500">
+        <Text className="rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4 text-stone-500">
           {t("summary.list.empty")}
         </Text>
       ) : (
@@ -252,7 +256,7 @@ export default function SummaryScreen() {
             }
           }}
           accessibilityLabel={t("summary.export")}
-          className="mt-4 flex-row items-center justify-center gap-2 rounded-xl border border-sky-600/20 bg-sky-600/10 dark:border-sky-400/20 dark:bg-sky-400/10 py-3"
+          className="mt-4 flex-row items-center justify-center gap-2 rounded-xl border border-blue-600/20 bg-blue-600/10 dark:border-blue-400/20 dark:bg-blue-400/10 py-3"
         >
           <Ionicons name="download-outline" size={18} color={colors.accent} />
           <Text className="font-inter-semibold text-accent-dark dark:text-accent">{t("summary.export")}</Text>
@@ -264,7 +268,7 @@ export default function SummaryScreen() {
         accessibilityLabel={t("summary.back")}
         className="mt-3 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface py-3"
       >
-        <Text className="text-center font-inter-medium text-slate-700 dark:text-slate-300">{t("summary.back")}</Text>
+        <Text className="text-center font-inter-medium text-stone-700 dark:text-stone-300">{t("summary.back")}</Text>
       </PressableScale>
     </ScrollView>
   );

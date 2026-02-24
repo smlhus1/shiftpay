@@ -123,12 +123,12 @@ export default function PeriodDetailScreen() {
   if (notFound || !id) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg p-6">
-        <Text className="text-center text-slate-600 dark:text-slate-400">{t("period.notFound")}</Text>
+        <Text className="text-center text-stone-600 dark:text-stone-400">{t("period.notFound")}</Text>
         <PressableScale
           onPress={() => router.back()}
           className="mt-4 rounded-xl bg-accent-dark dark:bg-accent px-6 py-2"
         >
-          <Text className="font-inter-semibold text-white dark:text-slate-900">{t("common.back")}</Text>
+          <Text className="font-inter-semibold text-white dark:text-stone-900">{t("common.back")}</Text>
         </PressableScale>
       </View>
     );
@@ -144,17 +144,17 @@ export default function PeriodDetailScreen() {
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
     >
       <AnimatedCard index={0} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
-        <Text className="text-lg font-inter-semibold text-slate-900 dark:text-slate-100">
+        <Text className="text-lg font-inter-semibold text-stone-900 dark:text-stone-100">
           {schedule.period_start} – {schedule.period_end}
         </Text>
-        <Text className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+        <Text className="mt-1 text-sm text-stone-600 dark:text-stone-400">
           {t("period.source", { source: sourceLabel(schedule.source, t), date: formatCreated(schedule.created_at) })}
         </Text>
         {yearMonth && (
           <PressableScale
             onPress={() => router.push(`/summary/${yearMonth}` as Href)}
             accessibilityLabel={t("period.viewSummary")}
-            className="mt-3 rounded-xl border border-sky-600/20 bg-sky-600/10 dark:border-sky-400/20 dark:bg-sky-400/10 py-2"
+            className="mt-3 rounded-xl border border-blue-600/20 bg-blue-600/10 dark:border-blue-400/20 dark:bg-blue-400/10 py-2"
           >
             <Text className="text-center text-sm font-inter-semibold text-accent-dark dark:text-accent">
               {t("period.viewSummary")}
@@ -163,10 +163,10 @@ export default function PeriodDetailScreen() {
         )}
       </AnimatedCard>
 
-      <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-slate-600 dark:text-slate-400">{t("period.shifts.title")}</Text>
+      <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("period.shifts.title")}</Text>
       {shifts.length === 0 ? (
         <View className="rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
-          <Text className="text-center text-slate-600 dark:text-slate-400">{t("period.shifts.empty")}</Text>
+          <Text className="text-center text-stone-600 dark:text-stone-400">{t("period.shifts.empty")}</Text>
         </View>
       ) : (
         shifts.map((shift) => (

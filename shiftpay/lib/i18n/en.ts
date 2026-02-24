@@ -76,7 +76,9 @@ const en: TranslationShape = {
     manualBtn: "Add shift manually",
     loading: "Processing...",
     progress: "Processing %{current} of %{total} images...",
+    cameraPermissionError: "Camera permission required to take a photo.",
     alerts: {
+      ocrFailed: "OCR failed",
       missingData: "Missing data",
       missingDataSave:
         "Enter date, start time and end time for at least one shift to save.",

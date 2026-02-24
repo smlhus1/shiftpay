@@ -76,7 +76,9 @@ const sv: TranslationShape = {
     manualBtn: "Lägg till skift manuellt",
     loading: "Bearbetar...",
     progress: "Bearbetar %{current} av %{total} bilder...",
+    cameraPermissionError: "Kamerabehörighet krävs för att ta foto.",
     alerts: {
+      ocrFailed: "OCR misslyckades",
       missingData: "Saknad data",
       missingDataSave:
         "Fyll i datum, starttid och sluttid för minst ett skift för att spara.",
