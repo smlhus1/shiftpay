@@ -1,25 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="no">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ShiftPay — Did you get paid right?</title>
-<meta name="description" content="Shift worker payroll auditor. Photo your timesheet, set your rates, verify your pay. All data stays on your device. Free for Android.">
+<title>ShiftPay — Fikk du riktig l&oslash;nn?</title>
+<meta name="description" content="Kontroller l&oslash;nnen din som skiftarbeider. Ta bilde av vaktplanen, sett satsene dine, se hva du burde ha tjent. All data forblir p&aring; enheten din.">
 <meta name="robots" content="index, follow">
 
 <!-- OG Tags -->
-<meta property="og:title" content="ShiftPay — Did you get paid right?">
-<meta property="og:description" content="Shift worker payroll auditor. Photo your timesheet, set your rates, verify your pay. All data stays on your device.">
+<meta property="og:title" content="ShiftPay — Fikk du riktig l&oslash;nn?">
+<meta property="og:description" content="Kontroller l&oslash;nnen din som skiftarbeider. Ta bilde av vaktplanen, sett satsene dine, se hva du burde ha tjent.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://shiftpay.vercel.app/">
+<meta property="og:url" content="https://shiftpay.vercel.app/no.html">
 <meta property="og:image" content="https://shiftpay.vercel.app/nye_screenshots/overview_dark.png">
 <meta property="og:site_name" content="ShiftPay">
+<meta property="og:locale" content="nb_NO">
 <meta name="twitter:card" content="summary_large_image">
 
 <!-- hreflang -->
 <link rel="alternate" hreflang="en" href="https://shiftpay.vercel.app/">
 <link rel="alternate" hreflang="no" href="https://shiftpay.vercel.app/no.html">
-<link rel="canonical" href="https://shiftpay.vercel.app/">
+<link rel="canonical" href="https://shiftpay.vercel.app/no.html">
 
 <!-- Schema: SoftwareApplication -->
 <script type="application/ld+json">
@@ -29,13 +30,14 @@
   "name": "ShiftPay",
   "operatingSystem": "Android",
   "applicationCategory": "FinanceApplication",
-  "description": "Shift worker payroll auditor. Photo your timesheet, set your rates, verify your pay.",
+  "description": "Kontroller l\u00f8nnen din som skiftarbeider. Ta bilde av vaktplanen, sett satsene dine, se hva du burde ha tjent.",
+  "inLanguage": "no",
   "offers": {
     "@type": "Offer",
     "price": "0",
-    "priceCurrency": "USD"
+    "priceCurrency": "NOK"
   },
-  "featureList": "OCR timesheet import, Pay calculation, Push notifications, Shift diary, Multilingual (EN/NO/SV/DA)"
+  "featureList": "OCR vaktplan-import, L\u00f8nnsberegning, Push-varsler, Vaktdagbok, Flerspr\u00e5klig (NO/EN/SV/DA)"
 }
 </script>
 
@@ -66,7 +68,6 @@
     line-height: 1.6;
   }
 
-  /* --- LANGUAGE TOGGLE --- */
   .lang-toggle {
     position: fixed;
     top: 16px;
@@ -96,11 +97,8 @@
     color: var(--teal-light);
   }
 
-  .lang-toggle a:hover:not(.active) {
-    color: var(--text);
-  }
+  .lang-toggle a:hover:not(.active) { color: var(--text); }
 
-  /* --- SECTIONS --- */
   section {
     padding: 80px 24px;
     position: relative;
@@ -111,7 +109,6 @@
     margin: 0 auto;
   }
 
-  /* --- HERO --- */
   .hero {
     min-height: 100vh;
     display: flex;
@@ -152,7 +149,6 @@
     font-weight: 600;
   }
 
-  /* --- PHONE FRAME --- */
   .phone-frame {
     width: 280px;
     background: #1e293b;
@@ -185,9 +181,7 @@
     display: block;
   }
 
-  .phone-frame.small {
-    width: 220px;
-  }
+  .phone-frame.small { width: 220px; }
 
   .dual-phones {
     display: flex;
@@ -195,7 +189,6 @@
     flex-shrink: 0;
   }
 
-  /* --- BADGE --- */
   .badge {
     display: inline-block;
     background: rgba(20, 184, 166, 0.15);
@@ -209,7 +202,6 @@
     margin-bottom: 20px;
   }
 
-  /* --- SECTION HEADINGS --- */
   .section-heading {
     font-size: 40px;
     font-weight: 700;
@@ -226,19 +218,10 @@
     margin-bottom: 40px;
   }
 
-  .section-centered {
-    text-align: center;
-  }
+  .section-centered { text-align: center; }
+  .section-centered .section-sub { margin-left: auto; margin-right: auto; }
 
-  .section-centered .section-sub {
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  /* --- PROBLEM STATS --- */
-  .problem-section {
-    background: var(--darker);
-  }
+  .problem-section { background: var(--darker); }
 
   .problem-stats {
     display: grid;
@@ -269,16 +252,13 @@
     line-height: 1.4;
   }
 
-  /* --- HOW IT WORKS --- */
   .how-section .container {
     display: flex;
     align-items: center;
     gap: 60px;
   }
 
-  .how-text {
-    flex: 1;
-  }
+  .how-text { flex: 1; }
 
   .flow {
     display: flex;
@@ -305,7 +285,6 @@
     flex-shrink: 0;
   }
 
-  /* --- FEATURE CARDS --- */
   .features-section {
     background: linear-gradient(135deg, #042f2e 0%, #0f172a 100%);
   }
@@ -324,10 +303,7 @@
     padding: 28px;
   }
 
-  .feature-card .icon {
-    font-size: 28px;
-    margin-bottom: 12px;
-  }
+  .feature-card .icon { font-size: 28px; margin-bottom: 12px; }
 
   .feature-card h3 {
     font-size: 17px;
@@ -342,10 +318,7 @@
     line-height: 1.5;
   }
 
-  /* --- TESTIMONIAL --- */
-  .testimonial-section {
-    background: var(--darker);
-  }
+  .testimonial-section { background: var(--darker); }
 
   .quote {
     border-left: 3px solid var(--teal);
@@ -390,7 +363,6 @@
     letter-spacing: 0.5px;
   }
 
-  /* --- VIDEO --- */
   .video-wrapper {
     max-width: 400px;
     margin: 40px auto 0;
@@ -458,7 +430,6 @@
     margin-top: 12px;
   }
 
-  /* --- PRIVACY SECTION --- */
   .privacy-flow {
     display: flex;
     align-items: center;
@@ -485,10 +456,7 @@
     background: rgba(20, 184, 166, 0.08);
   }
 
-  .privacy-arrow {
-    color: #475569;
-    font-size: 24px;
-  }
+  .privacy-arrow { color: #475569; font-size: 24px; }
 
   .privacy-points {
     display: grid;
@@ -497,15 +465,8 @@
     margin-top: 32px;
   }
 
-  .privacy-point {
-    text-align: center;
-    padding: 20px;
-  }
-
-  .privacy-point .icon {
-    font-size: 24px;
-    margin-bottom: 8px;
-  }
+  .privacy-point { text-align: center; padding: 20px; }
+  .privacy-point .icon { font-size: 24px; margin-bottom: 8px; }
 
   .privacy-point h4 {
     font-size: 15px;
@@ -514,12 +475,8 @@
     margin-bottom: 4px;
   }
 
-  .privacy-point p {
-    font-size: 13px;
-    color: #94a3b8;
-  }
+  .privacy-point p { font-size: 13px; color: #94a3b8; }
 
-  /* --- FAQ --- */
   .faq-list {
     max-width: 700px;
     margin: 0 auto;
@@ -551,9 +508,7 @@
     transition: transform 0.2s;
   }
 
-  .faq-list details[open] summary::after {
-    content: '\2212';
-  }
+  .faq-list details[open] summary::after { content: '\2212'; }
 
   .faq-list .faq-answer {
     padding: 0 0 20px;
@@ -562,7 +517,6 @@
     line-height: 1.6;
   }
 
-  /* --- DOWNLOAD BUTTON --- */
   .download-btn {
     display: inline-block;
     background: var(--teal);
@@ -591,11 +545,8 @@
     margin-top: 4px;
   }
 
-  .download-btn:hover .sub {
-    color: rgba(15, 23, 42, 0.6);
-  }
+  .download-btn:hover .sub { color: rgba(15, 23, 42, 0.6); }
 
-  /* --- STICKY MOBILE CTA --- */
   .sticky-cta {
     display: none;
     position: fixed;
@@ -612,9 +563,7 @@
     transition: transform 0.3s ease;
   }
 
-  .sticky-cta.visible {
-    transform: translateY(0);
-  }
+  .sticky-cta.visible { transform: translateY(0); }
 
   .sticky-cta .download-btn {
     padding: 12px 32px;
@@ -623,28 +572,16 @@
     max-width: 360px;
   }
 
-  /* --- FOOTER --- */
   footer {
     padding: 40px 24px;
     border-top: 1px solid rgba(255,255,255,0.06);
     text-align: center;
   }
 
-  footer p {
-    font-size: 13px;
-    color: var(--gray);
-  }
+  footer p { font-size: 13px; color: var(--gray); }
+  footer a { color: var(--teal-light); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
 
-  footer a {
-    color: var(--teal-light);
-    text-decoration: none;
-  }
-
-  footer a:hover {
-    text-decoration: underline;
-  }
-
-  /* --- TRUST SIGNALS --- */
   .trust-signals {
     display: flex;
     justify-content: center;
@@ -661,12 +598,8 @@
     gap: 6px;
   }
 
-  .trust-signal .check {
-    color: var(--teal-light);
-    font-weight: 700;
-  }
+  .trust-signal .check { color: var(--teal-light); font-weight: 700; }
 
-  /* --- QR SECTION --- */
   .qr-section {
     display: flex;
     align-items: center;
@@ -675,9 +608,7 @@
     flex-wrap: wrap;
   }
 
-  .qr-code {
-    text-align: center;
-  }
+  .qr-code { text-align: center; }
 
   .qr-code img {
     width: 160px;
@@ -687,59 +618,27 @@
     padding: 8px;
   }
 
-  .qr-code p {
-    font-size: 13px;
-    color: #94a3b8;
-    margin-top: 8px;
-  }
+  .qr-code p { font-size: 13px; color: #94a3b8; margin-top: 8px; }
 
-  /* --- LINK --- */
-  a.text-link {
-    color: var(--teal-light);
-    text-decoration: none;
-    font-weight: 500;
-  }
+  a.text-link { color: var(--teal-light); text-decoration: none; font-weight: 500; }
+  a.text-link:hover { text-decoration: underline; }
 
-  a.text-link:hover {
-    text-decoration: underline;
-  }
+  .highlight { color: var(--teal-light); font-weight: 600; }
 
-  .highlight {
-    color: var(--teal-light);
-    font-weight: 600;
-  }
-
-  /* --- RESPONSIVE --- */
   @media (max-width: 900px) {
-    .hero .container {
-      flex-direction: column;
-      text-align: center;
-    }
-
+    .hero .container { flex-direction: column; text-align: center; }
     .hero-text { max-width: 100%; }
     .hero-text h1 { font-size: 36px; }
-
     .phone-frame { width: 220px; }
     .phone-frame.small { width: 180px; }
     .dual-phones { gap: 12px; }
-
     .section-heading { font-size: 28px; }
-
     .problem-stats { grid-template-columns: 1fr; }
     .feature-grid { grid-template-columns: 1fr; }
     .privacy-points { grid-template-columns: 1fr; }
-
-    .how-section .container {
-      flex-direction: column;
-    }
-
-    .stat-row {
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
+    .how-section .container { flex-direction: column; }
+    .stat-row { flex-wrap: wrap; justify-content: center; }
     .qr-code { display: none; }
-
     .sticky-cta { display: block; }
   }
 
@@ -755,9 +654,9 @@
 <body>
 
 <!-- LANGUAGE TOGGLE -->
-<div class="lang-toggle" role="navigation" aria-label="Language">
-  <a href="/" class="active" aria-current="page">EN</a>
-  <a href="no.html">NO</a>
+<div class="lang-toggle" role="navigation" aria-label="Spr&aring;k">
+  <a href="/">EN</a>
+  <a href="no.html" class="active" aria-current="page">NO</a>
 </div>
 
 <!-- ============================================================ -->
@@ -766,207 +665,207 @@
 <section class="hero" id="top">
   <div class="container">
     <div class="hero-text">
-      <h1>Did you get paid&nbsp;right?</h1>
-      <p class="subheadline">Photo your timesheet. Set your rates. <strong>See what you should have earned.</strong> ShiftPay calculates your expected pay so you can compare it to your payslip.</p>
+      <h1>Fikk du riktig l&oslash;nn?</h1>
+      <p class="subheadline">Ta bilde av vaktplanen. Sett satsene dine. <strong>Se hva du burde ha tjent.</strong> ShiftPay beregner forventet l&oslash;nn slik at du kan sammenligne med l&oslash;nnsslippen.</p>
       <a href="https://ifzngxyvdzaobyxtnrcy.supabase.co/storage/v1/object/public/releases/shiftpay-v1.0.1.apk" class="download-btn" id="hero-cta">
-        Download for Android
-        <span class="sub">Free &middot; No account needed &middot; 41 MB</span>
+        Last ned for Android
+        <span class="sub">Gratis &middot; Ingen konto n&oslash;dvendig &middot; 41 MB</span>
       </a>
     </div>
     <div class="phone-frame">
-      <img src="nye_screenshots/overview_dark.png" alt="ShiftPay dashboard showing upcoming shifts and expected pay" width="256" height="512" loading="eager">
+      <img src="nye_screenshots/overview_dark.png" alt="ShiftPay-dashbord med kommende vakter og forventet l&oslash;nn" width="256" height="512" loading="eager">
     </div>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- 2. THE PROBLEM -->
+<!-- 2. PROBLEMET -->
 <!-- ============================================================ -->
 <section class="problem-section" id="problem">
   <div class="container section-centered">
-    <div class="badge">The problem</div>
-    <h2 class="section-heading">Shift workers can't verify their&nbsp;pay</h2>
-    <p class="section-sub">Night shifts, weekends, holidays &mdash; each pays differently. The rules are buried in collective agreements, and payroll systems show limited history. Most errors go undetected.</p>
+    <div class="badge">Problemet</div>
+    <h2 class="section-heading">Skiftarbeidere kan ikke kontrollere l&oslash;nnen sin</h2>
+    <p class="section-sub">Nattevakter, helger, helligdager &mdash; alt har ulike tillegg. Reglene er gjemt i tariffavtaler, og l&oslash;nnssystemet viser begrenset historikk. De fleste feil oppdages aldri.</p>
 
     <div class="problem-stats">
       <div class="problem-stat">
         <div class="num">600M+</div>
-        <div class="label">Shift workers globally</div>
+        <div class="label">Skiftarbeidere globalt</div>
       </div>
       <div class="problem-stat">
         <div class="num">82%</div>
-        <div class="label">Can't verify their pay supplements</div>
+        <div class="label">Kan ikke kontrollere tilleggene sine</div>
       </div>
       <div class="problem-stat">
-        <div class="num">1 mo</div>
-        <div class="label">Typical payroll history access</div>
+        <div class="num">1 md</div>
+        <div class="label">Typisk l&oslash;nnshistorikk tilgjengelig</div>
       </div>
     </div>
 
-    <p style="max-width: 560px; margin: 0 auto; font-size: 16px;">Payroll errors are <span class="highlight">systematic, not rare</span>. Most go undetected because the math is too complex to do by hand.</p>
+    <p style="max-width: 560px; margin: 0 auto; font-size: 16px;">L&oslash;nnsfeil er <span class="highlight">systematiske, ikke sjeldne</span>. De fleste oppdages aldri fordi regnestykket er for komplisert &aring; gj&oslash;re for h&aring;nd.</p>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- 3. HOW IT WORKS -->
+<!-- 3. SLIK FUNGERER DET -->
 <!-- ============================================================ -->
 <section class="how-section" id="how-it-works">
   <div class="container">
     <div class="how-text">
-      <div class="badge">How it works</div>
-      <h2 class="section-heading">Photo &rarr; AI &rarr; Expected&nbsp;pay</h2>
-      <p class="section-sub">Take a photo of your timesheet. AI reads every shift &mdash; dates, times, and type. Review, edit if needed, and see your expected pay.</p>
+      <div class="badge">Slik fungerer det</div>
+      <h2 class="section-heading">Foto &rarr; AI &rarr; Forventet l&oslash;nn</h2>
+      <p class="section-sub">Ta bilde av vaktplanen. AI leser alle vakter &mdash; datoer, tider og type. Se over, rediger om n&oslash;dvendig, og f&aring; forventet l&oslash;nn.</p>
 
       <div class="flow">
-        <div class="flow-step">Snap photo</div>
+        <div class="flow-step">Ta bilde</div>
         <div class="flow-arrow">&rarr;</div>
-        <div class="flow-step">AI reads it</div>
+        <div class="flow-step">AI leser</div>
         <div class="flow-arrow">&rarr;</div>
-        <div class="flow-step">Review shifts</div>
+        <div class="flow-step">Se over vakter</div>
         <div class="flow-arrow">&rarr;</div>
-        <div class="flow-step">Expected pay</div>
+        <div class="flow-step">Forventet l&oslash;nn</div>
       </div>
 
-      <p style="color: #94a3b8; font-size: 15px;">Also supports CSV import and manual entry. Works with messy formats, abbreviations, and handwriting.</p>
+      <p style="color: #94a3b8; font-size: 15px;">St&oslash;tter ogs&aring; CSV-import og manuell registrering. Fungerer med rotete formater, forkortelser og h&aring;ndskrift.</p>
     </div>
     <div class="dual-phones">
       <div class="phone-frame small">
-        <img src="nye_screenshots/prossesing.png" alt="AI processing a timesheet photo" width="196" height="392" loading="lazy">
+        <img src="nye_screenshots/prossesing.png" alt="AI behandler et bilde av vaktplanen" width="196" height="392" loading="lazy">
       </div>
       <div class="phone-frame small">
-        <img src="nye_screenshots/calc_pay.png" alt="Calculated expected pay breakdown" width="196" height="392" loading="lazy">
+        <img src="nye_screenshots/calc_pay.png" alt="Beregnet forventet l&oslash;nn" width="196" height="392" loading="lazy">
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- 4. FEATURES -->
+<!-- 4. FUNKSJONER -->
 <!-- ============================================================ -->
 <section class="features-section" id="features">
   <div class="container section-centered">
-    <div class="badge">Features</div>
-    <h2 class="section-heading">Everything you need to track your&nbsp;shifts</h2>
+    <div class="badge">Funksjoner</div>
+    <h2 class="section-heading">Alt du trenger for &aring; f&oslash;lge med p&aring; vaktene dine</h2>
 
     <div class="feature-grid">
       <div class="feature-card">
         <div class="icon">&#128247;</div>
-        <h3>Photo-first import</h3>
-        <p>Snap a photo of your printed or posted schedule. AI reads dates, times, and shift types automatically. No typing required.</p>
+        <h3>Foto-import</h3>
+        <p>Ta bilde av den trykte eller opphengte vaktplanen. AI leser datoer, tider og vakttyper automatisk. Ingen tasting n&oslash;dvendig.</p>
       </div>
       <div class="feature-card">
         <div class="icon">&#128276;</div>
-        <h3>Push notifications</h3>
-        <p>After each shift ends, get a notification: "Did you complete it?" Tap yes, no, or overtime. Done in 2 seconds.</p>
+        <h3>Push-varsler</h3>
+        <p>Etter hver vakt f&aring;r du et varsel: &laquo;Fullf&oslash;rte du vakten?&raquo; Trykk ja, nei eller overtid. Ferdig p&aring; 2 sekunder.</p>
       </div>
       <div class="feature-card">
         <div class="icon">&#128214;</div>
-        <h3>Shift diary</h3>
-        <p>Build a verified record of every hour actually worked &mdash; not just what was planned. Monthly summaries show planned vs actual.</p>
+        <h3>Vaktdagbok</h3>
+        <p>Bygg en verifisert oversikt over alle timer du faktisk har jobbet &mdash; ikke bare det som var planlagt. M&aring;nedsoversikt viser planlagt vs. faktisk.</p>
       </div>
       <div class="feature-card">
         <div class="icon">&#127760;</div>
-        <h3>Multilingual</h3>
-        <p>Available in English, Norwegian, Swedish, and Danish. Set your currency (NOK, GBP, SEK, DKK, EUR) independently.</p>
+        <h3>Flerspr&aring;klig</h3>
+        <p>Tilgjengelig p&aring; norsk, engelsk, svensk og dansk. Sett valuta (NOK, GBP, SEK, DKK, EUR) uavhengig av spr&aring;k.</p>
       </div>
     </div>
 
     <!-- Video demo -->
     <div class="video-wrapper">
-      <div class="video-container" id="demo-video" role="button" tabindex="0" aria-label="Play app demo video">
+      <div class="video-container" id="demo-video" role="button" tabindex="0" aria-label="Spill av app-demo">
         <div class="video-placeholder">
-          <img src="nye_screenshots/overview_dark.png" alt="ShiftPay app demo preview" loading="lazy">
+          <img src="nye_screenshots/overview_dark.png" alt="Forh&aring;ndsvisning av ShiftPay app-demo" loading="lazy">
           <div class="video-play-btn" aria-hidden="true"></div>
         </div>
       </div>
-      <p class="video-label">App demo &middot; 30 seconds</p>
+      <p class="video-label">App-demo &middot; 30 sekunder</p>
     </div>
 
     <div style="margin-top: 40px;">
       <a href="https://ifzngxyvdzaobyxtnrcy.supabase.co/storage/v1/object/public/releases/shiftpay-v1.0.1.apk" class="download-btn">
-        Download for Android
-        <span class="sub">Free &middot; No account needed</span>
+        Last ned for Android
+        <span class="sub">Gratis &middot; Ingen konto n&oslash;dvendig</span>
       </a>
     </div>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- 5. TESTIMONIAL -->
+<!-- 5. BRUKERHISTORIE -->
 <!-- ============================================================ -->
 <section class="testimonial-section" id="testimonial">
   <div class="container">
-    <div class="badge">Real user</div>
-    <h2 class="section-heading">Found a 400 NOK error on one&nbsp;shift</h2>
+    <div class="badge">Ekte bruker</div>
+    <h2 class="section-heading">Fant en feil p&aring; 400 kr p&aring; &eacute;n vakt</h2>
 
-    <div class="quote">"I photographed my February schedule and ShiftPay calculated my expected pay. When my payslip arrived, there was a 400 NOK difference on a single night shift supplement. I would never have caught that."</div>
-    <p class="quote-attr">&mdash; Healthcare worker, Norway</p>
+    <div class="quote">&laquo;Jeg tok bilde av februarplanen min og ShiftPay beregnet forventet l&oslash;nn. Da l&oslash;nnsslippen kom, var det 400 kr avvik p&aring; et enkelt nattillegg. Det hadde jeg aldri oppdaget selv.&raquo;</div>
+    <p class="quote-attr">&mdash; Helsearbeider, Norge</p>
 
     <div class="stat-row">
       <div class="stat">
         <div class="num">4</div>
-        <div class="label">Schedules imported</div>
+        <div class="label">Vaktplaner importert</div>
       </div>
       <div class="stat">
         <div class="num amber">1</div>
-        <div class="label">Pay discrepancy found</div>
+        <div class="label">L&oslash;nnsfeil oppdaget</div>
       </div>
       <div class="stat">
         <div class="num">4</div>
-        <div class="label">Languages supported</div>
+        <div class="label">Spr&aring;k st&oslash;ttet</div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============================================================ -->
-<!-- 6. PRIVACY -->
+<!-- 6. PERSONVERN -->
 <!-- ============================================================ -->
 <section id="privacy">
   <div class="container section-centered">
-    <div class="badge">Privacy by design</div>
-    <h2 class="section-heading">Your data never leaves your&nbsp;phone</h2>
-    <p class="section-sub">No account. No cloud. No tracking. Everything is stored locally on your device. The only network call is OCR &mdash; and it's stateless.</p>
+    <div class="badge">Personvern by design</div>
+    <h2 class="section-heading">Dataene dine forlater aldri telefonen</h2>
+    <p class="section-sub">Ingen konto. Ingen sky. Ingen sporing. Alt lagres lokalt p&aring; enheten din. Det eneste nettverkskallet er OCR &mdash; og det er tilstandsl&oslash;st.</p>
 
     <div class="privacy-flow">
       <div class="privacy-node">
         <div class="icon">&#128247;</div>
-        <div class="label">Photo</div>
-        <div class="sub">Your phone</div>
+        <div class="label">Foto</div>
+        <div class="sub">Din telefon</div>
       </div>
       <div class="privacy-arrow">&rarr;</div>
       <div class="privacy-node">
         <div class="icon">&#129302;</div>
         <div class="label">AI OCR</div>
-        <div class="sub">Stateless &mdash; nothing stored</div>
+        <div class="sub">Tilstandsl&oslash;st &mdash; ingenting lagres</div>
       </div>
       <div class="privacy-arrow">&rarr;</div>
       <div class="privacy-node safe">
         <div class="icon">&#128274;</div>
-        <div class="label">Your device</div>
-        <div class="sub">All data stays here</div>
+        <div class="label">Din enhet</div>
+        <div class="sub">All data forblir her</div>
       </div>
     </div>
 
     <div class="privacy-points">
       <div class="privacy-point">
         <div class="icon">&#128100;</div>
-        <h4>No account required</h4>
-        <p>No email, no password, no sign-up. Just open and start.</p>
+        <h4>Ingen konto n&oslash;dvendig</h4>
+        <p>Ingen e-post, passord eller registrering. Bare &aring;pne og start.</p>
       </div>
       <div class="privacy-point">
         <div class="icon">&#9729;&#65039;</div>
-        <h4>No cloud storage</h4>
-        <p>All shifts, rates, and history stay in SQLite on your device.</p>
+        <h4>Ingen skylagring</h4>
+        <p>Alle vakter, satser og historikk forblir i SQLite p&aring; enheten din.</p>
       </div>
       <div class="privacy-point">
         <div class="icon">&#128065;&#8205;&#128488;&#65039;</div>
-        <h4>No tracking</h4>
-        <p>No analytics, no telemetry, no ads. We don't know who you are.</p>
+        <h4>Ingen sporing</h4>
+        <p>Ingen analyse, telemetri eller annonser. Vi vet ikke hvem du er.</p>
       </div>
     </div>
 
-    <p style="margin-top: 24px;"><a href="privacy.html" class="text-link">Read our full privacy policy &rarr;</a></p>
+    <p style="margin-top: 24px;"><a href="privacy.html" class="text-link">Les hele personvernerkl&aelig;ringen &rarr;</a></p>
   </div>
 </section>
 
@@ -975,33 +874,33 @@
 <!-- ============================================================ -->
 <section class="faq-section" id="faq" style="background: var(--darker);">
   <div class="container section-centered">
-    <div class="badge">FAQ</div>
-    <h2 class="section-heading">Common questions</h2>
+    <div class="badge">Sp&oslash;rsm&aring;l</div>
+    <h2 class="section-heading">Vanlige sp&oslash;rsm&aring;l</h2>
 
     <div class="faq-list">
       <details>
-        <summary>Is ShiftPay free?</summary>
-        <div class="faq-answer">Yes. ShiftPay is completely free to download and use. No subscriptions, no in-app purchases, no ads.</div>
+        <summary>Er ShiftPay gratis?</summary>
+        <div class="faq-answer">Ja. ShiftPay er helt gratis &aring; laste ned og bruke. Ingen abonnementer, kj&oslash;p i appen eller annonser.</div>
       </details>
       <details>
-        <summary>What devices does it work on?</summary>
-        <div class="faq-answer">ShiftPay is available for Android (5.0+). Download the APK directly &mdash; no Play Store listing yet. iOS support is planned for a future release.</div>
+        <summary>Hvilke enheter st&oslash;ttes?</summary>
+        <div class="faq-answer">ShiftPay er tilgjengelig for Android (5.0+). Last ned APK-en direkte &mdash; appen er ikke p&aring; Play Store enn&aring;. iOS-st&oslash;tte er planlagt.</div>
       </details>
       <details>
-        <summary>Will it come to iOS?</summary>
-        <div class="faq-answer">It's on the roadmap. The app is built with React Native, so an iOS version is technically ready &mdash; it just needs App Store approval and an Apple Developer account.</div>
+        <summary>Kommer den til iPhone?</summary>
+        <div class="faq-answer">Det er p&aring; planen. Appen er bygget med React Native, s&aring; en iOS-versjon er teknisk klar &mdash; den trenger bare App Store-godkjenning og en Apple Developer-konto.</div>
       </details>
       <details>
-        <summary>Is my data safe?</summary>
-        <div class="faq-answer">All your data is stored locally on your device. No account, no cloud, no tracking. The only network call is when you photo a timesheet &mdash; the image is sent for AI processing and immediately discarded. Nothing is stored server-side. <a href="privacy.html" class="text-link">Read the full privacy policy.</a></div>
+        <summary>Er dataene mine trygge?</summary>
+        <div class="faq-answer">All data lagres lokalt p&aring; enheten din. Ingen konto, sky eller sporing. Det eneste nettverkskallet er n&aring;r du tar bilde av en vaktplan &mdash; bildet sendes for AI-behandling og slettes umiddelbart. Ingenting lagres p&aring; serveren. <a href="privacy.html" class="text-link">Les hele personvernerkl&aelig;ringen.</a></div>
       </details>
       <details>
-        <summary>How do I set my pay rates?</summary>
-        <div class="faq-answer">Go to Settings and enter your base hourly rate plus any supplements (evening, night, weekend, holiday, overtime). These are stored locally and used to calculate your expected pay.</div>
+        <summary>Hvordan setter jeg l&oslash;nnssatsene?</summary>
+        <div class="faq-answer">G&aring; til Innstillinger og legg inn grunnl&oslash;nn per time pluss eventuelle tillegg (kveld, natt, helg, helligdag, overtid). Disse lagres lokalt og brukes til &aring; beregne forventet l&oslash;nn.</div>
       </details>
       <details>
-        <summary>Can I export my data?</summary>
-        <div class="faq-answer">Not yet, but it's planned. A future update will let you export your shift history and pay calculations as a PDF report &mdash; useful for discussions with your employer or union.</div>
+        <summary>Kan jeg eksportere dataene mine?</summary>
+        <div class="faq-answer">Ikke enn&aring;, men det er planlagt. En fremtidig oppdatering lar deg eksportere vakthistorikk og l&oslash;nnsberegninger som PDF &mdash; nyttig for samtaler med arbeidsgiver eller fagforening.</div>
       </details>
     </div>
   </div>
@@ -1012,47 +911,46 @@
 <!-- ============================================================ -->
 <section id="download" style="background: radial-gradient(ellipse at 50% 50%, rgba(15, 118, 110, 0.12) 0%, transparent 60%);">
   <div class="container section-centered">
-    <h2 class="section-heading">Find out if you got paid right</h2>
-    <p class="section-sub">Free. Private. No account needed.</p>
+    <h2 class="section-heading">Finn ut om du fikk riktig l&oslash;nn</h2>
+    <p class="section-sub">Gratis. Privat. Ingen konto n&oslash;dvendig.</p>
 
     <div class="qr-section">
       <div class="qr-code">
-        <img src="qr-code (3).png" alt="QR code to download ShiftPay APK" width="160" height="160">
-        <p>Scan to download (Android)</p>
+        <img src="qr-code (3).png" alt="QR-kode for &aring; laste ned ShiftPay APK" width="160" height="160">
+        <p>Skann for &aring; laste ned (Android)</p>
       </div>
       <div>
         <a href="https://ifzngxyvdzaobyxtnrcy.supabase.co/storage/v1/object/public/releases/shiftpay-v1.0.1.apk" class="download-btn">
-          Download APK
-          <span class="sub">Direct download &middot; Android &middot; 41 MB</span>
+          Last ned APK
+          <span class="sub">Direkte nedlasting &middot; Android &middot; 41 MB</span>
         </a>
       </div>
     </div>
 
     <div class="trust-signals">
-      <span class="trust-signal"><span class="check">&#10003;</span> Free forever</span>
-      <span class="trust-signal"><span class="check">&#10003;</span> No account</span>
-      <span class="trust-signal"><span class="check">&#10003;</span> No cloud</span>
-      <span class="trust-signal"><span class="check">&#10003;</span> No tracking</span>
+      <span class="trust-signal"><span class="check">&#10003;</span> Alltid gratis</span>
+      <span class="trust-signal"><span class="check">&#10003;</span> Ingen konto</span>
+      <span class="trust-signal"><span class="check">&#10003;</span> Ingen sky</span>
+      <span class="trust-signal"><span class="check">&#10003;</span> Ingen sporing</span>
     </div>
   </div>
 </section>
 
 <footer>
-  <p><a href="privacy.html">Privacy Policy</a> &middot; <a href="no.html">Norsk</a></p>
-  <p style="margin-top: 8px;">&copy; 2026 ShiftPay. All data stays on your device.</p>
+  <p><a href="privacy.html">Personvern</a> &middot; <a href="/">English</a></p>
+  <p style="margin-top: 8px;">&copy; 2026 ShiftPay. All data forblir p&aring; enheten din.</p>
 </footer>
 
 <!-- STICKY MOBILE CTA -->
 <div class="sticky-cta" id="sticky-cta" aria-hidden="true">
   <a href="https://ifzngxyvdzaobyxtnrcy.supabase.co/storage/v1/object/public/releases/shiftpay-v1.0.1.apk" class="download-btn">
-    Download for Android
-    <span class="sub">Free &middot; No account needed</span>
+    Last ned for Android
+    <span class="sub">Gratis &middot; Ingen konto n&oslash;dvendig</span>
   </a>
 </div>
 
 <script>
-  // Lazy-load Vimeo video on click
-  const videoEl = document.getElementById('demo-video');
+  var videoEl = document.getElementById('demo-video');
   if (videoEl) {
     function loadVideo() {
       videoEl.innerHTML = '<div style="padding:177.78% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/1167087755?autoplay=1&badge=0&autopause=0&player_id=0&app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="ShiftPay App Demo"></iframe></div>';
@@ -1063,11 +961,10 @@
     });
   }
 
-  // Sticky mobile CTA — show after scrolling past hero
-  const stickyCta = document.getElementById('sticky-cta');
-  const heroCta = document.getElementById('hero-cta');
+  var stickyCta = document.getElementById('sticky-cta');
+  var heroCta = document.getElementById('hero-cta');
   if (stickyCta && heroCta) {
-    const observer = new IntersectionObserver(function(entries) {
+    var observer = new IntersectionObserver(function(entries) {
       entries.forEach(function(entry) {
         if (entry.isIntersecting) {
           stickyCta.classList.remove('visible');
