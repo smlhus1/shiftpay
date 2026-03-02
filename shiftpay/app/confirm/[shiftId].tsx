@@ -12,8 +12,8 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getShiftById, confirmShift, updateShift } from "../../lib/db";
-import type { ShiftRow } from "../../lib/db";
+import { getShiftById, confirmShift, updateShift, updateShiftPayType } from "../../lib/db";
+import type { ShiftRow, PayType } from "../../lib/db";
 import { useTranslation } from "../../lib/i18n";
 import { PressableScale } from "../../components/PressableScale";
 import { AnimatedCard } from "../../components/AnimatedCard";
@@ -44,6 +44,7 @@ export default function ConfirmShiftScreen() {
   const [editDirty, setEditDirty] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [showEditFields, setShowEditFields] = useState(false);
+  const [payType, setPayType] = useState<PayType>("regular");
 
   const load = useCallback(async () => {
     if (!shiftId || !UUID_RE.test(shiftId)) {
@@ -60,6 +61,7 @@ export default function ConfirmShiftScreen() {
         setEditDate(row.date);
         setEditStart(row.start_time);
         setEditEnd(row.end_time);
+        setPayType(row.pay_type ?? "regular");
       }
     } catch {
       setNotFound(true);
@@ -141,6 +143,17 @@ export default function ConfirmShiftScreen() {
     }
   }, [shiftId, editDate, editStart, editEnd, editDirty, t]);
 
+  const handlePayTypeChange = useCallback(async (newType: PayType) => {
+    if (!shiftId) return;
+    setPayType(newType);
+    try {
+      await updateShiftPayType(shiftId, newType);
+      setShift((prev) => prev ? { ...prev, pay_type: newType } : prev);
+    } catch {
+      setPayType(payType); // revert on error
+    }
+  }, [shiftId, payType]);
+
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
@@ -218,8 +231,28 @@ export default function ConfirmShiftScreen() {
           <Text className="mt-2 text-stone-600 dark:text-stone-400">{formatShiftLabel(shift)}</Text>
         </AnimatedCard>
 
-        {/* Editable date/time fields — collapsed by default */}
+        {/* Pay type toggle */}
         <AnimatedCard index={1} className="mb-4">
+          <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400">{t("confirm.payType.label")}</Text>
+          <View className="flex-row gap-2" accessibilityRole="radiogroup" accessibilityLabel={t("confirm.payType.label")}>
+            {(["regular", "extra"] as const).map((type) => (
+              <PressableScale
+                key={type}
+                onPress={() => handlePayTypeChange(type)}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: payType === type }}
+                className={`flex-1 items-center rounded-xl py-3 ${payType === type ? "bg-accent-dark dark:bg-accent" : "border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface"}`}
+              >
+                <Text className={`font-inter-medium ${payType === type ? "text-white dark:text-stone-900" : "text-stone-700 dark:text-stone-300"}`}>
+                  {t(`confirm.payType.${type}`)}
+                </Text>
+              </PressableScale>
+            ))}
+          </View>
+        </AnimatedCard>
+
+        {/* Editable date/time fields — collapsed by default */}
+        <AnimatedCard index={2} className="mb-4">
           <PressableScale
             onPress={() => setShowEditFields((v) => !v)}
             accessibilityLabel={t("confirm.editFields.title")}
@@ -285,7 +318,7 @@ export default function ConfirmShiftScreen() {
         </AnimatedCard>
 
         {!showOvertime ? (
-          <AnimatedCard index={2}>
+          <AnimatedCard index={3}>
             <PressableScale
               onPress={() => handleConfirm("completed")}
               disabled={submitting}

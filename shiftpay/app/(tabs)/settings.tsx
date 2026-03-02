@@ -24,6 +24,8 @@ const defaultRates: TariffRatesInput = {
   weekend_supplement: 0,
   holiday_supplement: 0,
   overtime_supplement: 40,
+  regular_period_start_day: 1,
+  extra_period_start_day: 12,
 };
 
 function toStr(n: number): string {
@@ -64,6 +66,7 @@ export default function SettingsScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showPayPeriods, setShowPayPeriods] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,6 +80,8 @@ export default function SettingsScreen() {
             weekend_supplement: row.weekend_supplement,
             holiday_supplement: row.holiday_supplement,
             overtime_supplement: row.overtime_supplement,
+            regular_period_start_day: row.regular_period_start_day,
+            extra_period_start_day: row.extra_period_start_day,
           });
         }
       })
@@ -182,6 +187,36 @@ export default function SettingsScreen() {
           suffix="%"
           placeholder="40"
         />
+
+        {/* Pay periods section — collapsed by default */}
+        <View className="mt-4">
+          <PressableScale
+            onPress={() => setShowPayPeriods((v) => !v)}
+            accessibilityLabel={t("settings.payPeriods.toggle")}
+            accessibilityState={{ expanded: showPayPeriods }}
+            className="flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4"
+          >
+            <Text className="text-sm font-inter-medium text-stone-700 dark:text-stone-300">{t("settings.payPeriods.toggle")}</Text>
+            <Ionicons name={showPayPeriods ? "chevron-up" : "chevron-down"} size={18} color={colors.textMuted} />
+          </PressableScale>
+          {showPayPeriods && (
+            <View className="mt-2 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
+              <Text className="mb-3 text-xs text-stone-500 dark:text-stone-400">{t("settings.payPeriods.hint")}</Text>
+              <RateField
+                label={t("settings.payPeriods.regularLabel")}
+                value={toStr(rates.regular_period_start_day)}
+                onChangeText={(s) => setRates((r) => ({ ...r, regular_period_start_day: toNum(s) }))}
+                placeholder="1"
+              />
+              <RateField
+                label={t("settings.payPeriods.extraLabel")}
+                value={toStr(rates.extra_period_start_day)}
+                onChangeText={(s) => setRates((r) => ({ ...r, extra_period_start_day: toNum(s) }))}
+                placeholder="12"
+              />
+            </View>
+          )}
+        </View>
 
         <PressableScale
           onPress={handleSave}

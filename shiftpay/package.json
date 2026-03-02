@@ -46,5 +46,10 @@
     "babel-preset-expo": "^54.0.10",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "expo": {
+    "autolinking": {
+      "exclude": ["expo-dev-client", "expo-dev-launcher", "expo-dev-menu", "expo-dev-menu-interface"]
+    }
+  }
 }

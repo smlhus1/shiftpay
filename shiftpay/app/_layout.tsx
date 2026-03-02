@@ -104,6 +104,10 @@ function RootLayoutInner() {
             name="summary/[yearMonth]"
             options={{ headerShown: true, headerTitle: t("screens.monthlySummary") }}
           />
+          <Stack.Screen
+            name="add-shift"
+            options={{ headerShown: true, headerTitle: t("screens.addShift") }}
+          />
         </Stack>
       </ErrorBoundary>
       {Platform.OS !== "web" && initError && (

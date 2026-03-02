@@ -57,6 +57,21 @@ const da: TranslationShape = {
       message: "Kunne ikke indlæse data",
       retry: "Prøv igen",
     },
+    addShift: "Tilføj vagt",
+  },
+  addShift: {
+    title: "Tilføj vagt",
+    date: "Dato",
+    startTime: "Starttid",
+    endTime: "Sluttid",
+    shiftType: "Vagttype",
+    payType: "Løntype",
+    regular: "Fast",
+    extra: "Ekstra",
+    save: "Gem vagt",
+    saved: "Vagt gemt!",
+    duplicate: "Denne vagt findes allerede",
+    pastInfo: "Denne vagt er i fortiden",
   },
   import: {
     disclaimer:
@@ -112,6 +127,13 @@ const da: TranslationShape = {
       basePay: "Grundløn",
       supplements: "Tillæg pr. time",
       overtime: "Overarbejde",
+      payPeriods: "Lønperioder",
+    },
+    payPeriods: {
+      toggle: "Lønperioder (valgfrit)",
+      regularLabel: "Faste vagter starter dag",
+      extraLabel: "Ekstra vagter starter dag",
+      hint: "De fleste har 1. for fast og 12. for ekstra",
     },
     save: "Gem",
     saved: "Gemt.",
@@ -191,6 +213,11 @@ const da: TranslationShape = {
       loadError: "Kunne ikke indlæse vagten.",
       saveError: "Kunne ikke gemme",
     },
+    payType: {
+      label: "Løntype",
+      regular: "Fast",
+      extra: "Ekstravagt",
+    },
     backBtnLabel: "Tilbage",
     editFields: {
       title: "Rediger vagt",
@@ -227,6 +254,19 @@ const da: TranslationShape = {
       error: "Kunne ikke slette vagten.",
     },
     back: "Tilbage",
+    regularPay: "Fast løn",
+    extraPay: "Ekstravagter",
+    addShift: "Tilføj vagt",
+    actualPay: {
+      title: "Faktisk udbetalt",
+      inputLabel: "Hvad fik du udbetalt?",
+      invalidAmount: "Ugyldigt beløb",
+      saveError: "Kunne ikke gemme",
+      save: "Gem",
+      difference: "%{amount} %{direction}",
+      over: "for meget",
+      under: "for lidt",
+    },
   },
   period: {
     notFound: "Vagtplanen blev ikke fundet.",
@@ -246,6 +286,8 @@ const da: TranslationShape = {
     errors: {
       deleteError: "Kunne ikke slette",
     },
+    markAllExtra: "Marker alle som ekstra",
+    markedExtra: "Alle vagter markeret som ekstra",
   },
   components: {
     shiftEditor: {
@@ -276,6 +318,7 @@ const da: TranslationShape = {
       deleteA11y: "Slet vagt %{date}",
       edit: "Rediger",
       overtime: "+%{minutes} min overarbejde",
+      extra: "Ekstra",
     },
     camera: {
       instruction: "Hold timesedlen inden for rammen",
@@ -325,6 +368,7 @@ const da: TranslationShape = {
     periodDetail: "Periodedetaljer",
     confirmShift: "Bekræft vagt",
     monthlySummary: "Månedsoversigt",
+    addShift: "Tilføj vagt",
   },
 };
 

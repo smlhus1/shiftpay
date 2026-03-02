@@ -30,19 +30,13 @@
   `privacy-policy.md` finnes og er komplett. Play Console krever en URL.
   Enkleste: GitHub Pages, eller legg den pa Vercel (deploy-mappen under Screenshots har allerede Vercel-oppsett).
 
-- [ ] **Forbered store listing-tekster**
-  Play Console krever:
-  - App-tittel (maks 30 tegn): "ShiftPay"
-  - Kort beskrivelse (maks 80 tegn)
-  - Full beskrivelse (maks 4000 tegn)
-  - Kategori: Finance / Tools
-  - Content rating questionnaire
+- [x] **Forbered store listing-tekster** ✓
+  Ferdig i `design/store-listing.md`. Tittel, kort beskrivelse, full beskrivelse, kategori og tags.
 
 ### MEDIUM (anbefalt for ryddig release)
 
-- [ ] **Auto-increment versionCode**
-  Legg til i eas.json under production: `"autoIncrement": true`
-  Slipper a manuelt bumpe `android.versionCode` i app.json for hver release.
+- [x] **Auto-increment versionCode** ✓
+  Lagt til `"autoIncrement": true` i eas.json production-profilen.
 
 - [x] **Flytt expo-dev-client til devDependencies** ✓
   Flyttet i `package.json`.
@@ -86,13 +80,12 @@
 ### Gjenstaar
 
 - [x] **Anthropic billing-cap** ✓ — Eget workspace "ShiftPay" med $100/mnd cap og dedikert API-nokkel.
-- [ ] **Rate limiting pa OCR-endepunkt** — In-memory rate limiter (10 req/min/IP) i Edge Function.
-  Billing-cap er backstop, men rate limiting reduserer stoy og gjor misbruk tregere.
-- [ ] **Timing-safe key comparison** — Bytt `!==` til HMAC-basert sammenligning i OCR-endepunktet.
+- [x] **Rate limiting pa OCR-endepunkt** ✓ — In-memory rate limiter i Edge Function.
+- [x] **Timing-safe key comparison** ✓ — HMAC-basert constant-time sammenligning i OCR-endepunktet.
 - [ ] **Sett OCR-nokkel i EAS Secrets** — `eas secret:create --name EXPO_PUBLIC_OCR_API_KEY --value <nokkel>`.
   Kun nodvendig for EAS cloud builds (ikke lokale builds).
-- [ ] **Fjern stale permissions med tools:node="remove"** — Avhengigheter merger tilbake READ_EXTERNAL_STORAGE etc. i kompilert manifest. Legg til `tools:node="remove"` i AndroidManifest.
-- [ ] **UUID-validering i period/[id].tsx** — Mangler UUID-sjekk for routing (confirm/ har det allerede).
+- [x] **Fjern stale permissions med blockedPermissions** ✓ — `blockedPermissions` array i app.json blokkerer READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, READ_MEDIA_*, RECORD_AUDIO, SYSTEM_ALERT_WINDOW.
+- [x] **UUID-validering i period/[id].tsx** ✓ — UUID v4 regex-validering lagt til.
 
 ---
 
@@ -176,11 +169,9 @@ Full rapport: `design/ux-review-shiftpay-2026-02-23.md`
   Bytt til stone for varmere grå: bg-light #FAFAF9 (stone-50), text #1C1917 (stone-900),
   bg-dark #0C0A09 (stone-950), surface-dark #1C1917 (stone-900). Oppdater alle tema-tokens.
 
-- [ ] **Sammenligning mot faktisk lønn**
-  `app/summary/[yearMonth].tsx`. Hele app-poenget er "ble jeg betalt riktig?" men det finnes
-  ingen måte å sammenligne. Legg til et input-felt "What you actually received" (persistert
-  i SQLite, ny kolonne eller tabell). Vis differansen prominent: grønn hvis positiv,
-  rød hvis negativ. Kan utsettes til v1.1 men er kjerne-brukscaset.
+- [x] **Sammenligning mot faktisk lønn** ✓
+  Ny `monthly_pay` tabell i SQLite. Input-felt i summary-skjermen for faktisk utbetalt.
+  Differanse vises grønn (overpaid) eller rød (underpaid). i18n for alle 4 locales.
 
 - [x] **A11y: Section-overskrifter med header-rolle** ✓
   `app/(tabs)/index.tsx` linje 211, 255, 295 + `period/[id].tsx` linje 165 +
@@ -222,40 +213,25 @@ Full rapport: `design/ux-review-shiftpay-2026-02-23.md`
 
 ## v1.1 — User feedback
 
-### Dual pay periods
-Regular shifts and extra shifts have different pay periods:
-- **Regular (fast turnus):** 1st – last day of month
-- **Extra shifts (ekstra vakter):** 12th – 11th of next month
+### Dual pay periods ✓
+- [x] `pay_type` field on shifts (`regular` | `extra`) + DB migration
+- [x] Configurable start-days in settings (collapsed "Pay periods" section)
+- [x] Mark shift as extra in confirm screen (pay type toggle)
+- [x] "Mark all as extra" bulk action in period detail
+- [x] Summary splits regular vs extra pay when extra shifts exist
 
-Pay period dates vary between employers — solution must be configurable, not hardcoded.
+### Overtime visibility ✓
+- [x] Violet left border on overtime shifts in ShiftCard (compact + full)
+- [x] "+OT" badge in compact mode, clock icon + minutes in full mode
+- [x] "Extra" badge in violet when `pay_type === "extra"`
 
-**Approach alternatives (not decided):**
-
-**A) Custom start-day in settings**
-Two fields: "Regular shifts start day" (default: 1) and "Extra shifts start day" (default: 1). App calculates the rest. Simple, minimal UI. Most users change one number or nothing.
-
-**B) Multiple pay period profiles**
-User creates named periods with custom date ranges. More flexible, more complex UI. Overkill for most users?
-
-**C) Toggle: standard month vs custom**
-Default is 1st–last. Toggle to "custom" reveals a start-day picker. One toggle per shift type.
-
-**Leaning toward A** — least UI friction, covers the real use case.
-
-Needs (once approach is decided):
-- [ ] Shift type distinction: `regular` vs `extra` (new field on shifts table)
-- [ ] Way for user to mark a shift as extra (import flow + edit)
-- [ ] Pay period settings (configurable start-day per shift type)
-- [ ] Period calculation logic that splits by shift type
-- [ ] Summary view shows both periods separately (or clearly separated)
-- [ ] DB migration to add shift employment type + pay period config
-
-### Overtime visibility
-- [ ] Make overtime shifts visually easier to spot (color, icon, badge)
-
-### Extra shifts outside schedule
-- [ ] Support adding single extra shifts that aren't part of imported schedule
-- [ ] Quick-add flow from dashboard?
+### Extra shifts outside schedule ✓
+- [x] New `add-shift` screen with full form (date, times, shift type, pay type)
+- [x] Auto-classification of shift type from start time
+- [x] Dedup check against existing shifts
+- [x] FAB on dashboard for quick-add
+- [x] "Add shift" button in monthly summary
+- [x] Route registered in `_layout.tsx`
 
 ---
 

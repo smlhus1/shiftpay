@@ -71,6 +71,49 @@ async function migrateAddOvertimeSupplement(database: SQLite.SQLiteDatabase): Pr
   }
 }
 
+async function migrateAddPayType(database: SQLite.SQLiteDatabase): Promise<void> {
+  const shiftCols = await database.getAllAsync<{ name: string }>("PRAGMA table_info(shifts)");
+  if (!shiftCols.some((c) => c.name === "pay_type")) {
+    await database.execAsync(
+      "ALTER TABLE shifts ADD COLUMN pay_type TEXT NOT NULL DEFAULT 'regular'"
+    );
+    if (__DEV__) {
+      console.log("[ShiftPay] Migrated: added pay_type to shifts");
+    }
+  }
+  const rateCols = await database.getAllAsync<{ name: string }>("PRAGMA table_info(tariff_rates)");
+  if (!rateCols.some((c) => c.name === "regular_period_start_day")) {
+    await database.execAsync(
+      "ALTER TABLE tariff_rates ADD COLUMN regular_period_start_day INTEGER NOT NULL DEFAULT 1"
+    );
+    await database.execAsync(
+      "ALTER TABLE tariff_rates ADD COLUMN extra_period_start_day INTEGER NOT NULL DEFAULT 12"
+    );
+    if (__DEV__) {
+      console.log("[ShiftPay] Migrated: added pay period columns to tariff_rates");
+    }
+  }
+}
+
+async function migrateAddMonthlyPay(database: SQLite.SQLiteDatabase): Promise<void> {
+  const tables = await database.getAllAsync<{ name: string }>(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='monthly_pay'"
+  );
+  if (tables.length > 0) return;
+  await database.execAsync(
+    `CREATE TABLE IF NOT EXISTS monthly_pay (
+      year INTEGER NOT NULL,
+      month INTEGER NOT NULL,
+      actual_pay REAL NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL,
+      UNIQUE(year, month)
+    )`
+  );
+  if (__DEV__) {
+    console.log("[ShiftPay] Migrated: created monthly_pay table");
+  }
+}
+
 async function migrateTimesheetsToSchedules(database: SQLite.SQLiteDatabase): Promise<void> {
   const tables = await database.getAllAsync<{ name: string }>(
     "SELECT name FROM sqlite_master WHERE type='table' AND name='timesheets'"
@@ -111,6 +154,8 @@ export async function initDb(): Promise<SQLite.SQLiteDatabase> {
     const database = await SQLite.openDatabaseAsync(DB_NAME);
     await database.execAsync(SCHEMA);
     await migrateAddOvertimeSupplement(database);
+    await migrateAddPayType(database);
+    await migrateAddMonthlyPay(database);
     await migrateTimesheetsToSchedules(database);
     return database;
   };
@@ -173,6 +218,8 @@ export interface TariffRatesRow {
   weekend_supplement: number;
   holiday_supplement: number;
   overtime_supplement: number;
+  regular_period_start_day: number;
+  extra_period_start_day: number;
   updated_at: string;
 }
 
@@ -185,6 +232,7 @@ export interface ScheduleRow {
 }
 
 export type ShiftStatus = "planned" | "completed" | "missed" | "overtime";
+export type PayType = "regular" | "extra";
 
 export interface ShiftRow {
   id: string;
@@ -194,6 +242,7 @@ export interface ShiftRow {
   end_time: string;
   shift_type: string;
   status: ShiftStatus;
+  pay_type: PayType;
   actual_start: string | null;
   actual_end: string | null;
   overtime_minutes: number;
@@ -254,10 +303,12 @@ export async function getTariffRates(): Promise<TariffRatesRow> {
       weekend_supplement: 0,
       holiday_supplement: 0,
       overtime_supplement: 40,
+      regular_period_start_day: 1,
+      extra_period_start_day: 12,
       updated_at: now,
     };
     await database.runAsync(
-      "INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, overtime_supplement, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, overtime_supplement, regular_period_start_day, extra_period_start_day, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         defaultRates.id,
         defaultRates.base_rate,
@@ -266,6 +317,8 @@ export async function getTariffRates(): Promise<TariffRatesRow> {
         defaultRates.weekend_supplement,
         defaultRates.holiday_supplement,
         defaultRates.overtime_supplement,
+        defaultRates.regular_period_start_day,
+        defaultRates.extra_period_start_day,
         defaultRates.updated_at,
       ]
     );
@@ -282,12 +335,14 @@ export async function setTariffRates(rates: TariffRatesInput): Promise<void> {
     weekend_supplement: Math.max(0, rates.weekend_supplement),
     holiday_supplement: Math.max(0, rates.holiday_supplement),
     overtime_supplement: Math.max(0, rates.overtime_supplement),
+    regular_period_start_day: Math.min(28, Math.max(1, rates.regular_period_start_day)),
+    extra_period_start_day: Math.min(28, Math.max(1, rates.extra_period_start_day)),
   };
   await withDb(async (database) => {
     const now = new Date().toISOString();
     await database.runAsync(
-      `INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, overtime_supplement, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, overtime_supplement, regular_period_start_day, extra_period_start_day, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          base_rate = excluded.base_rate,
          evening_supplement = excluded.evening_supplement,
@@ -295,6 +350,8 @@ export async function setTariffRates(rates: TariffRatesInput): Promise<void> {
          weekend_supplement = excluded.weekend_supplement,
          holiday_supplement = excluded.holiday_supplement,
          overtime_supplement = excluded.overtime_supplement,
+         regular_period_start_day = excluded.regular_period_start_day,
+         extra_period_start_day = excluded.extra_period_start_day,
          updated_at = excluded.updated_at`,
       [
         TARIFF_ID,
@@ -304,6 +361,8 @@ export async function setTariffRates(rates: TariffRatesInput): Promise<void> {
         validated.weekend_supplement,
         validated.holiday_supplement,
         validated.overtime_supplement,
+        validated.regular_period_start_day,
+        validated.extra_period_start_day,
         now,
       ]
     );
@@ -611,6 +670,18 @@ export async function updateShift(
   });
 }
 
+export async function updateShiftPayType(shiftId: string, payType: PayType): Promise<void> {
+  await withDb(async (database) => {
+    await database.runAsync("UPDATE shifts SET pay_type = ? WHERE id = ?", [payType, shiftId]);
+  });
+}
+
+export async function bulkUpdatePayType(scheduleId: string, payType: PayType): Promise<void> {
+  await withDb(async (database) => {
+    await database.runAsync("UPDATE shifts SET pay_type = ? WHERE schedule_id = ?", [payType, scheduleId]);
+  });
+}
+
 export async function getShiftById(id: string): Promise<ShiftRow | null> {
   return withDb(async (database) => {
     const rows = await database.getAllAsync<ShiftRow>("SELECT * FROM shifts WHERE id = ?", [id]);
@@ -627,6 +698,31 @@ export async function getExistingShiftKeys(): Promise<Set<string>> {
     )
   );
   return new Set(rows.map((r) => `${r.date}|${r.start_time}|${r.end_time}`));
+}
+
+export async function getMonthlyActualPay(year: number, month: number): Promise<number | null> {
+  return withDb(async (database) => {
+    const rows = await database.getAllAsync<{ actual_pay: number }>(
+      "SELECT actual_pay FROM monthly_pay WHERE year = ? AND month = ?",
+      [year, month]
+    );
+    return rows.length > 0 ? rows[0].actual_pay : null;
+  });
+}
+
+export async function setMonthlyActualPay(year: number, month: number, amount: number): Promise<void> {
+  const validated = Math.max(0, amount);
+  await withDb(async (database) => {
+    const now = new Date().toISOString();
+    await database.runAsync(
+      `INSERT INTO monthly_pay (year, month, actual_pay, updated_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(year, month) DO UPDATE SET
+         actual_pay = excluded.actual_pay,
+         updated_at = excluded.updated_at`,
+      [year, month, validated, now]
+    );
+  });
 }
 
 export async function getShiftsInDateRange(fromDate: string, toDate: string): Promise<ShiftRow[]> {

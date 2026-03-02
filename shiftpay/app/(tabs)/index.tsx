@@ -196,9 +196,10 @@ export default function DashboardScreen() {
   const empty = monthsList.length === 0 && !nextShift && dueConfirmation.length === 0;
 
   return (
+    <View className="flex-1 bg-app-bg dark:bg-dark-bg">
     <ScrollView
-      className="flex-1 bg-app-bg dark:bg-dark-bg"
-      contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      className="flex-1"
+      contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -368,5 +369,16 @@ export default function DashboardScreen() {
         </>
       )}
     </ScrollView>
+
+    {/* FAB — Add shift */}
+    <PressableScale
+      onPress={() => router.push("/add-shift" as Href)}
+      accessibilityLabel={t("dashboard.addShift")}
+      className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-accent-dark dark:bg-accent"
+      style={{ elevation: 8, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}
+    >
+      <Ionicons name="add" size={28} color={theme === "dark" ? "#1C1917" : "#FFFFFF"} />
+    </PressableScale>
+    </View>
   );
 }

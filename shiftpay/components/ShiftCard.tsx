@@ -36,15 +36,20 @@ export function ShiftCard({
   const colors = useThemeColors();
   const tappable = !!onEdit;
 
+  const isOvertime = shift.status === "overtime";
+
   if (compact) {
     return (
-      <View className="mt-2 flex-row flex-wrap items-center gap-2 rounded-xl border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated p-2">
+      <View className={`mt-2 flex-row flex-wrap items-center gap-2 rounded-xl border bg-app-elevated dark:bg-dark-elevated p-2 ${isOvertime ? "border-l-4 border-l-violet-500 dark:border-l-violet-400 border-app-border dark:border-dark-border" : "border-app-border dark:border-dark-border"}`}>
         <Text className="text-stone-900 dark:text-stone-100">
           {shift.date} {shift.start_time}–{shift.end_time}
         </Text>
         <View className={`rounded-full px-2 py-0.5 ${statusColor(shift.status)}`}>
           <Text className="text-xs font-inter-medium">{statusLabel(shift.status, t)}</Text>
         </View>
+        {isOvertime && (shift.overtime_minutes ?? 0) > 0 && (
+          <Text className="text-xs font-inter-semibold text-violet-600 dark:text-violet-400">+OT</Text>
+        )}
         {onConfirm && shift.status === "planned" && (
           <PressableScale
             onPress={() => onConfirm(shift.id)}
@@ -68,10 +73,20 @@ export function ShiftCard({
       <View className={`rounded-full px-2 py-0.5 ${statusColor(shift.status)}`}>
         <Text className="text-sm font-inter">{statusLabel(shift.status, t)}</Text>
       </View>
-      {showOvertimeLabel && shift.status === "overtime" && (shift.overtime_minutes ?? 0) > 0 && (
-        <Text className="text-sm text-accent-dark dark:text-accent">
-          {t("components.shiftCard.overtime", { minutes: shift.overtime_minutes })}
-        </Text>
+      {shift.pay_type === "extra" && (
+        <View className="rounded-full bg-violet-100 dark:bg-violet-400/15 px-2 py-0.5">
+          <Text className="text-sm font-inter-medium text-violet-700 dark:text-violet-300">
+            {t("components.shiftCard.extra")}
+          </Text>
+        </View>
+      )}
+      {showOvertimeLabel && isOvertime && (shift.overtime_minutes ?? 0) > 0 && (
+        <View className="flex-row items-center gap-1">
+          <Ionicons name="time-outline" size={14} color={colors.accent} />
+          <Text className="text-sm text-accent-dark dark:text-accent">
+            {t("components.shiftCard.overtime", { minutes: shift.overtime_minutes })}
+          </Text>
+        </View>
       )}
     </View>
   );
@@ -81,7 +96,7 @@ export function ShiftCard({
       <PressableScale
         onPress={() => onEdit!(shift.id)}
         accessibilityLabel={`${shift.date} ${shift.start_time}–${shift.end_time}`}
-        className="mb-2 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-3"
+        className={`mb-2 rounded-xl border bg-app-surface dark:bg-dark-surface p-3 ${isOvertime ? "border-l-4 border-l-violet-500 dark:border-l-violet-400 border-app-border dark:border-dark-border" : "border-app-border dark:border-dark-border"}`}
       >
         <View className="flex-row items-center justify-between">
           <View className="flex-1">
@@ -110,7 +125,7 @@ export function ShiftCard({
   }
 
   return (
-    <View className="mb-2 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-3">
+    <View className={`mb-2 rounded-xl border bg-app-surface dark:bg-dark-surface p-3 ${isOvertime ? "border-l-4 border-l-violet-500 dark:border-l-violet-400 border-app-border dark:border-dark-border" : "border-app-border dark:border-dark-border"}`}>
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
           <Text className="font-inter-medium text-stone-900 dark:text-stone-100">{shift.date}</Text>

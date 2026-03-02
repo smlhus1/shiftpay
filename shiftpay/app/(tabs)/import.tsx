@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -36,6 +36,7 @@ import {
 } from "../../lib/notifications";
 import { calculateExpectedPay, type Shift, type ShiftType } from "../../lib/calculations";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { CameraCapture } from "../../components/CameraCapture";
 import { ShiftEditor } from "../../components/ShiftEditor";
 import { PressableScale } from "../../components/PressableScale";
@@ -229,11 +230,13 @@ export default function ImportScreen() {
   const cameraRef = useRef<{ takePictureAsync: (opts?: object) => Promise<{ uri: string }> } | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
 
-  useEffect(() => {
-    getTariffRates()
-      .then((r) => setBaseRateZero(r.base_rate === 0))
-      .catch(() => setBaseRateZero(false));
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getTariffRates()
+        .then((r) => setBaseRateZero(r.base_rate === 0))
+        .catch(() => setBaseRateZero(false));
+    }, [])
+  );
 
   /** Run OCR on multiple images and merge all shifts into rows. */
   const processMultipleImages = async (uris: string[]) => {

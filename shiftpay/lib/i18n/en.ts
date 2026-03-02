@@ -57,6 +57,21 @@ const en: TranslationShape = {
       message: "Could not load data",
       retry: "Try again",
     },
+    addShift: "Add shift",
+  },
+  addShift: {
+    title: "Add shift",
+    date: "Date",
+    startTime: "Start time",
+    endTime: "End time",
+    shiftType: "Shift type",
+    payType: "Pay type",
+    regular: "Regular",
+    extra: "Extra",
+    save: "Save shift",
+    saved: "Shift saved!",
+    duplicate: "This shift already exists",
+    pastInfo: "This shift is in the past",
   },
   import: {
     disclaimer:
@@ -112,6 +127,13 @@ const en: TranslationShape = {
       basePay: "Base pay",
       supplements: "Supplements per hour",
       overtime: "Overtime",
+      payPeriods: "Pay periods",
+    },
+    payPeriods: {
+      toggle: "Pay periods (optional)",
+      regularLabel: "Regular shifts start day",
+      extraLabel: "Extra shifts start day",
+      hint: "Most use 1st for regular and 12th for extra",
     },
     save: "Save",
     saved: "Saved.",
@@ -191,6 +213,11 @@ const en: TranslationShape = {
       loadError: "Could not load shift.",
       saveError: "Could not save",
     },
+    payType: {
+      label: "Pay type",
+      regular: "Regular",
+      extra: "Extra shift",
+    },
     backBtnLabel: "Back",
     editFields: {
       title: "Edit shift",
@@ -227,6 +254,19 @@ const en: TranslationShape = {
       error: "Could not delete the shift.",
     },
     back: "Back",
+    regularPay: "Regular pay",
+    extraPay: "Extra shifts",
+    addShift: "Add shift",
+    actualPay: {
+      title: "Actual pay received",
+      inputLabel: "What did you actually receive?",
+      invalidAmount: "Invalid amount",
+      saveError: "Could not save",
+      save: "Save",
+      difference: "%{amount} %{direction}",
+      over: "overpaid",
+      under: "underpaid",
+    },
   },
   period: {
     notFound: "Schedule not found.",
@@ -246,6 +286,8 @@ const en: TranslationShape = {
     errors: {
       deleteError: "Could not delete",
     },
+    markAllExtra: "Mark all as extra",
+    markedExtra: "All shifts marked as extra",
   },
   components: {
     shiftEditor: {
@@ -276,6 +318,7 @@ const en: TranslationShape = {
       deleteA11y: "Delete shift %{date}",
       edit: "Edit",
       overtime: "+%{minutes} min overtime",
+      extra: "Extra",
     },
     camera: {
       instruction: "Keep the timesheet within the frame",
@@ -325,6 +368,7 @@ const en: TranslationShape = {
     periodDetail: "Period details",
     confirmShift: "Confirm shift",
     monthlySummary: "Monthly summary",
+    addShift: "Add shift",
   },
 };
 

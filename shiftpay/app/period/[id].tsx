@@ -12,6 +12,7 @@ import {
   getScheduleById,
   getShiftsBySchedule,
   deleteSchedule,
+  bulkUpdatePayType,
   type ScheduleRow,
   type ShiftRow,
 } from "../../lib/db";
@@ -45,6 +46,8 @@ function periodToYearMonth(periodStart: string): string {
   return `${y}-${m}`;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function PeriodDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -57,7 +60,7 @@ export default function PeriodDetailScreen() {
   const [notFound, setNotFound] = useState(false);
 
   const load = useCallback(async () => {
-    if (!id) {
+    if (!id || !UUID_RE.test(id)) {
       setNotFound(true);
       setLoading(false);
       return;
@@ -177,6 +180,24 @@ export default function PeriodDetailScreen() {
             onConfirm={(id) => router.push(`/confirm/${id}` as Href)}
           />
         ))
+      )}
+
+      {shifts.length > 0 && !shifts.every((s) => s.pay_type === "extra") && (
+        <PressableScale
+          onPress={async () => {
+            try {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              await bulkUpdatePayType(id!, "extra");
+              load();
+            } catch {
+              Alert.alert(t("common.error"), t("period.errors.deleteError"));
+            }
+          }}
+          accessibilityLabel={t("period.markAllExtra")}
+          className="mt-4 rounded-xl border border-violet-500/20 bg-violet-50 dark:border-violet-400/20 dark:bg-violet-500/10 py-3"
+        >
+          <Text className="text-center font-inter-medium text-violet-700 dark:text-violet-300">{t("period.markAllExtra")}</Text>
+        </PressableScale>
       )}
 
       <PressableScale

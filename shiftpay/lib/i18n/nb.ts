@@ -55,6 +55,21 @@ const nb = {
       message: "Kunne ikke laste data",
       retry: "Prøv igjen",
     },
+    addShift: "Legg til vakt",
+  },
+  addShift: {
+    title: "Legg til vakt",
+    date: "Dato",
+    startTime: "Starttid",
+    endTime: "Sluttid",
+    shiftType: "Vakttype",
+    payType: "Avlønningstype",
+    regular: "Fast",
+    extra: "Ekstra",
+    save: "Lagre vakt",
+    saved: "Vakt lagret!",
+    duplicate: "Denne vakten finnes allerede",
+    pastInfo: "Denne vakten er i fortiden",
   },
   import: {
     disclaimer:
@@ -110,6 +125,13 @@ const nb = {
       basePay: "Grunnlønn",
       supplements: "Tillegg per time",
       overtime: "Overtid",
+      payPeriods: "Lønnsperioder",
+    },
+    payPeriods: {
+      toggle: "Lønnsperioder (valgfritt)",
+      regularLabel: "Faste vakter starter dag",
+      extraLabel: "Ekstra vakter starter dag",
+      hint: "De fleste har 1. for fast og 12. for ekstra",
     },
     save: "Lagre",
     saved: "Lagret.",
@@ -189,6 +211,11 @@ const nb = {
       loadError: "Kunne ikke laste vakten.",
       saveError: "Kunne ikke lagre",
     },
+    payType: {
+      label: "Vakttype (lønn)",
+      regular: "Fast",
+      extra: "Ekstra",
+    },
     backBtnLabel: "Tilbake",
     editFields: {
       title: "Rediger vakt",
@@ -225,6 +252,19 @@ const nb = {
       error: "Kunne ikke slette vakten.",
     },
     back: "Tilbake",
+    regularPay: "Fast lønn",
+    extraPay: "Ekstra vakter",
+    addShift: "Legg til vakt",
+    actualPay: {
+      title: "Faktisk utbetalt",
+      inputLabel: "Hva fikk du utbetalt?",
+      invalidAmount: "Ugyldig beløp",
+      saveError: "Kunne ikke lagre",
+      save: "Lagre",
+      difference: "%{amount} %{direction}",
+      over: "for mye",
+      under: "for lite",
+    },
   },
   period: {
     notFound: "Vaktplanen ble ikke funnet.",
@@ -244,6 +284,8 @@ const nb = {
     errors: {
       deleteError: "Kunne ikke slette",
     },
+    markAllExtra: "Merk alle som ekstra",
+    markedExtra: "Alle vakter merket som ekstra",
   },
   components: {
     shiftEditor: {
@@ -274,6 +316,7 @@ const nb = {
       deleteA11y: "Slett vakt %{date}",
       edit: "Endre",
       overtime: "+%{minutes} min overtid",
+      extra: "Ekstra",
     },
     camera: {
       instruction: "Hold timelisten innenfor rammen",
@@ -323,6 +366,7 @@ const nb = {
     periodDetail: "Periodedetaljer",
     confirmShift: "Bekreft vakt",
     monthlySummary: "Månedsoppsummering",
+    addShift: "Legg til vakt",
   },
 };
 

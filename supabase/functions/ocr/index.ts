@@ -42,6 +42,30 @@ Datoformat ALLTID DD.MM.YYYY. Tidsformat ALLTID HH:MM. Returner BARE JSON.`;
 
 // CORS: Only needed if called from browsers. Mobile apps don't send Origin.
 // Restrict to known origins; omit wildcard to prevent cross-origin abuse.
+/** Timing-safe string comparison using HMAC to prevent timing attacks on API key. */
+async function safeCompare(a: string, b: string): Promise<boolean> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode("shiftpay-compare"),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const [macA, macB] = await Promise.all([
+    crypto.subtle.sign("HMAC", key, enc.encode(a)),
+    crypto.subtle.sign("HMAC", key, enc.encode(b)),
+  ]);
+  const viewA = new Uint8Array(macA);
+  const viewB = new Uint8Array(macB);
+  if (viewA.length !== viewB.length) return false;
+  let result = 0;
+  for (let i = 0; i < viewA.length; i++) {
+    result |= viewA[i]! ^ viewB[i]!;
+  }
+  return result === 0;
+}
+
 const ALLOWED_ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").filter(Boolean);
 
 function getCorsHeaders(req: Request) {
@@ -77,8 +101,8 @@ Deno.serve(async (req: Request) => {
   if (!appApiKey) {
     return jsonResponse({ detail: "Service unavailable" }, 503, req);
   }
-  const provided = req.headers.get("x-api-key");
-  if (provided !== appApiKey) {
+  const provided = req.headers.get("x-api-key") ?? "";
+  if (!provided || !(await safeCompare(provided, appApiKey))) {
     return jsonResponse({ detail: "Unauthorized" }, 401, req);
   }
 

@@ -3,6 +3,9 @@ import {
   View,
   Text,
   ScrollView,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
   ActivityIndicator,
   Alert,
 } from "react-native";
@@ -10,7 +13,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import type { Href } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { getMonthSummary, getTariffRates, getDistinctMonthsWithShifts, deleteShift } from "../../lib/db";
+import { getMonthSummary, getTariffRates, getDistinctMonthsWithShifts, deleteShift, getMonthlyActualPay, setMonthlyActualPay, type TariffRatesRow } from "../../lib/db";
 import type { ShiftRow } from "../../lib/db";
 import { calculateExpectedPay, calculateOvertimePay, type Shift } from "../../lib/calculations";
 import { shiftRowToShift, MONTH_KEYS, toYearMonthKey, formatCurrency } from "../../lib/format";
@@ -42,6 +45,11 @@ export default function SummaryScreen() {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<Awaited<ReturnType<typeof getMonthSummary>> | null>(null);
   const [expectedPay, setExpectedPay] = useState(0);
+  const [regularPay, setRegularPay] = useState(0);
+  const [extraPay, setExtraPay] = useState(0);
+  const [hasExtraShifts, setHasExtraShifts] = useState(false);
+  const [actualPay, setActualPay] = useState("");
+  const [actualPaySaved, setActualPaySaved] = useState<number | null>(null);
   const [invalid, setInvalid] = useState(false);
   const [adjacentMonths, setAdjacentMonths] = useState<{
     prev: { year: number; month: number } | null;
@@ -71,7 +79,26 @@ export default function SummaryScreen() {
       );
       const shiftsForPay: Shift[] = paidShifts.map(shiftRowToShift);
       const pay = calculateExpectedPay(shiftsForPay, rates);
-      setExpectedPay(pay + calculateOvertimePay(paidShifts, rates));
+      const totalPay = pay + calculateOvertimePay(paidShifts, rates);
+      setExpectedPay(totalPay);
+
+      // Split by pay type
+      const extraExists = s.shifts.some((sh) => sh.pay_type === "extra");
+      setHasExtraShifts(extraExists);
+      if (extraExists) {
+        const regularShifts = paidShifts.filter((sh) => sh.pay_type !== "extra");
+        const extraShifts = paidShifts.filter((sh) => sh.pay_type === "extra");
+        const regPay = calculateExpectedPay(regularShifts.map(shiftRowToShift), rates) + calculateOvertimePay(regularShifts, rates);
+        const extPay = calculateExpectedPay(extraShifts.map(shiftRowToShift), rates) + calculateOvertimePay(extraShifts, rates);
+        setRegularPay(regPay);
+        setExtraPay(extPay);
+      }
+
+      const savedActual = await getMonthlyActualPay(year, month);
+      if (savedActual !== null) {
+        setActualPaySaved(savedActual);
+        setActualPay(String(savedActual));
+      }
 
       const allMonths = await getDistinctMonthsWithShifts();
       const currentKey = toYearMonthKey(year, month);
@@ -92,6 +119,22 @@ export default function SummaryScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const handleSaveActualPay = useCallback(async () => {
+    const parsed = parseFloat(actualPay.replace(",", "."));
+    if (isNaN(parsed) || parsed < 0) {
+      Alert.alert(t("common.error"), t("summary.actualPay.invalidAmount"));
+      return;
+    }
+    const [yStr, mStr] = (yearMonth ?? "").split("-").map(Number);
+    try {
+      await setMonthlyActualPay(yStr ?? 0, mStr ?? 0, parsed);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setActualPaySaved(parsed);
+    } catch {
+      Alert.alert(t("common.error"), t("summary.actualPay.saveError"));
+    }
+  }, [actualPay, yearMonth, t]);
 
   const handleDeleteShift = useCallback((shiftId: string) => {
     Alert.alert(
@@ -144,6 +187,10 @@ export default function SummaryScreen() {
   const monthName = t(`months.${monthKey}`);
 
   return (
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
     <ScrollView
       className="flex-1 bg-app-bg dark:bg-dark-bg"
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
@@ -195,8 +242,61 @@ export default function SummaryScreen() {
         <Text className="mt-1 text-xs text-stone-500">{t("summary.expectedPay.subtitle")}</Text>
       </AnimatedCard>
 
+      {/* Regular vs Extra split — only shown when extra shifts exist */}
+      {hasExtraShifts && (
+        <AnimatedCard index={1} className="mb-4 flex-row gap-3">
+          <View className="flex-1 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-3">
+            <Text className="text-xs font-inter-medium text-stone-600 dark:text-stone-400">{t("summary.regularPay")}</Text>
+            <Text className="mt-1 font-display text-xl text-stone-900 dark:text-stone-100">
+              {formatCurrency(regularPay, currency)}
+            </Text>
+          </View>
+          <View className="flex-1 rounded-xl border border-violet-500/20 dark:border-violet-400/20 bg-violet-50 dark:bg-violet-500/10 p-3">
+            <Text className="text-xs font-inter-medium text-violet-700 dark:text-violet-300">{t("summary.extraPay")}</Text>
+            <Text className="mt-1 font-display text-xl text-violet-700 dark:text-violet-300">
+              {formatCurrency(extraPay, currency)}
+            </Text>
+          </View>
+        </AnimatedCard>
+      )}
+
+      {/* Actual pay comparison */}
+      <AnimatedCard index={hasExtraShifts ? 2 : 1} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
+        <Text className="text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400">{t("summary.actualPay.title")}</Text>
+        <View className="mt-2 flex-row items-center gap-2">
+          <TextInput
+            value={actualPay}
+            onChangeText={setActualPay}
+            keyboardType="decimal-pad"
+            placeholder="0"
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t("summary.actualPay.inputLabel")}
+            className="flex-1 rounded-lg border border-app-border dark:border-dark-border bg-app-bg dark:bg-dark-bg px-3 py-2 font-inter-medium text-lg text-stone-900 dark:text-stone-100"
+          />
+          <PressableScale
+            onPress={handleSaveActualPay}
+            accessibilityLabel={t("summary.actualPay.save")}
+            className="rounded-lg bg-accent-dark dark:bg-accent px-4 py-2"
+          >
+            <Text className="font-inter-semibold text-white dark:text-stone-900">{t("summary.actualPay.save")}</Text>
+          </PressableScale>
+        </View>
+        {actualPaySaved !== null && expectedPay > 0 && (() => {
+          const diff = actualPaySaved - expectedPay;
+          const absDiff = Math.abs(diff);
+          if (absDiff < 1) return null;
+          const isOver = diff > 0;
+          const direction = isOver ? t("summary.actualPay.over") : t("summary.actualPay.under");
+          return (
+            <Text className={`mt-2 font-inter-semibold text-base ${isOver ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+              {t("summary.actualPay.difference", { amount: formatCurrency(absDiff, currency), direction })}
+            </Text>
+          );
+        })()}
+      </AnimatedCard>
+
       {/* Stat boxes */}
-      <AnimatedCard index={1} className="mb-4 flex-row gap-3">
+      <AnimatedCard index={hasExtraShifts ? 3 : 2} className="mb-4 flex-row gap-3">
         <StatBox
           value={String(summary.plannedShifts)}
           label={t("summary.shifts.planned", { count: summary.plannedShifts, hours: summary.plannedHours.toFixed(1) })}
@@ -212,7 +312,7 @@ export default function SummaryScreen() {
       </AnimatedCard>
 
       {/* Hours detail */}
-      <AnimatedCard index={2} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
+      <AnimatedCard index={hasExtraShifts ? 4 : 3} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
         <Text className="font-inter-medium text-stone-900 dark:text-stone-100">{t("summary.shifts.title")}</Text>
         <View className="mt-2 flex-row flex-wrap gap-3">
           <Text className="text-stone-600 dark:text-stone-400">
@@ -264,6 +364,15 @@ export default function SummaryScreen() {
       )}
 
       <PressableScale
+        onPress={() => router.push(`/add-shift?month=${yearMonth}` as Href)}
+        accessibilityLabel={t("summary.addShift")}
+        className="mt-4 flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-app-border dark:border-dark-border py-3"
+      >
+        <Ionicons name="add-circle-outline" size={18} color={colors.textMuted} />
+        <Text className="font-inter-medium text-stone-600 dark:text-stone-400">{t("summary.addShift")}</Text>
+      </PressableScale>
+
+      <PressableScale
         onPress={() => router.back()}
         accessibilityLabel={t("summary.back")}
         className="mt-3 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface py-3"
@@ -271,5 +380,6 @@ export default function SummaryScreen() {
         <Text className="text-center font-inter-medium text-stone-700 dark:text-stone-300">{t("summary.back")}</Text>
       </PressableScale>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

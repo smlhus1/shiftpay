@@ -57,6 +57,21 @@ const sv: TranslationShape = {
       message: "Kunde inte ladda data",
       retry: "Försök igen",
     },
+    addShift: "Lägg till skift",
+  },
+  addShift: {
+    title: "Lägg till skift",
+    date: "Datum",
+    startTime: "Starttid",
+    endTime: "Sluttid",
+    shiftType: "Passtyp",
+    payType: "Lönetyp",
+    regular: "Ordinarie",
+    extra: "Extra",
+    save: "Spara skift",
+    saved: "Skift sparat!",
+    duplicate: "Det här skiftet finns redan",
+    pastInfo: "Det här skiftet är i det förflutna",
   },
   import: {
     disclaimer:
@@ -112,6 +127,13 @@ const sv: TranslationShape = {
       basePay: "Grundlön",
       supplements: "Tillägg per timme",
       overtime: "Övertid",
+      payPeriods: "Löneperioder",
+    },
+    payPeriods: {
+      toggle: "Löneperioder (valfritt)",
+      regularLabel: "Ordinarie skift startar dag",
+      extraLabel: "Extra skift startar dag",
+      hint: "De flesta har 1:a för ordinarie och 12:e för extra",
     },
     save: "Spara",
     saved: "Sparat.",
@@ -191,6 +213,11 @@ const sv: TranslationShape = {
       loadError: "Kunde inte ladda skiftet.",
       saveError: "Kunde inte spara",
     },
+    payType: {
+      label: "Lönetyp",
+      regular: "Ordinarie",
+      extra: "Extrapass",
+    },
     backBtnLabel: "Tillbaka",
     editFields: {
       title: "Redigera skift",
@@ -227,6 +254,19 @@ const sv: TranslationShape = {
       error: "Kunde inte ta bort skiftet.",
     },
     back: "Tillbaka",
+    regularPay: "Ordinarie lön",
+    extraPay: "Extrapass",
+    addShift: "Lägg till skift",
+    actualPay: {
+      title: "Faktisk utbetalt",
+      inputLabel: "Vad fick du utbetalt?",
+      invalidAmount: "Ogiltigt belopp",
+      saveError: "Kunde inte spara",
+      save: "Spara",
+      difference: "%{amount} %{direction}",
+      over: "för mycket",
+      under: "för lite",
+    },
   },
   period: {
     notFound: "Schemat hittades inte.",
@@ -246,6 +286,8 @@ const sv: TranslationShape = {
     errors: {
       deleteError: "Kunde inte ta bort",
     },
+    markAllExtra: "Markera alla som extra",
+    markedExtra: "Alla skift markerade som extra",
   },
   components: {
     shiftEditor: {
@@ -276,6 +318,7 @@ const sv: TranslationShape = {
       deleteA11y: "Ta bort skift %{date}",
       edit: "Ändra",
       overtime: "+%{minutes} min övertid",
+      extra: "Extra",
     },
     camera: {
       instruction: "Håll tidlistan inom ramen",
@@ -325,6 +368,7 @@ const sv: TranslationShape = {
     periodDetail: "Perioddetaljer",
     confirmShift: "Bekräfta skift",
     monthlySummary: "Månadssammanfattning",
+    addShift: "Lägg till skift",
   },
 };
 
