@@ -15,7 +15,13 @@
       "backgroundColor": "#0f766e"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "no.fenrirstudio.shiftpay",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "ShiftPay needs camera access to photograph your timesheet for OCR import.",
+        "NSPhotoLibraryUsageDescription": "ShiftPay needs photo library access to select timesheet images for OCR import."
+      }
     },
     "android": {
       "versionCode": 1,
