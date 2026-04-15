@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  RefreshControl,
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -78,7 +77,6 @@ export default function DashboardScreen() {
     expectedPay: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -138,7 +136,6 @@ export default function DashboardScreen() {
       setMonthSummary(null);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   }, [t]);
 
@@ -148,11 +145,6 @@ export default function DashboardScreen() {
       load();
     }, [load])
   );
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    load();
-  }, [load]);
 
   const onPressConfirm = useCallback(
     (shiftId: string) => {
@@ -200,15 +192,6 @@ export default function DashboardScreen() {
     <ScrollView
       className="flex-1"
       contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          colors={[colors.accent]}
-          tintColor={colors.accent}
-          progressBackgroundColor={colors.surface}
-        />
-      }
     >
       {empty && (
         <View className="flex-1 items-center justify-center py-12">
