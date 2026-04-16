@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -187,12 +187,27 @@ export default function DashboardScreen() {
 
   const empty = monthsList.length === 0 && !nextShift && dueConfirmation.length === 0;
 
+  // Editorial margin-note — Fraunces italic, one per screen (DESIGN.md §11.2)
+  const marginNote = useMemo(() => {
+    const h = new Date().getHours();
+    if (h < 6)  return "Natta er lang.";
+    if (h < 12) return "Morgenvakt i dag?";
+    if (h < 16) return "Midt i dagen.";
+    if (h < 22) return "Nylig hjem fra vakt?";
+    return "Kveldsro.";
+  }, []);
+
   return (
     <View className="flex-1 bg-app-bg dark:bg-dark-bg">
     <ScrollView
       className="flex-1"
       contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
     >
+      {!empty && (
+        <Text className="mb-3 italic text-[13px] text-stone-500 dark:text-stone-400" style={{ fontFamily: "Fraunces_400Regular_Italic" }}>
+          {marginNote}
+        </Text>
+      )}
       {empty && (
         <View className="flex-1 items-center justify-center py-12">
           <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-500/15">

@@ -14,6 +14,7 @@ import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from "@expo-google-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initDb, getTariffRates } from "../lib/db";
 import { ErrorBoundary } from "../components/ErrorBoundary";
+import { ShiftTintStripe } from "../components/ShiftTintStripe";
 import { LocaleProvider, useTranslation } from "../lib/i18n";
 import { ThemeProvider, useTheme } from "../lib/theme-context";
 
@@ -129,6 +130,7 @@ function RootLayoutInner() {
           />
         </Stack>
       </ErrorBoundary>
+      <ShiftTintStripe />
       {Platform.OS !== "web" && initError && (
         <Modal visible transparent animationType="fade" accessibilityViewIsModal={true}>
           <View className="flex-1 justify-center bg-black/50 px-6" accessibilityRole="alert">
