@@ -32,13 +32,21 @@ module.exports = {
         'dark-border': 'rgba(245, 239, 228, 0.10)',
       },
       fontFamily: {
-        // Kept for backward compat during migration. Typography migration
-        // (phase 2) will add fraunces/inter-tight/jetbrains-mono families.
-        inter: ['Inter_400Regular'],
-        'inter-medium': ['Inter_500Medium'],
-        'inter-semibold': ['Inter_600SemiBold'],
-        'inter-bold': ['Inter_700Bold'],
-        display: ['Inter_700Bold'],
+        // Inter Tight — body sans (tighter than Inter, less generic)
+        inter: ['InterTight_400Regular'],
+        'inter-medium': ['InterTight_500Medium'],
+        'inter-semibold': ['InterTight_600SemiBold'],
+        'inter-bold': ['InterTight_700Bold'],
+        // Fraunces — display serif for headings and margin-notes
+        display: ['Fraunces_700Bold'],
+        fraunces: ['Fraunces_400Regular'],
+        'fraunces-italic': ['Fraunces_400Regular_Italic'],
+        'fraunces-italic-mid': ['Fraunces_500Medium_Italic'],
+        'fraunces-semi': ['Fraunces_600SemiBold'],
+        'fraunces-bold': ['Fraunces_700Bold'],
+        // JetBrains Mono — tabular-nums for amounts, times, rates
+        mono: ['JetBrainsMono_400Regular'],
+        'mono-medium': ['JetBrainsMono_500Medium'],
       },
     },
   },

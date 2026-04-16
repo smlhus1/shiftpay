@@ -6,7 +6,11 @@ import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import { Stack, useRouter } from "expo-router";
 import type { Href } from "expo-router";
-import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from "@expo-google-fonts/inter";
+import { useFonts } from "@expo-google-fonts/inter";
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from "@expo-google-fonts/inter";
+import { InterTight_400Regular, InterTight_500Medium, InterTight_600SemiBold, InterTight_700Bold } from "@expo-google-fonts/inter-tight";
+import { Fraunces_400Regular, Fraunces_400Regular_Italic, Fraunces_500Medium_Italic, Fraunces_600SemiBold, Fraunces_700Bold } from "@expo-google-fonts/fraunces";
+import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from "@expo-google-fonts/jetbrains-mono";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initDb, getTariffRates } from "../lib/db";
 import { ErrorBoundary } from "../components/ErrorBoundary";
@@ -28,10 +32,25 @@ function RootLayoutInner() {
   const [initError, setInitError] = useState<string | null>(null);
 
   const [fontsLoaded] = useFonts({
+    // Inter (body) — kept during migration, still referenced by existing components
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
+    // Inter Tight — body-sans going forward
+    InterTight_400Regular,
+    InterTight_500Medium,
+    InterTight_600SemiBold,
+    InterTight_700Bold,
+    // Fraunces — display/editorial serif for headings + italic margin-notes
+    Fraunces_400Regular,
+    Fraunces_400Regular_Italic,
+    Fraunces_500Medium_Italic,
+    Fraunces_600SemiBold,
+    Fraunces_700Bold,
+    // JetBrains Mono — all numbers (amounts, times, rates)
+    JetBrainsMono_400Regular,
+    JetBrainsMono_500Medium,
   });
 
   const runInit = useCallback(async () => {
