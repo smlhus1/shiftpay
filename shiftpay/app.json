@@ -55,6 +55,17 @@
         "projectId": "d648781a-3c53-44da-876d-1e7e1ded49e7"
       }
     },
-    "owner": "smlhus"
+    "owner": "smlhus",
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableBundleCompression": true,
+            "buildArchs": ["arm64-v8a"]
+          }
+        }
+      ]
+    ]
   }
 }
