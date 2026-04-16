@@ -12,7 +12,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.tabActive,
         tabBarInactiveTintColor: colors.tabInactive,
         headerStyle: { backgroundColor: colors.bg },
-        headerTitleStyle: { color: colors.textPrimary, fontFamily: 'Inter_600SemiBold' },
+        headerTitleStyle: { color: colors.textPrimary, fontFamily: "Inter_600SemiBold" },
         headerShadowVisible: false,
         tabBarStyle: {
           borderTopColor: colors.border,
@@ -26,9 +26,7 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.overview"),
           tabBarLabel: t("tabs.overview"),
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="time-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Icon name="time-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen

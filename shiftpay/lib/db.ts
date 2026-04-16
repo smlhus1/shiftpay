@@ -119,17 +119,27 @@ async function migrateTimesheetsToSchedules(database: SQLite.SQLiteDatabase): Pr
     "SELECT name FROM sqlite_master WHERE type='table' AND name='timesheets'"
   );
   if (tables.length === 0) return;
-  const rows = await database.getAllAsync<{ id: string; period_start: string; period_end: string; shifts: string; source: string; created_at: string }>(
-    "SELECT id, period_start, period_end, shifts, source, created_at FROM timesheets"
-  );
+  const rows = await database.getAllAsync<{
+    id: string;
+    period_start: string;
+    period_end: string;
+    shifts: string;
+    source: string;
+    created_at: string;
+  }>("SELECT id, period_start, period_end, shifts, source, created_at FROM timesheets");
   for (const row of rows) {
     await database.runAsync(
       "INSERT OR IGNORE INTO schedules (id, period_start, period_end, source, created_at) VALUES (?, ?, ?, ?, ?)",
       [row.id, row.period_start, row.period_end, row.source, row.created_at]
     );
-    let shifts: Array<{ date: string; start_time: string; end_time: string; shift_type: string }>;
+    let shifts: { date: string; start_time: string; end_time: string; shift_type: string }[];
     try {
-      shifts = JSON.parse(row.shifts) as Array<{ date: string; start_time: string; end_time: string; shift_type: string }>;
+      shifts = JSON.parse(row.shifts) as {
+        date: string;
+        start_time: string;
+        end_time: string;
+        shift_type: string;
+      }[];
     } catch {
       continue;
     }
@@ -137,7 +147,15 @@ async function migrateTimesheetsToSchedules(database: SQLite.SQLiteDatabase): Pr
       const shiftId = generateId();
       await database.runAsync(
         "INSERT INTO shifts (id, schedule_id, date, start_time, end_time, shift_type, status, overtime_minutes, created_at) VALUES (?, ?, ?, ?, ?, ?, 'planned', 0, ?)",
-        [shiftId, row.id, s.date, s.start_time, s.end_time, s.shift_type ?? "tidlig", row.created_at]
+        [
+          shiftId,
+          row.id,
+          s.date,
+          s.start_time,
+          s.end_time,
+          s.shift_type ?? "tidlig",
+          row.created_at,
+        ]
       );
     }
   }
@@ -191,9 +209,7 @@ export async function initDb(): Promise<SQLite.SQLiteDatabase> {
 }
 
 /** Run a DB operation; if native connection is stale (NullPointerException), re-open and retry once. */
-async function withDb<T>(
-  fn: (database: SQLite.SQLiteDatabase) => Promise<T>
-): Promise<T> {
+async function withDb<T>(fn: (database: SQLite.SQLiteDatabase) => Promise<T>): Promise<T> {
   let database = await initDb();
   try {
     return await fn(database);
@@ -418,7 +434,9 @@ export async function insertScheduleWithShifts(
       const hours = shiftDurationHours(s.start_time, s.end_time);
       if (hours <= 0 || hours > MAX_SHIFT_HOURS) {
         if (__DEV__) {
-          console.warn(`[ShiftPay] Filtered out invalid shift: ${s.date} ${s.start_time}-${s.end_time} (${hours.toFixed(1)}h)`);
+          console.warn(
+            `[ShiftPay] Filtered out invalid shift: ${s.date} ${s.start_time}-${s.end_time} (${hours.toFixed(1)}h)`
+          );
         }
         return false;
       }
@@ -442,7 +460,12 @@ export async function insertScheduleWithShifts(
       [scheduleId]
     );
     if (__DEV__) {
-      console.log("[ShiftPay] insertScheduleWithShifts: scheduleId=", scheduleId, "shifts=", rows.length);
+      console.log(
+        "[ShiftPay] insertScheduleWithShifts: scheduleId=",
+        scheduleId,
+        "shifts=",
+        rows.length
+      );
     }
     return { scheduleId, shifts: sortShiftsByDate(rows) };
   });
@@ -519,14 +542,7 @@ export async function confirmShift(
   await withDb(async (database) => {
     await database.runAsync(
       "UPDATE shifts SET status = ?, overtime_minutes = ?, actual_start = ?, actual_end = ?, confirmed_at = ? WHERE id = ?",
-      [
-        status,
-        overtimeMinutes ?? 0,
-        actualStart ?? null,
-        actualEnd ?? null,
-        confirmedAt,
-        shiftId,
-      ]
+      [status, overtimeMinutes ?? 0, actualStart ?? null, actualEnd ?? null, confirmedAt, shiftId]
     );
   });
 }
@@ -545,11 +561,9 @@ export interface MonthSummary {
   shifts: ShiftRow[];
 }
 
-export async function getDistinctMonthsWithShifts(): Promise<Array<{ year: number; month: number }>> {
+export async function getDistinctMonthsWithShifts(): Promise<{ year: number; month: number }[]> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<{ date: string }>(
-      "SELECT DISTINCT date FROM shifts"
-    );
+    const rows = await database.getAllAsync<{ date: string }>("SELECT DISTINCT date FROM shifts");
     const seen = new Set<string>();
     for (const r of rows) {
       const parts = r.date.split(".");
@@ -568,16 +582,16 @@ export async function getDistinctMonthsWithShifts(): Promise<Array<{ year: numbe
 
 export async function getMonthSummary(year: number, month: number): Promise<MonthSummary> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts"
+    const rows = await database.getAllAsync<ShiftRow>("SELECT * FROM shifts");
+    const shifts = sortShiftsByDate(
+      rows.filter((r) => {
+        const parts = r.date.split(".");
+        const d = Number(parts[0]);
+        const m = Number(parts[1]);
+        const y = Number(parts[2]);
+        return y === year && m === month;
+      })
     );
-    const shifts = sortShiftsByDate(rows.filter((r) => {
-      const parts = r.date.split(".");
-      const d = Number(parts[0]);
-      const m = Number(parts[1]);
-      const y = Number(parts[2]);
-      return y === year && m === month;
-    }));
     let plannedHours = 0;
     let actualHours = 0;
     let overtimeHours = 0;
@@ -585,7 +599,10 @@ export async function getMonthSummary(year: number, month: number): Promise<Mont
       const planned = shiftDurationHours(s.start_time, s.end_time);
       plannedHours += planned;
       if (s.status === "completed" || s.status === "overtime") {
-        actualHours += s.actual_start && s.actual_end ? shiftDurationHours(s.actual_start, s.actual_end) : planned;
+        actualHours +=
+          s.actual_start && s.actual_end
+            ? shiftDurationHours(s.actual_start, s.actual_end)
+            : planned;
         overtimeHours += (s.overtime_minutes ?? 0) / 60;
       }
     }
@@ -620,7 +637,9 @@ export async function getAllSchedules(): Promise<ScheduleRow[]> {
 
 export async function getScheduleById(id: string): Promise<ScheduleRow | null> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<ScheduleRow>("SELECT * FROM schedules WHERE id = ?", [id]);
+    const rows = await database.getAllAsync<ScheduleRow>("SELECT * FROM schedules WHERE id = ?", [
+      id,
+    ]);
     return rows.length > 0 ? rows[0] : null;
   });
 }
@@ -660,10 +679,22 @@ export async function updateShift(
   await withDb(async (database) => {
     const sets: string[] = [];
     const values: (string | number)[] = [];
-    if (updates.date !== undefined) { sets.push("date = ?"); values.push(updates.date); }
-    if (updates.start_time !== undefined) { sets.push("start_time = ?"); values.push(updates.start_time); }
-    if (updates.end_time !== undefined) { sets.push("end_time = ?"); values.push(updates.end_time); }
-    if (updates.shift_type !== undefined) { sets.push("shift_type = ?"); values.push(updates.shift_type); }
+    if (updates.date !== undefined) {
+      sets.push("date = ?");
+      values.push(updates.date);
+    }
+    if (updates.start_time !== undefined) {
+      sets.push("start_time = ?");
+      values.push(updates.start_time);
+    }
+    if (updates.end_time !== undefined) {
+      sets.push("end_time = ?");
+      values.push(updates.end_time);
+    }
+    if (updates.shift_type !== undefined) {
+      sets.push("shift_type = ?");
+      values.push(updates.shift_type);
+    }
     if (sets.length === 0) return;
     values.push(shiftId);
     await database.runAsync(`UPDATE shifts SET ${sets.join(", ")} WHERE id = ?`, values);
@@ -678,7 +709,10 @@ export async function updateShiftPayType(shiftId: string, payType: PayType): Pro
 
 export async function bulkUpdatePayType(scheduleId: string, payType: PayType): Promise<void> {
   await withDb(async (database) => {
-    await database.runAsync("UPDATE shifts SET pay_type = ? WHERE schedule_id = ?", [payType, scheduleId]);
+    await database.runAsync("UPDATE shifts SET pay_type = ? WHERE schedule_id = ?", [
+      payType,
+      scheduleId,
+    ]);
   });
 }
 
@@ -710,7 +744,11 @@ export async function getMonthlyActualPay(year: number, month: number): Promise<
   });
 }
 
-export async function setMonthlyActualPay(year: number, month: number, amount: number): Promise<void> {
+export async function setMonthlyActualPay(
+  year: number,
+  month: number,
+  amount: number
+): Promise<void> {
   const validated = Math.max(0, amount);
   await withDb(async (database) => {
     const now = new Date().toISOString();
@@ -726,13 +764,13 @@ export async function setMonthlyActualPay(year: number, month: number, amount: n
 }
 
 export async function getShiftsInDateRange(fromDate: string, toDate: string): Promise<ShiftRow[]> {
-  const rows = await withDb((database) =>
-    database.getAllAsync<ShiftRow>("SELECT * FROM shifts")
+  const rows = await withDb((database) => database.getAllAsync<ShiftRow>("SELECT * FROM shifts"));
+  return sortShiftsByDate(
+    rows.filter((r) => {
+      const c = dateToComparable(r.date);
+      const from = dateToComparable(fromDate);
+      const to = dateToComparable(toDate);
+      return c >= from && c <= to;
+    })
   );
-  return sortShiftsByDate(rows.filter((r) => {
-    const c = dateToComparable(r.date);
-    const from = dateToComparable(fromDate);
-    const to = dateToComparable(toDate);
-    return c >= from && c <= to;
-  }));
 }

@@ -78,13 +78,7 @@ interface IconProps {
   importantForAccessibility?: "auto" | "yes" | "no" | "no-hide-descendants";
 }
 
-export function Icon({
-  name,
-  size = 24,
-  color = "#000",
-  weight = "duotone",
-  ...rest
-}: IconProps) {
+export function Icon({ name, size = 24, color = "#000", weight = "duotone", ...rest }: IconProps) {
   const Component = MAP[name];
   if (!Component) {
     if (__DEV__) console.warn(`Icon: unknown name "${name}" — falling back to Sliders`);

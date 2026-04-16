@@ -1,10 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  Alert,
-} from "react-native";
+import { View, Text, ScrollView, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
@@ -50,7 +45,7 @@ function SkeletonCard({ delay }: { delay: number }) {
       from={{ opacity: 0.3 }}
       animate={{ opacity: 0.7 }}
       transition={{ loop: true, type: "timing", duration: 1000, delay }}
-      className="mb-3 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-3"
+      className="mb-3 rounded-xl border border-app-border bg-app-surface p-3 dark:border-dark-border dark:bg-dark-surface"
     >
       <View className="flex-row items-center gap-2">
         <View className="h-4 w-24 rounded bg-stone-200 dark:bg-stone-700" />
@@ -86,17 +81,15 @@ function OcrLoadingState({ progress }: { progress: string | null }) {
 
   return (
     <View className="py-8" accessibilityLiveRegion="polite">
-      <View className="items-center mb-6">
+      <View className="mb-6 items-center">
         <Animated.View style={spinStyle}>
           <Icon name="scan-outline" size={48} color={colors.accent} />
         </Animated.View>
-        <Text className="mt-3 text-lg font-inter-semibold text-stone-900 dark:text-stone-100">
+        <Text className="mt-3 font-inter-semibold text-lg text-stone-900 dark:text-stone-100">
           {t("import.loading")}
         </Text>
         {progress && (
-          <Text className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-            {progress}
-          </Text>
+          <Text className="mt-1 text-sm text-stone-600 dark:text-stone-400">{progress}</Text>
         )}
       </View>
       <SkeletonCard delay={0} />
@@ -131,7 +124,7 @@ function SavedSuccessView({
       <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/15">
         <Icon name="checkmark-circle" size={40} color={colors.success} />
       </View>
-      <Text className="text-xl font-inter-semibold text-stone-900 dark:text-stone-100">
+      <Text className="font-inter-semibold text-xl text-stone-900 dark:text-stone-100">
         {t("import.saved.title")}
       </Text>
       <Text className="mt-2 text-center text-stone-600 dark:text-stone-400">
@@ -144,7 +137,7 @@ function SavedSuccessView({
       <PressableScale
         onPress={onViewSchedule}
         accessibilityLabel={t("import.saved.viewSchedule")}
-        className="mt-6 w-full rounded-xl bg-accent-dark dark:bg-accent py-4"
+        className="mt-6 w-full rounded-xl bg-accent-dark py-4 dark:bg-accent"
       >
         <Text className="text-center font-inter-semibold text-white dark:text-stone-900">
           {t("import.saved.viewSchedule")}
@@ -153,7 +146,7 @@ function SavedSuccessView({
       <PressableScale
         onPress={onImportMore}
         accessibilityLabel={t("import.saved.importMore")}
-        className="mt-3 w-full rounded-xl border border-app-border dark:border-dark-border py-3"
+        className="mt-3 w-full rounded-xl border border-app-border py-3 dark:border-dark-border"
       >
         <Text className="text-center font-inter-medium text-stone-700 dark:text-stone-300">
           {t("import.saved.importMore")}
@@ -218,8 +211,10 @@ export default function ImportScreen() {
   const [rows, setRows] = useState<CsvRowResult[]>([]);
   const [expectedPay, setExpectedPay] = useState<number | null>(null);
   const [savedResult, setSavedResult] = useState<{
-    scheduleId: string; shiftCount: number;
-    periodStart: string; periodEnd: string;
+    scheduleId: string;
+    shiftCount: number;
+    periodStart: string;
+    periodEnd: string;
   } | null>(null);
   const [saving, setSaving] = useState(false);
   const [calculating, setCalculating] = useState(false);
@@ -227,7 +222,9 @@ export default function ImportScreen() {
   const [ocrProgress, setOcrProgress] = useState<string | null>(null);
   const [showMore, setShowMore] = useState(false);
   const [baseRateZero, setBaseRateZero] = useState(false);
-  const cameraRef = useRef<{ takePictureAsync: (opts?: object) => Promise<{ uri: string }> } | null>(null);
+  const cameraRef = useRef<{
+    takePictureAsync: (opts?: object) => Promise<{ uri: string }>;
+  } | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
 
   useFocusEffect(
@@ -252,7 +249,9 @@ export default function ImportScreen() {
           allRows.push({ ok: true as const, shift: ocrShiftToShift(s) });
         }
       } catch (e) {
-        errors.push(`Image ${i + 1}: ${e instanceof Error ? e.message : t("import.alerts.ocrFailed")}`);
+        errors.push(
+          `Image ${i + 1}: ${e instanceof Error ? e.message : t("import.alerts.ocrFailed")}`
+        );
       }
     }
     // Deduplicate: same date + start_time + end_time = same shift
@@ -406,9 +405,18 @@ export default function ImportScreen() {
       return;
     }
     const dates = validShifts.map((s) => s.date);
-    const periodStart = dates.reduce((a, b) => (dateToComparable(a) <= dateToComparable(b) ? a : b));
+    const periodStart = dates.reduce((a, b) =>
+      dateToComparable(a) <= dateToComparable(b) ? a : b
+    );
     const periodEnd = dates.reduce((a, b) => (dateToComparable(a) >= dateToComparable(b) ? a : b));
-    const sourceStr = source === "gallery" ? "gallery" : source === "csv" ? "csv" : source === "ocr" ? "ocr" : "manual";
+    const sourceStr =
+      source === "gallery"
+        ? "gallery"
+        : source === "csv"
+          ? "csv"
+          : source === "ocr"
+            ? "ocr"
+            : "manual";
     setSaving(true);
     try {
       // Auto-calculate expected pay before saving
@@ -418,7 +426,14 @@ export default function ImportScreen() {
 
       await requestNotificationPermission();
       if (__DEV__) {
-        console.log("[ShiftPay] saveTimesheet: period", periodStart, "–", periodEnd, "shifts:", validShifts.length);
+        console.log(
+          "[ShiftPay] saveTimesheet: period",
+          periodStart,
+          "–",
+          periodEnd,
+          "shifts:",
+          validShifts.length
+        );
       }
       const { scheduleId, shifts: inserted } = await insertScheduleWithShifts(
         periodStart,
@@ -432,7 +447,13 @@ export default function ImportScreen() {
         }))
       );
       if (__DEV__) {
-        console.log("[ShiftPay] saveTimesheet: saved schedule", scheduleId, "with", inserted.length, "shifts");
+        console.log(
+          "[ShiftPay] saveTimesheet: saved schedule",
+          scheduleId,
+          "with",
+          inserted.length,
+          "shifts"
+        );
       }
       try {
         for (const shift of inserted) {
@@ -494,10 +515,13 @@ export default function ImportScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-app-bg dark:bg-dark-bg" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+    <ScrollView
+      className="flex-1 bg-app-bg dark:bg-dark-bg"
+      contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+    >
       {error && (
         <View
-          className="mb-4 rounded-xl bg-red-50 dark:bg-red-500/10 p-3"
+          className="mb-4 rounded-xl bg-red-50 p-3 dark:bg-red-500/10"
           accessibilityRole="alert"
           accessibilityLiveRegion="assertive"
         >
@@ -512,23 +536,34 @@ export default function ImportScreen() {
               onPress={() => router.push("/(tabs)/settings")}
               accessibilityRole="link"
               accessibilityLabel={t("import.rateZero") + ". " + t("import.rateZeroCta")}
-              className="mb-4 flex-row items-center gap-2 rounded-xl border border-amber-600/20 bg-amber-600/10 dark:border-amber-500/20 dark:bg-amber-500/10 p-3"
+              className="mb-4 flex-row items-center gap-2 rounded-xl border border-amber-600/20 bg-amber-600/10 p-3 dark:border-amber-500/20 dark:bg-amber-500/10"
             >
               <Text className="flex-1 text-sm text-amber-700 dark:text-amber-300">
                 {t("import.rateZero")}
               </Text>
-              <Text className="font-inter-semibold text-amber-700 dark:text-amber-400">{t("import.rateZeroCta")}</Text>
+              <Text className="font-inter-semibold text-amber-700 dark:text-amber-400">
+                {t("import.rateZeroCta")}
+              </Text>
             </PressableScale>
           )}
-          <AnimatedCard index={0} className="mb-4 rounded-xl bg-app-surface dark:bg-dark-surface p-3">
+          <AnimatedCard
+            index={0}
+            className="mb-4 rounded-xl bg-app-surface p-3 dark:bg-dark-surface"
+          >
             <Text className="text-sm text-stone-600 dark:text-stone-400">
               {t("import.disclaimer")}
             </Text>
           </AnimatedCard>
           {/* Primary: camera */}
           <AnimatedCard index={1}>
-            <PressableScale onPress={openCamera} accessibilityLabel={t("import.cameraBtn")} className="rounded-xl bg-accent-dark dark:bg-accent py-4">
-              <Text className="text-center text-base font-inter-semibold text-white dark:text-stone-900">{t("import.cameraBtn")}</Text>
+            <PressableScale
+              onPress={openCamera}
+              accessibilityLabel={t("import.cameraBtn")}
+              className="rounded-xl bg-accent-dark py-4 dark:bg-accent"
+            >
+              <Text className="text-center font-inter-semibold text-base text-white dark:text-stone-900">
+                {t("import.cameraBtn")}
+              </Text>
             </PressableScale>
           </AnimatedCard>
           {/* Secondary: gallery/files */}
@@ -542,9 +577,11 @@ export default function ImportScreen() {
                 ])
               }
               accessibilityLabel={t("import.fileBtn")}
-              className="mt-3 rounded-xl border-2 border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface py-4"
+              className="mt-3 rounded-xl border-2 border-app-border bg-app-surface py-4 dark:border-dark-border dark:bg-dark-surface"
             >
-              <Text className="text-center text-base font-inter-medium text-stone-700 dark:text-stone-300">{t("import.fileBtn")}</Text>
+              <Text className="text-center font-inter-medium text-base text-stone-700 dark:text-stone-300">
+                {t("import.fileBtn")}
+              </Text>
             </PressableScale>
           </AnimatedCard>
           {/* Tertiary: more options toggle */}
@@ -565,25 +602,25 @@ export default function ImportScreen() {
                 accessibilityLabel={t("import.csvBtn")}
                 className="mt-1 py-2"
               >
-                <Text className="text-center text-sm font-inter-medium text-accent-dark dark:text-accent">{t("import.csvBtn")}</Text>
+                <Text className="text-center font-inter-medium text-sm text-accent-dark dark:text-accent">
+                  {t("import.csvBtn")}
+                </Text>
               </PressableScale>
               <PressableScale
                 onPress={addShiftManually}
                 accessibilityLabel={t("import.manualBtn")}
                 className="mt-2 py-2"
               >
-                <Text className="text-center text-sm font-inter-medium text-accent-dark dark:text-accent">{t("import.manualBtn")}</Text>
+                <Text className="text-center font-inter-medium text-sm text-accent-dark dark:text-accent">
+                  {t("import.manualBtn")}
+                </Text>
               </PressableScale>
             </>
           )}
         </>
       )}
 
-      {loading && (
-        <OcrLoadingState
-          progress={ocrProgress}
-        />
-      )}
+      {loading && <OcrLoadingState progress={ocrProgress} />}
 
       {savedResult && !loading && (
         <SavedSuccessView

@@ -1,11 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { Href } from "expo-router";
 import {
@@ -89,49 +83,56 @@ export default function PeriodDetailScreen() {
 
   const handleDelete = useCallback(() => {
     if (!id) return;
-    Alert.alert(
-      t("period.delete.title"),
-      t("period.delete.message"),
-      [
-        { text: t("period.delete.cancel"), style: "cancel" },
-        {
-          text: t("period.delete.confirm"),
-          style: "destructive",
-          onPress: async () => {
-            setDeleting(true);
-            try {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-              await cancelScheduleReminders(id);
-              await deleteSchedule(id);
-              router.back();
-            } catch (e) {
-              Alert.alert(t("common.error"), e instanceof Error ? e.message : t("period.errors.deleteError"));
-            } finally {
-              setDeleting(false);
-            }
-          },
+    Alert.alert(t("period.delete.title"), t("period.delete.message"), [
+      { text: t("period.delete.cancel"), style: "cancel" },
+      {
+        text: t("period.delete.confirm"),
+        style: "destructive",
+        onPress: async () => {
+          setDeleting(true);
+          try {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            await cancelScheduleReminders(id);
+            await deleteSchedule(id);
+            router.back();
+          } catch (e) {
+            Alert.alert(
+              t("common.error"),
+              e instanceof Error ? e.message : t("period.errors.deleteError")
+            );
+          } finally {
+            setDeleting(false);
+          }
         },
-      ]
-    );
+      },
+    ]);
   }, [id, router, t]);
 
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
-        <ActivityIndicator size="large" color={colors.accent} accessibilityLabel={t("common.loading")} />
+        <ActivityIndicator
+          size="large"
+          color={colors.accent}
+          accessibilityLabel={t("common.loading")}
+        />
       </View>
     );
   }
 
   if (notFound || !id) {
     return (
-      <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg p-6">
-        <Text className="text-center text-stone-600 dark:text-stone-400">{t("period.notFound")}</Text>
+      <View className="flex-1 items-center justify-center bg-app-bg p-6 dark:bg-dark-bg">
+        <Text className="text-center text-stone-600 dark:text-stone-400">
+          {t("period.notFound")}
+        </Text>
         <PressableScale
           onPress={() => router.back()}
-          className="mt-4 rounded-xl bg-accent-dark dark:bg-accent px-6 py-2"
+          className="mt-4 rounded-xl bg-accent-dark px-6 py-2 dark:bg-accent"
         >
-          <Text className="font-inter-semibold text-white dark:text-stone-900">{t("common.back")}</Text>
+          <Text className="font-inter-semibold text-white dark:text-stone-900">
+            {t("common.back")}
+          </Text>
         </PressableScale>
       </View>
     );
@@ -146,30 +147,43 @@ export default function PeriodDetailScreen() {
       className="flex-1 bg-app-bg dark:bg-dark-bg"
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
     >
-      <AnimatedCard index={0} className="mb-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
-        <Text className="text-lg font-inter-semibold text-stone-900 dark:text-stone-100">
+      <AnimatedCard
+        index={0}
+        className="mb-4 rounded-xl border border-app-border bg-app-surface p-4 dark:border-dark-border dark:bg-dark-surface"
+      >
+        <Text className="font-inter-semibold text-lg text-stone-900 dark:text-stone-100">
           {schedule.period_start} – {schedule.period_end}
         </Text>
         <Text className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-          {t("period.source", { source: sourceLabel(schedule.source, t), date: formatCreated(schedule.created_at) })}
+          {t("period.source", {
+            source: sourceLabel(schedule.source, t),
+            date: formatCreated(schedule.created_at),
+          })}
         </Text>
         {yearMonth && (
           <PressableScale
             onPress={() => router.push(`/summary/${yearMonth}` as Href)}
             accessibilityLabel={t("period.viewSummary")}
-            className="mt-3 rounded-xl border border-blue-600/20 bg-blue-600/10 dark:border-blue-400/20 dark:bg-blue-400/10 py-2"
+            className="mt-3 rounded-xl border border-blue-600/20 bg-blue-600/10 py-2 dark:border-blue-400/20 dark:bg-blue-400/10"
           >
-            <Text className="text-center text-sm font-inter-semibold text-accent-dark dark:text-accent">
+            <Text className="text-center font-inter-semibold text-sm text-accent-dark dark:text-accent">
               {t("period.viewSummary")}
             </Text>
           </PressableScale>
         )}
       </AnimatedCard>
 
-      <Text className="mb-2 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("period.shifts.title")}</Text>
+      <Text
+        className="mb-2 font-inter-medium text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400"
+        accessibilityRole="header"
+      >
+        {t("period.shifts.title")}
+      </Text>
       {shifts.length === 0 ? (
-        <View className="rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
-          <Text className="text-center text-stone-600 dark:text-stone-400">{t("period.shifts.empty")}</Text>
+        <View className="rounded-xl border border-app-border bg-app-surface p-4 dark:border-dark-border dark:bg-dark-surface">
+          <Text className="text-center text-stone-600 dark:text-stone-400">
+            {t("period.shifts.empty")}
+          </Text>
         </View>
       ) : (
         shifts.map((shift) => (
@@ -194,9 +208,11 @@ export default function PeriodDetailScreen() {
             }
           }}
           accessibilityLabel={t("period.markAllExtra")}
-          className="mt-4 rounded-xl border border-violet-500/20 bg-violet-50 dark:border-violet-400/20 dark:bg-violet-500/10 py-3"
+          className="mt-4 rounded-xl border border-violet-500/20 bg-violet-50 py-3 dark:border-violet-400/20 dark:bg-violet-500/10"
         >
-          <Text className="text-center font-inter-medium text-violet-700 dark:text-violet-300">{t("period.markAllExtra")}</Text>
+          <Text className="text-center font-inter-medium text-violet-700 dark:text-violet-300">
+            {t("period.markAllExtra")}
+          </Text>
         </PressableScale>
       )}
 
@@ -210,7 +226,9 @@ export default function PeriodDetailScreen() {
         {deleting ? (
           <ActivityIndicator color={colors.error} accessibilityLabel={t("common.loading")} />
         ) : (
-          <Text className="text-center font-inter-semibold text-red-600 dark:text-red-400">{t("period.delete.btn")}</Text>
+          <Text className="text-center font-inter-semibold text-red-600 dark:text-red-400">
+            {t("period.delete.btn")}
+          </Text>
         )}
       </PressableScale>
     </ScrollView>

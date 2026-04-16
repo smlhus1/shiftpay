@@ -88,7 +88,10 @@ async function setStoredNotifs(record: Record<string, string[]>): Promise<void> 
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(record));
 }
 
-export async function storeScheduledNotificationId(scheduleId: string, notificationId: string): Promise<void> {
+export async function storeScheduledNotificationId(
+  scheduleId: string,
+  notificationId: string
+): Promise<void> {
   const record = await getStoredNotifs();
   if (!record[scheduleId]) record[scheduleId] = [];
   record[scheduleId].push(notificationId);

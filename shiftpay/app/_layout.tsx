@@ -6,11 +6,30 @@ import * as Notifications from "expo-notifications";
 import { StatusBar } from "expo-status-bar";
 import { Stack, useRouter } from "expo-router";
 import type { Href } from "expo-router";
-import { useFonts } from "@expo-google-fonts/inter";
-import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from "@expo-google-fonts/inter";
-import { InterTight_400Regular, InterTight_500Medium, InterTight_600SemiBold, InterTight_700Bold } from "@expo-google-fonts/inter-tight";
-import { Fraunces_400Regular, Fraunces_400Regular_Italic, Fraunces_500Medium_Italic, Fraunces_600SemiBold, Fraunces_700Bold } from "@expo-google-fonts/fraunces";
-import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from "@expo-google-fonts/jetbrains-mono";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
+import {
+  InterTight_400Regular,
+  InterTight_500Medium,
+  InterTight_600SemiBold,
+  InterTight_700Bold,
+} from "@expo-google-fonts/inter-tight";
+import {
+  Fraunces_400Regular,
+  Fraunces_400Regular_Italic,
+  Fraunces_500Medium_Italic,
+  Fraunces_600SemiBold,
+  Fraunces_700Bold,
+} from "@expo-google-fonts/fraunces";
+import {
+  JetBrainsMono_400Regular,
+  JetBrainsMono_500Medium,
+} from "@expo-google-fonts/jetbrains-mono";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initDb, getTariffRates } from "@/lib/db";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -107,7 +126,7 @@ function RootLayoutInner() {
             headerShown: false,
             headerStyle: { backgroundColor: colors.bg },
             headerTintColor: colors.textPrimary,
-            headerTitleStyle: { color: colors.textPrimary, fontFamily: 'Inter_600SemiBold' },
+            headerTitleStyle: { color: colors.textPrimary, fontFamily: "Inter_600SemiBold" },
             contentStyle: { backgroundColor: colors.bg },
           }}
         >
@@ -134,16 +153,23 @@ function RootLayoutInner() {
       {Platform.OS !== "web" && initError && (
         <Modal visible transparent animationType="fade" accessibilityViewIsModal={true}>
           <View className="flex-1 justify-center bg-black/50 px-6" accessibilityRole="alert">
-            <View className="rounded-xl bg-app-surface dark:bg-dark-surface p-6">
-              <Text className="text-lg font-inter-semibold text-stone-900 dark:text-stone-100" accessibilityRole="header">{t("initError.title")}</Text>
+            <View className="rounded-xl bg-app-surface p-6 dark:bg-dark-surface">
+              <Text
+                className="font-inter-semibold text-lg text-stone-900 dark:text-stone-100"
+                accessibilityRole="header"
+              >
+                {t("initError.title")}
+              </Text>
               <Text className="mt-2 text-stone-600 dark:text-stone-400">{initError}</Text>
               <Pressable
                 onPress={() => runInit()}
                 accessibilityRole="button"
                 accessibilityLabel={t("initError.retry")}
-                className="mt-6 rounded-xl bg-accent-dark dark:bg-accent py-3"
+                className="mt-6 rounded-xl bg-accent-dark py-3 dark:bg-accent"
               >
-                <Text className="text-center font-inter-semibold text-white dark:text-stone-900">{t("initError.retry")}</Text>
+                <Text className="text-center font-inter-semibold text-white dark:text-stone-900">
+                  {t("initError.retry")}
+                </Text>
               </Pressable>
             </View>
           </View>
@@ -152,8 +178,11 @@ function RootLayoutInner() {
       {Platform.OS !== "web" && showOnboarding && !initError && (
         <Modal visible transparent animationType="fade" accessibilityViewIsModal={true}>
           <View className="flex-1 justify-center bg-black/50 px-6">
-            <View className="rounded-xl bg-app-surface dark:bg-dark-surface p-6">
-              <Text className="text-lg font-inter-semibold text-stone-900 dark:text-stone-100" accessibilityRole="header">
+            <View className="rounded-xl bg-app-surface p-6 dark:bg-dark-surface">
+              <Text
+                className="font-inter-semibold text-lg text-stone-900 dark:text-stone-100"
+                accessibilityRole="header"
+              >
                 {t("onboarding.title")}
               </Text>
               <Text className="mt-2 text-stone-600 dark:text-stone-400">
@@ -163,9 +192,11 @@ function RootLayoutInner() {
                 onPress={dismissOnboarding}
                 accessibilityRole="button"
                 accessibilityLabel={t("onboarding.cta")}
-                className="mt-6 rounded-xl bg-accent-dark dark:bg-accent py-3"
+                className="mt-6 rounded-xl bg-accent-dark py-3 dark:bg-accent"
               >
-                <Text className="text-center font-inter-semibold text-white dark:text-stone-900">{t("onboarding.cta")}</Text>
+                <Text className="text-center font-inter-semibold text-white dark:text-stone-900">
+                  {t("onboarding.cta")}
+                </Text>
               </Pressable>
             </View>
           </View>

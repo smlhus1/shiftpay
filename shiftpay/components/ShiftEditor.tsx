@@ -58,8 +58,10 @@ export function ShiftEditor({
         return (
           <View
             key={`row-${index}`}
-            className={`mb-3 rounded-xl border bg-app-surface dark:bg-dark-surface p-3 ${
-              isError ? "border-l-4 border-l-amber-500 border-app-border dark:border-dark-border" : "border-app-border dark:border-dark-border"
+            className={`mb-3 rounded-xl border bg-app-surface p-3 dark:bg-dark-surface ${
+              isError
+                ? "border-l-4 border-app-border border-l-amber-500 dark:border-dark-border"
+                : "border-app-border dark:border-dark-border"
             }`}
           >
             {isError && (
@@ -75,7 +77,7 @@ export function ShiftEditor({
                 placeholder="DD.MM.YYYY"
                 placeholderTextColor={colors.textMuted}
                 accessibilityLabel={t("confirm.editFields.date") + ", " + rowLabel}
-                className="min-w-[100px] flex-1 rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-stone-900 dark:text-stone-100"
+                className="min-w-[100px] flex-1 rounded-lg border border-app-border bg-app-elevated px-2 py-1 text-stone-900 dark:border-dark-border dark:bg-dark-elevated dark:text-stone-100"
                 style={{ minHeight: 44 }}
               />
               <TextInput
@@ -84,7 +86,7 @@ export function ShiftEditor({
                 placeholder="HH:MM"
                 placeholderTextColor={colors.textMuted}
                 accessibilityLabel={t("confirm.editFields.start") + ", " + rowLabel}
-                className="w-[72px] rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-stone-900 dark:text-stone-100"
+                className="w-[72px] rounded-lg border border-app-border bg-app-elevated px-2 py-1 text-stone-900 dark:border-dark-border dark:bg-dark-elevated dark:text-stone-100"
                 style={{ minHeight: 44 }}
               />
               <Text className="text-stone-600 dark:text-stone-400">{"\u2013"}</Text>
@@ -94,7 +96,7 @@ export function ShiftEditor({
                 placeholder="HH:MM"
                 placeholderTextColor={colors.textMuted}
                 accessibilityLabel={t("confirm.editFields.end") + ", " + rowLabel}
-                className="w-[72px] rounded-lg border border-app-border dark:border-dark-border bg-app-elevated dark:bg-dark-elevated px-2 py-1 text-stone-900 dark:text-stone-100"
+                className="w-[72px] rounded-lg border border-app-border bg-app-elevated px-2 py-1 text-stone-900 dark:border-dark-border dark:bg-dark-elevated dark:text-stone-100"
                 style={{ minHeight: 44 }}
               />
               <PressableScale
@@ -119,11 +121,19 @@ export function ShiftEditor({
                   accessibilityState={{ checked: displayType === type }}
                   accessibilityLabel={t(`shiftTypes.${type}`)}
                   className={`flex-1 items-center rounded-full px-2 py-1 ${
-                    displayType === type ? "bg-accent-dark dark:bg-accent" : "bg-app-elevated dark:bg-dark-elevated"
+                    displayType === type
+                      ? "bg-accent-dark dark:bg-accent"
+                      : "bg-app-elevated dark:bg-dark-elevated"
                   }`}
                   style={{ minHeight: 44, justifyContent: "center" }}
                 >
-                  <Text className={displayType === type ? "font-inter-medium text-white dark:text-stone-900" : "text-stone-700 dark:text-stone-300"}>
+                  <Text
+                    className={
+                      displayType === type
+                        ? "font-inter-medium text-white dark:text-stone-900"
+                        : "text-stone-700 dark:text-stone-300"
+                    }
+                  >
                     {t(`shiftTypes.${type}`)}
                   </Text>
                 </PressableScale>
@@ -136,9 +146,11 @@ export function ShiftEditor({
       {source === "manual" && (
         <PressableScale
           onPress={onAddRow}
-          className="mb-3 rounded-xl border border-dashed border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface py-3"
+          className="mb-3 rounded-xl border border-dashed border-app-border bg-app-surface py-3 dark:border-dark-border dark:bg-dark-surface"
         >
-          <Text className="text-center text-stone-600 dark:text-stone-400">{t("components.shiftEditor.addShift")}</Text>
+          <Text className="text-center text-stone-600 dark:text-stone-400">
+            {t("components.shiftEditor.addShift")}
+          </Text>
         </PressableScale>
       )}
 
@@ -148,12 +160,14 @@ export function ShiftEditor({
         disabled={saving}
         accessibilityLabel={t("components.shiftEditor.saveAndCalculate")}
         style={saving ? { opacity: 0.6 } : undefined}
-        className="mt-2 rounded-xl bg-accent-dark dark:bg-accent py-4"
+        className="mt-2 rounded-xl bg-accent-dark py-4 dark:bg-accent"
       >
         {saving ? (
           <ActivityIndicator color={colors.bg} accessibilityLabel={t("common.loading")} />
         ) : (
-          <Text className="text-center font-inter-semibold text-white dark:text-stone-900">{t("components.shiftEditor.saveAndCalculate")}</Text>
+          <Text className="text-center font-inter-semibold text-white dark:text-stone-900">
+            {t("components.shiftEditor.saveAndCalculate")}
+          </Text>
         )}
       </PressableScale>
 
@@ -163,22 +177,24 @@ export function ShiftEditor({
         disabled={calculating}
         accessibilityLabel={t("components.shiftEditor.calculate")}
         style={calculating ? { opacity: 0.6 } : undefined}
-        className="mt-3 rounded-xl border border-app-border dark:border-dark-border py-4"
+        className="mt-3 rounded-xl border border-app-border py-4 dark:border-dark-border"
       >
         {calculating ? (
           <ActivityIndicator color={colors.textPrimary} accessibilityLabel={t("common.loading")} />
         ) : (
-          <Text className="text-center font-inter-medium text-stone-700 dark:text-stone-300">{t("components.shiftEditor.calculate")}</Text>
+          <Text className="text-center font-inter-medium text-stone-700 dark:text-stone-300">
+            {t("components.shiftEditor.calculate")}
+          </Text>
         )}
       </PressableScale>
 
       {/* Result panel (no Save button inside) */}
       {expectedPay !== null && (
-        <View className="mt-4 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
-          <Text className="text-lg font-display text-amber-700 dark:text-warm">
+        <View className="mt-4 rounded-xl border border-app-border bg-app-surface p-4 dark:border-dark-border dark:bg-dark-surface">
+          <Text className="font-display text-lg text-amber-700 dark:text-warm">
             {t("components.shiftEditor.result", { amount: formatCurrency(expectedPay, currency) })}
           </Text>
-          <View className="mt-2 rounded-lg bg-app-elevated dark:bg-dark-elevated p-2">
+          <View className="mt-2 rounded-lg bg-app-elevated p-2 dark:bg-dark-elevated">
             <Text className="text-xs text-stone-600 dark:text-stone-400">
               {t("components.shiftEditor.disclaimer")}
             </Text>
@@ -190,9 +206,11 @@ export function ShiftEditor({
       <PressableScale
         onPress={onReset}
         accessibilityLabel={t("components.shiftEditor.reset")}
-        className="mt-4 rounded-xl border border-app-border dark:border-dark-border py-2"
+        className="mt-4 rounded-xl border border-app-border py-2 dark:border-dark-border"
       >
-        <Text className="text-center font-inter-medium text-stone-700 dark:text-stone-300">{t("components.shiftEditor.reset")}</Text>
+        <Text className="text-center font-inter-medium text-stone-700 dark:text-stone-300">
+          {t("components.shiftEditor.reset")}
+        </Text>
       </PressableScale>
     </>
   );

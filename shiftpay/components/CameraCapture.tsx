@@ -27,10 +27,18 @@ export function CameraCapture({ cameraRef, onCancel, onCapture }: CameraCaptureP
         </Text>
       </View>
       <View className="absolute bottom-8 left-0 right-0 flex-row justify-center gap-4">
-        <PressableScale onPress={onCancel} accessibilityLabel={t("components.camera.cancel")} className="rounded-xl bg-dark-elevated px-6 py-3">
+        <PressableScale
+          onPress={onCancel}
+          accessibilityLabel={t("components.camera.cancel")}
+          className="rounded-xl bg-dark-elevated px-6 py-3"
+        >
           <Text className="font-inter-medium text-white">{t("components.camera.cancel")}</Text>
         </PressableScale>
-        <PressableScale onPress={onCapture} accessibilityLabel={t("components.camera.capture")} className="rounded-xl bg-accent px-6 py-3">
+        <PressableScale
+          onPress={onCapture}
+          accessibilityLabel={t("components.camera.capture")}
+          className="rounded-xl bg-accent px-6 py-3"
+        >
           <Text className="font-inter-medium text-stone-900">{t("components.camera.capture")}</Text>
         </PressableScale>
       </View>

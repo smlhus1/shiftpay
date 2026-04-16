@@ -103,8 +103,11 @@ export default function AddShiftScreen() {
 
   if (saved) {
     return (
-      <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg p-8" accessibilityLiveRegion="polite">
-        <Text className="text-xl font-inter-semibold text-emerald-600 dark:text-emerald-400">
+      <View
+        className="flex-1 items-center justify-center bg-app-bg p-8 dark:bg-dark-bg"
+        accessibilityLiveRegion="polite"
+      >
+        <Text className="font-inter-semibold text-xl text-emerald-600 dark:text-emerald-400">
           {t("addShift.saved")}
         </Text>
       </View>
@@ -122,7 +125,7 @@ export default function AddShiftScreen() {
       >
         {/* Date */}
         <View className="mb-4">
-          <Text className="mb-1.5 text-sm font-inter-medium text-stone-700 dark:text-stone-300">
+          <Text className="mb-1.5 font-inter-medium text-sm text-stone-700 dark:text-stone-300">
             {t("addShift.date")}
           </Text>
           <TextInput
@@ -132,14 +135,14 @@ export default function AddShiftScreen() {
             placeholderTextColor={colors.textMuted}
             keyboardType="numbers-and-punctuation"
             accessibilityLabel={t("addShift.date")}
-            className="min-h-[48px] rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3 text-stone-900 dark:text-stone-100"
+            className="min-h-[48px] rounded-xl border border-app-border bg-app-surface px-4 py-3 text-stone-900 dark:border-dark-border dark:bg-dark-surface dark:text-stone-100"
           />
         </View>
 
         {/* Start / End */}
         <View className="mb-4 flex-row gap-3">
           <View className="flex-1">
-            <Text className="mb-1.5 text-sm font-inter-medium text-stone-700 dark:text-stone-300">
+            <Text className="mb-1.5 font-inter-medium text-sm text-stone-700 dark:text-stone-300">
               {t("addShift.startTime")}
             </Text>
             <TextInput
@@ -153,11 +156,11 @@ export default function AddShiftScreen() {
               placeholderTextColor={colors.textMuted}
               keyboardType="numbers-and-punctuation"
               accessibilityLabel={t("addShift.startTime")}
-              className="min-h-[48px] rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3 text-stone-900 dark:text-stone-100"
+              className="min-h-[48px] rounded-xl border border-app-border bg-app-surface px-4 py-3 text-stone-900 dark:border-dark-border dark:bg-dark-surface dark:text-stone-100"
             />
           </View>
           <View className="flex-1">
-            <Text className="mb-1.5 text-sm font-inter-medium text-stone-700 dark:text-stone-300">
+            <Text className="mb-1.5 font-inter-medium text-sm text-stone-700 dark:text-stone-300">
               {t("addShift.endTime")}
             </Text>
             <TextInput
@@ -167,26 +170,32 @@ export default function AddShiftScreen() {
               placeholderTextColor={colors.textMuted}
               keyboardType="numbers-and-punctuation"
               accessibilityLabel={t("addShift.endTime")}
-              className="min-h-[48px] rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3 text-stone-900 dark:text-stone-100"
+              className="min-h-[48px] rounded-xl border border-app-border bg-app-surface px-4 py-3 text-stone-900 dark:border-dark-border dark:bg-dark-surface dark:text-stone-100"
             />
           </View>
         </View>
 
         {/* Shift type pills */}
         <View className="mb-4">
-          <Text className="mb-1.5 text-sm font-inter-medium text-stone-700 dark:text-stone-300">
+          <Text className="mb-1.5 font-inter-medium text-sm text-stone-700 dark:text-stone-300">
             {t("addShift.shiftType")}
           </Text>
-          <View className="flex-row gap-2" accessibilityRole="radiogroup" accessibilityLabel={t("addShift.shiftType")}>
+          <View
+            className="flex-row gap-2"
+            accessibilityRole="radiogroup"
+            accessibilityLabel={t("addShift.shiftType")}
+          >
             {SHIFT_TYPES.map((type) => (
               <PressableScale
                 key={type}
                 onPress={() => setShiftType(type)}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: shiftType === type }}
-                className={`flex-1 items-center rounded-xl py-2.5 ${shiftType === type ? "bg-accent-dark dark:bg-accent" : "border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface"}`}
+                className={`flex-1 items-center rounded-xl py-2.5 ${shiftType === type ? "bg-accent-dark dark:bg-accent" : "border border-app-border bg-app-surface dark:border-dark-border dark:bg-dark-surface"}`}
               >
-                <Text className={`text-sm font-inter-medium ${shiftType === type ? "text-white dark:text-stone-900" : "text-stone-700 dark:text-stone-300"}`}>
+                <Text
+                  className={`font-inter-medium text-sm ${shiftType === type ? "text-white dark:text-stone-900" : "text-stone-700 dark:text-stone-300"}`}
+                >
                   {t(`shiftTypes.${type}`)}
                 </Text>
               </PressableScale>
@@ -196,19 +205,25 @@ export default function AddShiftScreen() {
 
         {/* Pay type toggle */}
         <View className="mb-6">
-          <Text className="mb-1.5 text-sm font-inter-medium text-stone-700 dark:text-stone-300">
+          <Text className="mb-1.5 font-inter-medium text-sm text-stone-700 dark:text-stone-300">
             {t("addShift.payType")}
           </Text>
-          <View className="flex-row gap-2" accessibilityRole="radiogroup" accessibilityLabel={t("addShift.payType")}>
+          <View
+            className="flex-row gap-2"
+            accessibilityRole="radiogroup"
+            accessibilityLabel={t("addShift.payType")}
+          >
             {(["regular", "extra"] as const).map((type) => (
               <PressableScale
                 key={type}
                 onPress={() => setPayType(type)}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: payType === type }}
-                className={`flex-1 items-center rounded-xl py-3 ${payType === type ? "bg-accent-dark dark:bg-accent" : "border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface"}`}
+                className={`flex-1 items-center rounded-xl py-3 ${payType === type ? "bg-accent-dark dark:bg-accent" : "border border-app-border bg-app-surface dark:border-dark-border dark:bg-dark-surface"}`}
               >
-                <Text className={`font-inter-medium ${payType === type ? "text-white dark:text-stone-900" : "text-stone-700 dark:text-stone-300"}`}>
+                <Text
+                  className={`font-inter-medium ${payType === type ? "text-white dark:text-stone-900" : "text-stone-700 dark:text-stone-300"}`}
+                >
                   {t(`addShift.${type}`)}
                 </Text>
               </PressableScale>
@@ -223,7 +238,7 @@ export default function AddShiftScreen() {
           accessibilityLabel={t("addShift.save")}
           accessibilityState={{ disabled: saving }}
           style={saving ? { opacity: 0.6 } : undefined}
-          className="rounded-xl bg-accent-dark dark:bg-accent py-4"
+          className="rounded-xl bg-accent-dark py-4 dark:bg-accent"
         >
           <Text className="text-center font-inter-semibold text-white dark:text-stone-900">
             {t("addShift.save")}

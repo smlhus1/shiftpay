@@ -17,9 +17,11 @@ interface ShiftCardProps {
 }
 
 function shiftTypeBadgeColor(type: string): string {
-  if (type === "tidlig") return "bg-amber-100 dark:bg-amber-400/15 text-amber-700 dark:text-amber-300";
+  if (type === "tidlig")
+    return "bg-amber-100 dark:bg-amber-400/15 text-amber-700 dark:text-amber-300";
   if (type === "mellom") return "bg-sky-100 dark:bg-sky-400/15 text-sky-700 dark:text-sky-300";
-  if (type === "kveld") return "bg-indigo-100 dark:bg-indigo-400/15 text-indigo-700 dark:text-indigo-300";
+  if (type === "kveld")
+    return "bg-indigo-100 dark:bg-indigo-400/15 text-indigo-700 dark:text-indigo-300";
   return "bg-stone-100 dark:bg-stone-400/15 text-stone-600 dark:text-stone-400"; // natt
 }
 
@@ -40,23 +42,29 @@ export function ShiftCard({
 
   if (compact) {
     return (
-      <View className={`mt-2 flex-row flex-wrap items-center gap-2 rounded-xl border bg-app-elevated dark:bg-dark-elevated p-2 ${isOvertime ? "border-l-4 border-l-violet-500 dark:border-l-violet-400 border-app-border dark:border-dark-border" : "border-app-border dark:border-dark-border"}`}>
+      <View
+        className={`mt-2 flex-row flex-wrap items-center gap-2 rounded-xl border bg-app-elevated p-2 dark:bg-dark-elevated ${isOvertime ? "border-l-4 border-app-border border-l-violet-500 dark:border-dark-border dark:border-l-violet-400" : "border-app-border dark:border-dark-border"}`}
+      >
         <Text className="text-stone-900 dark:text-stone-100">
           {shift.date} {shift.start_time}–{shift.end_time}
         </Text>
         <View className={`rounded-full px-2 py-0.5 ${statusColor(shift.status)}`}>
-          <Text className="text-xs font-inter-medium">{statusLabel(shift.status, t)}</Text>
+          <Text className="font-inter-medium text-xs">{statusLabel(shift.status, t)}</Text>
         </View>
         {isOvertime && (shift.overtime_minutes ?? 0) > 0 && (
-          <Text className="text-xs font-inter-semibold text-violet-600 dark:text-violet-400">+OT</Text>
+          <Text className="font-inter-semibold text-xs text-violet-600 dark:text-violet-400">
+            +OT
+          </Text>
         )}
         {onConfirm && shift.status === "planned" && (
           <PressableScale
             onPress={() => onConfirm(shift.id)}
             accessibilityLabel={t("components.shiftCard.confirmA11y", { date: shift.date })}
-            className="rounded-xl bg-accent-dark dark:bg-accent px-3 py-2"
+            className="rounded-xl bg-accent-dark px-3 py-2 dark:bg-accent"
           >
-            <Text className="text-xs font-inter-semibold text-white dark:text-stone-900">{t("components.shiftCard.confirm")}</Text>
+            <Text className="font-inter-semibold text-xs text-white dark:text-stone-900">
+              {t("components.shiftCard.confirm")}
+            </Text>
           </PressableScale>
         )}
       </View>
@@ -67,15 +75,15 @@ export function ShiftCard({
     <View className="mt-2 flex-row flex-wrap gap-2">
       {showShiftType && (
         <View className={`rounded-full px-2 py-0.5 ${shiftTypeBadgeColor(shift.shift_type)}`}>
-          <Text className="text-sm font-inter">{shiftTypeLabel(shift.shift_type, t)}</Text>
+          <Text className="font-inter text-sm">{shiftTypeLabel(shift.shift_type, t)}</Text>
         </View>
       )}
       <View className={`rounded-full px-2 py-0.5 ${statusColor(shift.status)}`}>
-        <Text className="text-sm font-inter">{statusLabel(shift.status, t)}</Text>
+        <Text className="font-inter text-sm">{statusLabel(shift.status, t)}</Text>
       </View>
       {shift.pay_type === "extra" && (
-        <View className="rounded-full bg-violet-100 dark:bg-violet-400/15 px-2 py-0.5">
-          <Text className="text-sm font-inter-medium text-violet-700 dark:text-violet-300">
+        <View className="rounded-full bg-violet-100 px-2 py-0.5 dark:bg-violet-400/15">
+          <Text className="font-inter-medium text-sm text-violet-700 dark:text-violet-300">
             {t("components.shiftCard.extra")}
           </Text>
         </View>
@@ -96,13 +104,17 @@ export function ShiftCard({
       <PressableScale
         onPress={() => onEdit!(shift.id)}
         accessibilityLabel={`${shift.date} ${shift.start_time}–${shift.end_time}`}
-        className={`mb-2 rounded-xl border bg-app-surface dark:bg-dark-surface p-3 ${isOvertime ? "border-l-4 border-l-violet-500 dark:border-l-violet-400 border-app-border dark:border-dark-border" : "border-app-border dark:border-dark-border"}`}
+        className={`mb-2 rounded-xl border bg-app-surface p-3 dark:bg-dark-surface ${isOvertime ? "border-l-4 border-app-border border-l-violet-500 dark:border-dark-border dark:border-l-violet-400" : "border-app-border dark:border-dark-border"}`}
       >
         <View className="flex-row items-center justify-between">
           <View className="flex-1">
             <View className="flex-row items-center gap-2">
-              <Text className="font-inter-medium text-stone-900 dark:text-stone-100">{shift.date}</Text>
-              <Text className="text-stone-600 dark:text-stone-400">{shift.start_time} – {shift.end_time}</Text>
+              <Text className="font-inter-medium text-stone-900 dark:text-stone-100">
+                {shift.date}
+              </Text>
+              <Text className="text-stone-600 dark:text-stone-400">
+                {shift.start_time} – {shift.end_time}
+              </Text>
             </View>
             {badges}
           </View>
@@ -118,7 +130,12 @@ export function ShiftCard({
               </PressableScale>
             )}
             <View style={{ marginLeft: 4 }}>
-              <Icon name="chevron-forward" size={18} color={colors.textMuted} importantForAccessibility="no" />
+              <Icon
+                name="chevron-forward"
+                size={18}
+                color={colors.textMuted}
+                importantForAccessibility="no"
+              />
             </View>
           </View>
         </View>
@@ -127,11 +144,15 @@ export function ShiftCard({
   }
 
   return (
-    <View className={`mb-2 rounded-xl border bg-app-surface dark:bg-dark-surface p-3 ${isOvertime ? "border-l-4 border-l-violet-500 dark:border-l-violet-400 border-app-border dark:border-dark-border" : "border-app-border dark:border-dark-border"}`}>
+    <View
+      className={`mb-2 rounded-xl border bg-app-surface p-3 dark:bg-dark-surface ${isOvertime ? "border-l-4 border-app-border border-l-violet-500 dark:border-dark-border dark:border-l-violet-400" : "border-app-border dark:border-dark-border"}`}
+    >
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
           <Text className="font-inter-medium text-stone-900 dark:text-stone-100">{shift.date}</Text>
-          <Text className="text-stone-600 dark:text-stone-400">{shift.start_time} – {shift.end_time}</Text>
+          <Text className="text-stone-600 dark:text-stone-400">
+            {shift.start_time} – {shift.end_time}
+          </Text>
         </View>
         {onDelete && (
           <PressableScale
@@ -149,9 +170,11 @@ export function ShiftCard({
         <PressableScale
           onPress={() => onConfirm(shift.id)}
           accessibilityLabel={t("components.shiftCard.confirmA11y", { date: shift.date })}
-          className="mt-2 self-start rounded-xl bg-accent-dark dark:bg-accent px-3 py-2"
+          className="mt-2 self-start rounded-xl bg-accent-dark px-3 py-2 dark:bg-accent"
         >
-          <Text className="text-sm font-inter-semibold text-white dark:text-stone-900">{t("components.shiftCard.confirm")}</Text>
+          <Text className="font-inter-semibold text-sm text-white dark:text-stone-900">
+            {t("components.shiftCard.confirm")}
+          </Text>
         </PressableScale>
       )}
     </View>

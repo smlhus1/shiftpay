@@ -25,10 +25,7 @@ declare module "expo-file-system" {
     length?: number;
   }
 
-  export function readAsStringAsync(
-    fileUri: string,
-    options?: LegacyReadOptions
-  ): Promise<string>;
+  export function readAsStringAsync(fileUri: string, options?: LegacyReadOptions): Promise<string>;
 
   export function writeAsStringAsync(
     fileUri: string,
@@ -48,8 +45,5 @@ declare module "expo-file-system" {
     md5?: string;
   }>;
 
-  export function deleteAsync(
-    fileUri: string,
-    options?: { idempotent?: boolean }
-  ): Promise<void>;
+  export function deleteAsync(fileUri: string, options?: { idempotent?: boolean }): Promise<void>;
 }

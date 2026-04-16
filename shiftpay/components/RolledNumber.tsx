@@ -29,7 +29,10 @@ function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
 }
 
-const DEFAULT_FORMAT = (n: number): string => `${Math.round(n).toLocaleString("nb-NO").replace(/\u202F/g, "\u00A0")}\u00A0kr`;
+const DEFAULT_FORMAT = (n: number): string =>
+  `${Math.round(n)
+    .toLocaleString("nb-NO")
+    .replace(/\u202F/g, "\u00A0")}\u00A0kr`;
 
 export function RolledNumber({
   value,

@@ -13,7 +13,7 @@ import { Icon } from "@/components/Icon";
 import * as Haptics from "expo-haptics";
 import Constants from "expo-constants";
 import { getTariffRates, setTariffRates, type TariffRatesInput } from "@/lib/db";
-import { useTranslation, SUPPORTED_LOCALES, SUPPORTED_CURRENCIES, type Locale, type Currency } from "@/lib/i18n";
+import { useTranslation, type Locale, type Currency } from "@/lib/i18n";
 import { PressableScale } from "@/components/PressableScale";
 import { useTheme, useThemeColors, type ThemePreference } from "@/lib/theme-context";
 
@@ -112,7 +112,11 @@ export default function SettingsScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
-        <ActivityIndicator size="large" color={colors.accent} accessibilityLabel={t("common.loading")} />
+        <ActivityIndicator
+          size="large"
+          color={colors.accent}
+          accessibilityLabel={t("common.loading")}
+        />
       </View>
     );
   }
@@ -128,7 +132,12 @@ export default function SettingsScreen() {
         </Text>
 
         {/* Base pay section */}
-        <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("settings.sections.basePay")}</Text>
+        <Text
+          className="mb-3 font-inter-medium text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400"
+          accessibilityRole="header"
+        >
+          {t("settings.sections.basePay")}
+        </Text>
         <RateField
           label={t("settings.labels.base")}
           value={toStr(rates.base_rate)}
@@ -138,52 +147,52 @@ export default function SettingsScreen() {
         />
 
         {/* Supplements section */}
-        <Text className="mb-3 mt-4 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("settings.sections.supplements")}</Text>
+        <Text
+          className="mb-3 mt-4 font-inter-medium text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400"
+          accessibilityRole="header"
+        >
+          {t("settings.sections.supplements")}
+        </Text>
         <RateField
           label={t("settings.labels.evening")}
           value={toStr(rates.evening_supplement)}
-          onChangeText={(s) =>
-            setRates((r) => ({ ...r, evening_supplement: toNum(s) }))
-          }
+          onChangeText={(s) => setRates((r) => ({ ...r, evening_supplement: toNum(s) }))}
           suffix="kr/t"
           placeholder="56"
         />
         <RateField
           label={t("settings.labels.night")}
           value={toStr(rates.night_supplement)}
-          onChangeText={(s) =>
-            setRates((r) => ({ ...r, night_supplement: toNum(s) }))
-          }
+          onChangeText={(s) => setRates((r) => ({ ...r, night_supplement: toNum(s) }))}
           suffix="kr/t"
           placeholder="75"
         />
         <RateField
           label={t("settings.labels.weekend")}
           value={toStr(rates.weekend_supplement)}
-          onChangeText={(s) =>
-            setRates((r) => ({ ...r, weekend_supplement: toNum(s) }))
-          }
+          onChangeText={(s) => setRates((r) => ({ ...r, weekend_supplement: toNum(s) }))}
           suffix="kr/t"
           placeholder="50"
         />
         <RateField
           label={t("settings.labels.holiday")}
           value={toStr(rates.holiday_supplement)}
-          onChangeText={(s) =>
-            setRates((r) => ({ ...r, holiday_supplement: toNum(s) }))
-          }
+          onChangeText={(s) => setRates((r) => ({ ...r, holiday_supplement: toNum(s) }))}
           suffix="kr/t"
           placeholder="133"
         />
 
         {/* Overtime section */}
-        <Text className="mb-3 mt-4 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("settings.sections.overtime")}</Text>
+        <Text
+          className="mb-3 mt-4 font-inter-medium text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400"
+          accessibilityRole="header"
+        >
+          {t("settings.sections.overtime")}
+        </Text>
         <RateField
           label={t("settings.labels.overtime")}
           value={toStr(rates.overtime_supplement)}
-          onChangeText={(s) =>
-            setRates((r) => ({ ...r, overtime_supplement: toNum(s) }))
-          }
+          onChangeText={(s) => setRates((r) => ({ ...r, overtime_supplement: toNum(s) }))}
           suffix="%"
           placeholder="40"
         />
@@ -194,18 +203,28 @@ export default function SettingsScreen() {
             onPress={() => setShowPayPeriods((v) => !v)}
             accessibilityLabel={t("settings.payPeriods.toggle")}
             accessibilityState={{ expanded: showPayPeriods }}
-            className="flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4"
+            className="flex-row items-center justify-between rounded-xl border border-app-border bg-app-surface p-4 dark:border-dark-border dark:bg-dark-surface"
           >
-            <Text className="text-sm font-inter-medium text-stone-700 dark:text-stone-300">{t("settings.payPeriods.toggle")}</Text>
-            <Icon name={showPayPeriods ? "chevron-up" : "chevron-down"} size={18} color={colors.textMuted} />
+            <Text className="font-inter-medium text-sm text-stone-700 dark:text-stone-300">
+              {t("settings.payPeriods.toggle")}
+            </Text>
+            <Icon
+              name={showPayPeriods ? "chevron-up" : "chevron-down"}
+              size={18}
+              color={colors.textMuted}
+            />
           </PressableScale>
           {showPayPeriods && (
-            <View className="mt-2 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
-              <Text className="mb-3 text-xs text-stone-500 dark:text-stone-400">{t("settings.payPeriods.hint")}</Text>
+            <View className="mt-2 rounded-xl border border-app-border bg-app-surface p-4 dark:border-dark-border dark:bg-dark-surface">
+              <Text className="mb-3 text-xs text-stone-500 dark:text-stone-400">
+                {t("settings.payPeriods.hint")}
+              </Text>
               <RateField
                 label={t("settings.payPeriods.regularLabel")}
                 value={toStr(rates.regular_period_start_day)}
-                onChangeText={(s) => setRates((r) => ({ ...r, regular_period_start_day: toNum(s) }))}
+                onChangeText={(s) =>
+                  setRates((r) => ({ ...r, regular_period_start_day: toNum(s) }))
+                }
                 placeholder="1"
               />
               <RateField
@@ -224,12 +243,14 @@ export default function SettingsScreen() {
           accessibilityLabel={t("settings.save")}
           accessibilityState={{ disabled: saving }}
           style={saving ? { opacity: 0.6 } : undefined}
-          className="mt-6 rounded-xl bg-accent-dark dark:bg-accent py-4"
+          className="mt-6 rounded-xl bg-accent-dark py-4 dark:bg-accent"
         >
           {saving ? (
             <ActivityIndicator color={colors.bg} accessibilityLabel={t("common.loading")} />
           ) : (
-            <Text className="text-center font-inter-semibold text-white dark:text-stone-900">{t("settings.save")}</Text>
+            <Text className="text-center font-inter-semibold text-white dark:text-stone-900">
+              {t("settings.save")}
+            </Text>
           )}
         </PressableScale>
 
@@ -243,57 +264,84 @@ export default function SettingsScreen() {
         )}
 
         {/* Language picker */}
-        <View className="mt-8" accessibilityRole="radiogroup" accessibilityLabel={t("settings.language.title")}>
-          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("settings.language.title")}</Text>
+        <View
+          className="mt-8"
+          accessibilityRole="radiogroup"
+          accessibilityLabel={t("settings.language.title")}
+        >
+          <Text
+            className="mb-3 font-inter-medium text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400"
+            accessibilityRole="header"
+          >
+            {t("settings.language.title")}
+          </Text>
           {LOCALE_OPTIONS.map((opt) => (
             <PressableScale
               key={opt.code}
               onPress={() => setLocale(opt.code)}
               accessibilityRole="radio"
               accessibilityState={{ checked: locale === opt.code }}
-              className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3"
+              className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border bg-app-surface px-4 py-3 dark:border-dark-border dark:bg-dark-surface"
             >
               <Text className="text-stone-900 dark:text-stone-100">{opt.label}</Text>
-              {locale === opt.code && (
-                <Icon name="checkmark" size={20} color={colors.accent} />
-              )}
+              {locale === opt.code && <Icon name="checkmark" size={20} color={colors.accent} />}
             </PressableScale>
           ))}
         </View>
 
         {/* Currency picker */}
-        <View className="mt-8" accessibilityRole="radiogroup" accessibilityLabel={t("settings.currency.title")}>
-          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("settings.currency.title")}</Text>
+        <View
+          className="mt-8"
+          accessibilityRole="radiogroup"
+          accessibilityLabel={t("settings.currency.title")}
+        >
+          <Text
+            className="mb-3 font-inter-medium text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400"
+            accessibilityRole="header"
+          >
+            {t("settings.currency.title")}
+          </Text>
           {CURRENCY_OPTIONS.map((opt) => (
             <PressableScale
               key={opt.code}
               onPress={() => setCurrency(opt.code)}
               accessibilityRole="radio"
               accessibilityState={{ checked: currency === opt.code }}
-              className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3"
+              className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border bg-app-surface px-4 py-3 dark:border-dark-border dark:bg-dark-surface"
             >
-              <Text className="text-stone-900 dark:text-stone-100">{opt.symbol} {opt.label}</Text>
-              {currency === opt.code && (
-                <Icon name="checkmark" size={20} color={colors.accent} />
-              )}
+              <Text className="text-stone-900 dark:text-stone-100">
+                {opt.symbol} {opt.label}
+              </Text>
+              {currency === opt.code && <Icon name="checkmark" size={20} color={colors.accent} />}
             </PressableScale>
           ))}
         </View>
 
         {/* Theme picker */}
-        <View className="mt-8" accessibilityRole="radiogroup" accessibilityLabel={t("settings.theme.title")}>
-          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("settings.theme.title")}</Text>
+        <View
+          className="mt-8"
+          accessibilityRole="radiogroup"
+          accessibilityLabel={t("settings.theme.title")}
+        >
+          <Text
+            className="mb-3 font-inter-medium text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400"
+            accessibilityRole="header"
+          >
+            {t("settings.theme.title")}
+          </Text>
           {THEME_OPTIONS.map((opt) => (
             <PressableScale
               key={opt.value}
               onPress={() => setPreference(opt.value)}
               accessibilityRole="radio"
               accessibilityState={{ checked: preference === opt.value }}
-              className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3"
+              className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border bg-app-surface px-4 py-3 dark:border-dark-border dark:bg-dark-surface"
             >
               <View className="flex-row items-center gap-3">
                 <Icon name={opt.icon} size={20} color={colors.textSecondary} />
-                <Text className="text-stone-900 dark:text-stone-100">{t(`settings.theme.${opt.value}`)}</Text>
+                <Text className="text-stone-900 dark:text-stone-100">
+                  {t(`settings.theme.${opt.value}`)}
+                </Text>
               </View>
               {preference === opt.value && (
                 <Icon name="checkmark" size={20} color={colors.accent} />
@@ -303,10 +351,19 @@ export default function SettingsScreen() {
         </View>
 
         {/* About section */}
-        <View className="mt-8 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
-          <Text className="mb-3 text-xs font-inter-medium uppercase tracking-wider text-stone-600 dark:text-stone-400" accessibilityRole="header">{t("settings.about.title")}</Text>
-          <Text className="mb-3 text-sm text-stone-600 dark:text-stone-400">{t("settings.about.description")}</Text>
-          <Text className="mb-3 text-sm text-stone-600 dark:text-stone-400">{t("settings.about.privacy")}</Text>
+        <View className="mt-8 rounded-xl border border-app-border bg-app-surface p-4 dark:border-dark-border dark:bg-dark-surface">
+          <Text
+            className="mb-3 font-inter-medium text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400"
+            accessibilityRole="header"
+          >
+            {t("settings.about.title")}
+          </Text>
+          <Text className="mb-3 text-sm text-stone-600 dark:text-stone-400">
+            {t("settings.about.description")}
+          </Text>
+          <Text className="mb-3 text-sm text-stone-600 dark:text-stone-400">
+            {t("settings.about.privacy")}
+          </Text>
           <PressableScale
             onPress={() => Linking.openURL("https://github.com/smlhus/shiftpay").catch(() => {})}
             accessibilityRole="link"
@@ -327,7 +384,9 @@ export default function SettingsScreen() {
             <Icon name="mail-outline" size={18} color={colors.accent} />
             <Text className="text-sm text-accent-dark dark:text-accent">shiftpay@smlhus.com</Text>
           </PressableScale>
-          <Text className="text-xs text-stone-500">ShiftPay v{Constants.expoConfig?.version ?? "1.0.0"}</Text>
+          <Text className="text-xs text-stone-500">
+            ShiftPay v{Constants.expoConfig?.version ?? "1.0.0"}
+          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -350,7 +409,9 @@ function RateField({
   const colors = useThemeColors();
   return (
     <View className="mb-4">
-      <Text className="mb-1.5 text-sm font-inter-medium text-stone-700 dark:text-stone-300">{label}</Text>
+      <Text className="mb-1.5 font-inter-medium text-sm text-stone-700 dark:text-stone-300">
+        {label}
+      </Text>
       <View className="flex-row items-center">
         <TextInput
           value={value}
@@ -359,7 +420,7 @@ function RateField({
           placeholder={placeholder ?? "0"}
           placeholderTextColor={colors.textMuted}
           accessibilityLabel={label + (suffix ? " (" + suffix + ")" : "")}
-          className="min-h-[48px] flex-1 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3 text-stone-900 dark:text-stone-100"
+          className="min-h-[48px] flex-1 rounded-xl border border-app-border bg-app-surface px-4 py-3 text-stone-900 dark:border-dark-border dark:bg-dark-surface dark:text-stone-100"
         />
         {suffix && (
           <Text className="ml-2 text-sm text-stone-500 dark:text-stone-400">{suffix}</Text>

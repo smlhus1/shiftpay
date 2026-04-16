@@ -1,14 +1,7 @@
 import { I18n } from "i18n-js";
 import * as Localization from "expo-localization";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import nb from "./nb";
 import en from "./en";
 import sv from "./sv";
@@ -72,9 +65,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
         detectedLocale = savedLocale as Locale;
       } else {
         const device = Localization.getLocales()[0]?.languageCode ?? "nb";
-        detectedLocale = SUPPORTED_LOCALES.includes(device as Locale)
-          ? (device as Locale)
-          : "nb";
+        detectedLocale = SUPPORTED_LOCALES.includes(device as Locale) ? (device as Locale) : "nb";
       }
       i18n.locale = detectedLocale;
       setLocaleState(detectedLocale);

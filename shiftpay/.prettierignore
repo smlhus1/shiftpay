@@ -1,0 +1,11 @@
+node_modules/
+android/
+ios/
+.expo/
+dist/
+coverage/
+package-lock.json
+*.md
+# Static HTML screenshots/deploy artifacts — outside the RN app scope
+Screenshots/
+nativewind-env.d.ts

@@ -20,7 +20,7 @@ type ShiftPhase = "morning" | "midday" | "evening" | "night";
 
 function currentPhase(now = new Date()): ShiftPhase {
   const h = now.getHours();
-  if (h < 6)  return "night";
+  if (h < 6) return "night";
   if (h < 12) return "morning";
   if (h < 16) return "midday";
   if (h < 22) return "evening";
@@ -34,11 +34,15 @@ export function ShiftTintStripe() {
 
   const tint = useMemo(() => {
     switch (phase) {
-      case "morning": return colors.warm;       // dempet oker
-      case "evening": return colors.accentMuted;  // burnt sienna
-      case "night":   return colors.marine;       // dyp marine
+      case "morning":
+        return colors.warm; // dempet oker
+      case "evening":
+        return colors.accentMuted; // burnt sienna
+      case "night":
+        return colors.marine; // dyp marine
       case "midday":
-      default:        return "transparent";       // skip mid-day — lys på lys = usynlig
+      default:
+        return "transparent"; // skip mid-day — lys på lys = usynlig
     }
   }, [phase, colors]);
 
@@ -47,10 +51,7 @@ export function ShiftTintStripe() {
   return (
     <View
       pointerEvents="none"
-      style={[
-        styles.stripe,
-        { backgroundColor: tint, top: insets.top, bottom: insets.bottom },
-      ]}
+      style={[styles.stripe, { backgroundColor: tint, top: insets.top, bottom: insets.bottom }]}
       accessibilityElementsHidden
       importantForAccessibility="no"
     />
