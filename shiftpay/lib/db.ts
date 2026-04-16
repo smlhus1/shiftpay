@@ -5,45 +5,212 @@ import { dateToComparable } from "./dates";
 
 const DB_NAME = "shiftpay.db";
 
-const SCHEMA = `
-CREATE TABLE IF NOT EXISTS tariff_rates (
-  id INTEGER PRIMARY KEY,
-  base_rate REAL NOT NULL DEFAULT 0,
-  evening_supplement REAL NOT NULL DEFAULT 0,
-  night_supplement REAL NOT NULL DEFAULT 0,
-  weekend_supplement REAL NOT NULL DEFAULT 0,
-  holiday_supplement REAL NOT NULL DEFAULT 0,
-  overtime_supplement REAL NOT NULL DEFAULT 40,
-  updated_at TEXT NOT NULL
-);
+// ─── Migrations ──────────────────────────────────────────────────────
+//
+// Driven by SQLite's `PRAGMA user_version`. On boot the runner reads
+// the current version and applies every migration with `version > current`
+// in order, each wrapped in its own EXCLUSIVE transaction so a crash mid-
+// migration leaves the DB in a consistent pre-state.
+//
+// Every migration must be idempotent (use IF NOT EXISTS, PRAGMA checks)
+// so legacy installs upgrading from pre-migration-runner code — where
+// schema changes were applied via `CREATE TABLE IF NOT EXISTS` and
+// `PRAGMA table_info` branches in each `migrateXxx` fn — see no-ops
+// on their first run under the new system.
+//
+// NEVER re-order or delete an existing migration. Append only.
 
-CREATE TABLE IF NOT EXISTS schedules (
-  id TEXT PRIMARY KEY,
-  period_start TEXT NOT NULL,
-  period_end TEXT NOT NULL,
-  source TEXT NOT NULL DEFAULT 'manual',
-  created_at TEXT NOT NULL
-);
+interface Migration {
+  version: number;
+  name: string;
+  up: (db: SQLite.SQLiteDatabase) => Promise<void>;
+}
 
-CREATE TABLE IF NOT EXISTS shifts (
-  id TEXT PRIMARY KEY,
-  schedule_id TEXT NOT NULL,
-  date TEXT NOT NULL,
-  start_time TEXT NOT NULL,
-  end_time TEXT NOT NULL,
-  shift_type TEXT NOT NULL DEFAULT 'tidlig',
-  status TEXT NOT NULL DEFAULT 'planned',
-  actual_start TEXT,
-  actual_end TEXT,
-  overtime_minutes INTEGER NOT NULL DEFAULT 0,
-  confirmed_at TEXT,
-  created_at TEXT NOT NULL
-);
+const migrations: Migration[] = [
+  {
+    version: 1,
+    name: "initial_schema",
+    up: async (database) => {
+      await database.execAsync(`
+        CREATE TABLE IF NOT EXISTS tariff_rates (
+          id INTEGER PRIMARY KEY,
+          base_rate REAL NOT NULL DEFAULT 0,
+          evening_supplement REAL NOT NULL DEFAULT 0,
+          night_supplement REAL NOT NULL DEFAULT 0,
+          weekend_supplement REAL NOT NULL DEFAULT 0,
+          holiday_supplement REAL NOT NULL DEFAULT 0,
+          updated_at TEXT NOT NULL
+        );
 
-CREATE INDEX IF NOT EXISTS idx_shifts_schedule_id ON shifts(schedule_id);
-CREATE INDEX IF NOT EXISTS idx_shifts_date ON shifts(date);
-CREATE INDEX IF NOT EXISTS idx_shifts_status ON shifts(status);
-`;
+        CREATE TABLE IF NOT EXISTS schedules (
+          id TEXT PRIMARY KEY,
+          period_start TEXT NOT NULL,
+          period_end TEXT NOT NULL,
+          source TEXT NOT NULL DEFAULT 'manual',
+          created_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS shifts (
+          id TEXT PRIMARY KEY,
+          schedule_id TEXT NOT NULL,
+          date TEXT NOT NULL,
+          start_time TEXT NOT NULL,
+          end_time TEXT NOT NULL,
+          shift_type TEXT NOT NULL DEFAULT 'tidlig',
+          status TEXT NOT NULL DEFAULT 'planned',
+          actual_start TEXT,
+          actual_end TEXT,
+          overtime_minutes INTEGER NOT NULL DEFAULT 0,
+          confirmed_at TEXT,
+          created_at TEXT NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_shifts_schedule_id ON shifts(schedule_id);
+        CREATE INDEX IF NOT EXISTS idx_shifts_date ON shifts(date);
+        CREATE INDEX IF NOT EXISTS idx_shifts_status ON shifts(status);
+      `);
+    },
+  },
+  {
+    version: 2,
+    name: "add_overtime_supplement",
+    up: async (database) => {
+      const cols = await database.getAllAsync<{ name: string }>(
+        "PRAGMA table_info(tariff_rates)"
+      );
+      if (!cols.some((c) => c.name === "overtime_supplement")) {
+        await database.execAsync(
+          "ALTER TABLE tariff_rates ADD COLUMN overtime_supplement REAL NOT NULL DEFAULT 40"
+        );
+      }
+    },
+  },
+  {
+    version: 3,
+    name: "add_pay_type_and_periods",
+    up: async (database) => {
+      const shiftCols = await database.getAllAsync<{ name: string }>(
+        "PRAGMA table_info(shifts)"
+      );
+      if (!shiftCols.some((c) => c.name === "pay_type")) {
+        await database.execAsync(
+          "ALTER TABLE shifts ADD COLUMN pay_type TEXT NOT NULL DEFAULT 'regular'"
+        );
+      }
+      const rateCols = await database.getAllAsync<{ name: string }>(
+        "PRAGMA table_info(tariff_rates)"
+      );
+      // BOTH alters run inside the same EXCLUSIVE transaction via runMigrations,
+      // so the pre-runner bug (app killed between the two ALTERs leaves half-state)
+      // cannot happen under the new runner.
+      if (!rateCols.some((c) => c.name === "regular_period_start_day")) {
+        await database.execAsync(
+          "ALTER TABLE tariff_rates ADD COLUMN regular_period_start_day INTEGER NOT NULL DEFAULT 1"
+        );
+      }
+      if (!rateCols.some((c) => c.name === "extra_period_start_day")) {
+        await database.execAsync(
+          "ALTER TABLE tariff_rates ADD COLUMN extra_period_start_day INTEGER NOT NULL DEFAULT 12"
+        );
+      }
+    },
+  },
+  {
+    version: 4,
+    name: "add_monthly_pay",
+    up: async (database) => {
+      await database.execAsync(
+        `CREATE TABLE IF NOT EXISTS monthly_pay (
+          year INTEGER NOT NULL,
+          month INTEGER NOT NULL,
+          actual_pay REAL NOT NULL DEFAULT 0,
+          updated_at TEXT NOT NULL,
+          UNIQUE(year, month)
+        )`
+      );
+    },
+  },
+  {
+    version: 5,
+    name: "migrate_timesheets_to_schedules",
+    up: async (database) => {
+      const tables = await database.getAllAsync<{ name: string }>(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='timesheets'"
+      );
+      if (tables.length === 0) return;
+      const rows = await database.getAllAsync<{
+        id: string;
+        period_start: string;
+        period_end: string;
+        shifts: string;
+        source: string;
+        created_at: string;
+      }>(
+        "SELECT id, period_start, period_end, shifts, source, created_at FROM timesheets"
+      );
+      for (const row of rows) {
+        await database.runAsync(
+          "INSERT OR IGNORE INTO schedules (id, period_start, period_end, source, created_at) VALUES (?, ?, ?, ?, ?)",
+          [row.id, row.period_start, row.period_end, row.source, row.created_at]
+        );
+        let legacyShifts: {
+          date: string;
+          start_time: string;
+          end_time: string;
+          shift_type: string;
+        }[];
+        try {
+          legacyShifts = JSON.parse(row.shifts);
+        } catch {
+          continue;
+        }
+        for (const s of legacyShifts) {
+          const shiftId = generateId();
+          await database.runAsync(
+            "INSERT INTO shifts (id, schedule_id, date, start_time, end_time, shift_type, status, overtime_minutes, created_at) VALUES (?, ?, ?, ?, ?, ?, 'planned', 0, ?)",
+            [
+              shiftId,
+              row.id,
+              s.date,
+              s.start_time,
+              s.end_time,
+              s.shift_type ?? "tidlig",
+              row.created_at,
+            ]
+          );
+        }
+      }
+      await database.execAsync("DROP TABLE IF EXISTS timesheets");
+    },
+  },
+];
+
+async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
+  const row = await database.getFirstAsync<{ user_version: number }>(
+    "PRAGMA user_version"
+  );
+  const current = row?.user_version ?? 0;
+  const pending = migrations.filter((m) => m.version > current);
+  if (pending.length === 0) return;
+  for (const m of pending) {
+    // withTransactionAsync wraps each migration in BEGIN/COMMIT on the
+    // main connection. At init time nothing else can query (initDb has
+    // not resolved yet), so the stronger exclusive-transaction guarantee
+    // is not needed here — and expo-sqlite-mock's :memory: backend opens
+    // a fresh in-memory DB per exclusive transaction, which would drop
+    // all schema between migration and user_version bump.
+    //
+    // Fail-mid leaves user_version at pre-migration, so the next boot
+    // retries cleanly.
+    await database.withTransactionAsync(async () => {
+      await m.up(database);
+      await database.execAsync(`PRAGMA user_version = ${m.version}`);
+    });
+    if (__DEV__) {
+      console.log(`[ShiftPay] Migrated to version ${m.version} (${m.name})`);
+    }
+  }
+}
 
 let db: SQLite.SQLiteDatabase | null = null;
 let dbInitPromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -58,123 +225,19 @@ function isDbGoneError(e: unknown): boolean {
   );
 }
 
-async function migrateAddOvertimeSupplement(database: SQLite.SQLiteDatabase): Promise<void> {
-  const cols = await database.getAllAsync<{ name: string }>("PRAGMA table_info(tariff_rates)");
-  const hasCol = cols.some((c) => c.name === "overtime_supplement");
-  if (!hasCol) {
-    await database.execAsync(
-      "ALTER TABLE tariff_rates ADD COLUMN overtime_supplement REAL NOT NULL DEFAULT 40"
-    );
-    if (__DEV__) {
-      console.log("[ShiftPay] Migrated: added overtime_supplement to tariff_rates");
-    }
-  }
-}
-
-async function migrateAddPayType(database: SQLite.SQLiteDatabase): Promise<void> {
-  const shiftCols = await database.getAllAsync<{ name: string }>("PRAGMA table_info(shifts)");
-  if (!shiftCols.some((c) => c.name === "pay_type")) {
-    await database.execAsync(
-      "ALTER TABLE shifts ADD COLUMN pay_type TEXT NOT NULL DEFAULT 'regular'"
-    );
-    if (__DEV__) {
-      console.log("[ShiftPay] Migrated: added pay_type to shifts");
-    }
-  }
-  const rateCols = await database.getAllAsync<{ name: string }>("PRAGMA table_info(tariff_rates)");
-  if (!rateCols.some((c) => c.name === "regular_period_start_day")) {
-    await database.execAsync(
-      "ALTER TABLE tariff_rates ADD COLUMN regular_period_start_day INTEGER NOT NULL DEFAULT 1"
-    );
-    await database.execAsync(
-      "ALTER TABLE tariff_rates ADD COLUMN extra_period_start_day INTEGER NOT NULL DEFAULT 12"
-    );
-    if (__DEV__) {
-      console.log("[ShiftPay] Migrated: added pay period columns to tariff_rates");
-    }
-  }
-}
-
-async function migrateAddMonthlyPay(database: SQLite.SQLiteDatabase): Promise<void> {
-  const tables = await database.getAllAsync<{ name: string }>(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name='monthly_pay'"
-  );
-  if (tables.length > 0) return;
-  await database.execAsync(
-    `CREATE TABLE IF NOT EXISTS monthly_pay (
-      year INTEGER NOT NULL,
-      month INTEGER NOT NULL,
-      actual_pay REAL NOT NULL DEFAULT 0,
-      updated_at TEXT NOT NULL,
-      UNIQUE(year, month)
-    )`
-  );
-  if (__DEV__) {
-    console.log("[ShiftPay] Migrated: created monthly_pay table");
-  }
-}
-
-async function migrateTimesheetsToSchedules(database: SQLite.SQLiteDatabase): Promise<void> {
-  const tables = await database.getAllAsync<{ name: string }>(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name='timesheets'"
-  );
-  if (tables.length === 0) return;
-  const rows = await database.getAllAsync<{
-    id: string;
-    period_start: string;
-    period_end: string;
-    shifts: string;
-    source: string;
-    created_at: string;
-  }>("SELECT id, period_start, period_end, shifts, source, created_at FROM timesheets");
-  for (const row of rows) {
-    await database.runAsync(
-      "INSERT OR IGNORE INTO schedules (id, period_start, period_end, source, created_at) VALUES (?, ?, ?, ?, ?)",
-      [row.id, row.period_start, row.period_end, row.source, row.created_at]
-    );
-    let shifts: { date: string; start_time: string; end_time: string; shift_type: string }[];
-    try {
-      shifts = JSON.parse(row.shifts) as {
-        date: string;
-        start_time: string;
-        end_time: string;
-        shift_type: string;
-      }[];
-    } catch {
-      continue;
-    }
-    for (const s of shifts) {
-      const shiftId = generateId();
-      await database.runAsync(
-        "INSERT INTO shifts (id, schedule_id, date, start_time, end_time, shift_type, status, overtime_minutes, created_at) VALUES (?, ?, ?, ?, ?, ?, 'planned', 0, ?)",
-        [
-          shiftId,
-          row.id,
-          s.date,
-          s.start_time,
-          s.end_time,
-          s.shift_type ?? "tidlig",
-          row.created_at,
-        ]
-      );
-    }
-  }
-  await database.execAsync("DROP TABLE IF EXISTS timesheets");
-  if (__DEV__) {
-    console.log("[ShiftPay] Migrated timesheets to schedules + shifts");
-  }
-}
-
 export async function initDb(): Promise<SQLite.SQLiteDatabase> {
   if (db) return db;
   if (dbInitPromise) return dbInitPromise;
   const openAndPrepare = async (): Promise<SQLite.SQLiteDatabase> => {
     const database = await SQLite.openDatabaseAsync(DB_NAME);
-    await database.execAsync(SCHEMA);
-    await migrateAddOvertimeSupplement(database);
-    await migrateAddPayType(database);
-    await migrateAddMonthlyPay(database);
-    await migrateTimesheetsToSchedules(database);
+    // PRAGMAs must run on every open — they are connection-scoped, not
+    // persisted. WAL gives us concurrent reads + single writer; foreign_keys
+    // enforces cascade semantics (off by default in SQLite). journal_mode
+    // is a no-op on :memory: databases used in tests.
+    await database.execAsync(
+      "PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;"
+    );
+    await runMigrations(database);
     return database;
   };
   dbInitPromise = openAndPrepare()
