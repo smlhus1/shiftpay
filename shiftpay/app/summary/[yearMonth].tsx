@@ -21,6 +21,8 @@ import { exportShiftsAsCSV } from "../../lib/csv";
 import { ShiftCard } from "../../components/ShiftCard";
 import { PressableScale } from "../../components/PressableScale";
 import { AnimatedCard } from "../../components/AnimatedCard";
+import { RolledNumber } from "../../components/RolledNumber";
+import { hapticHeavy } from "../../lib/haptics";
 import { useTranslation } from "../../lib/i18n";
 import { useThemeColors } from "../../lib/theme-context";
 
@@ -287,10 +289,33 @@ export default function SummaryScreen() {
           if (absDiff < 1) return null;
           const isOver = diff > 0;
           const direction = isOver ? t("summary.actualPay.over") : t("summary.actualPay.under");
+          const signedDiff = isOver ? absDiff : -absDiff;
+          // Big mono diff-number (DESIGN.md §11.2) — haptic heavy when the reveal
+          // completes, giving weight to the moment Kari sees the gap.
           return (
-            <Text className={`mt-2 font-inter-semibold text-base ${isOver ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-              {t("summary.actualPay.difference", { amount: formatCurrency(absDiff, currency), direction })}
-            </Text>
+            <View className="mt-3">
+              <RolledNumber
+                value={signedDiff}
+                duration={1400}
+                from={0}
+                format={(n) => {
+                  const prefix = n >= 0 ? "+\u00A0" : "−\u00A0";
+                  return prefix + Math.round(Math.abs(n)).toLocaleString("nb-NO").replace(/\u202F/g, "\u00A0") + "\u00A0kr";
+                }}
+                onComplete={hapticHeavy}
+                accessibilityLabel={t("summary.actualPay.difference", { amount: formatCurrency(absDiff, currency), direction })}
+                style={{
+                  fontFamily: "JetBrainsMono_500Medium",
+                  fontSize: 36,
+                  lineHeight: 40,
+                  letterSpacing: -1.2,
+                  color: isOver ? (colors.success) : (colors.error),
+                }}
+              />
+              <Text className="mt-1 italic text-xs text-stone-500 dark:text-stone-400" style={{ fontFamily: "Fraunces_400Regular_Italic" }}>
+                {isOver ? t("summary.actualPay.over") : t("summary.actualPay.under")}
+              </Text>
+            </View>
           );
         })()}
       </AnimatedCard>
