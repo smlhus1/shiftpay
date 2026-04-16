@@ -586,7 +586,6 @@ export async function getMonthSummary(year: number, month: number): Promise<Mont
     const shifts = sortShiftsByDate(
       rows.filter((r) => {
         const parts = r.date.split(".");
-        const d = Number(parts[0]);
         const m = Number(parts[1]);
         const y = Number(parts[2]);
         return y === year && m === month;

@@ -56,6 +56,9 @@
       }
     },
     "owner": "smlhus",
+    "experiments": {
+      "typedRoutes": true
+    },
     "plugins": [
       [
         "expo-build-properties",

@@ -32,7 +32,7 @@ import {
 import { calculateExpectedPay, type Shift, type ShiftType } from "@/lib/calculations";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
-import { CameraCapture } from "@/components/CameraCapture";
+import { CameraCapture, type CameraViewRef } from "@/components/CameraCapture";
 import { ShiftEditor } from "@/components/ShiftEditor";
 import { PressableScale } from "@/components/PressableScale";
 import { AnimatedCard } from "@/components/AnimatedCard";
@@ -222,9 +222,7 @@ export default function ImportScreen() {
   const [ocrProgress, setOcrProgress] = useState<string | null>(null);
   const [showMore, setShowMore] = useState(false);
   const [baseRateZero, setBaseRateZero] = useState(false);
-  const cameraRef = useRef<{
-    takePictureAsync: (opts?: object) => Promise<{ uri: string }>;
-  } | null>(null);
+  const cameraRef = useRef<CameraViewRef | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
 
   useFocusEffect(
@@ -627,7 +625,10 @@ export default function ImportScreen() {
           savedResult={savedResult}
           onViewSchedule={() => {
             setSavedResult(null);
-            router.push(`/period/${savedResult.scheduleId}` as any);
+            router.push({
+              pathname: "/period/[id]",
+              params: { id: savedResult.scheduleId },
+            });
           }}
           onImportMore={() => setSavedResult(null)}
         />

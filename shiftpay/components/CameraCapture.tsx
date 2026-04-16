@@ -1,11 +1,18 @@
 import { View, Text } from "react-native";
 import { CameraView } from "expo-camera";
-import type { RefObject } from "react";
+import type { ComponentRef, RefObject } from "react";
 import { useTranslation } from "@/lib/i18n";
 import { PressableScale } from "./PressableScale";
 
+/**
+ * CameraView's ref exposes imperative methods (takePictureAsync, etc.) but
+ * its exported ref type is not parameterised for public use. ComponentRef
+ * extracts the instance type from the component, matching what useRef needs.
+ */
+export type CameraViewRef = ComponentRef<typeof CameraView>;
+
 interface CameraCaptureProps {
-  cameraRef: RefObject<{ takePictureAsync: (opts?: object) => Promise<{ uri: string }> } | null>;
+  cameraRef: RefObject<CameraViewRef | null>;
   onCancel: () => void;
   onCapture: () => void;
 }
@@ -14,7 +21,7 @@ export function CameraCapture({ cameraRef, onCancel, onCapture }: CameraCaptureP
   const { t } = useTranslation();
   return (
     <View className="flex-1 bg-black">
-      <CameraView ref={cameraRef as any} style={{ flex: 1 }} facing="back" accessible={false} />
+      <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" accessible={false} />
       <View
         className="absolute inset-0 items-center justify-center"
         pointerEvents="none"
