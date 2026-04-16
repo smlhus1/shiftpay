@@ -11,20 +11,20 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { Href } from "expo-router";
-import { Icon } from "../../components/Icon";
+import { Icon } from "@/components/Icon";
 import * as Haptics from "expo-haptics";
-import { getMonthSummary, getTariffRates, getDistinctMonthsWithShifts, deleteShift, getMonthlyActualPay, setMonthlyActualPay, type TariffRatesRow } from "../../lib/db";
-import type { ShiftRow } from "../../lib/db";
-import { calculateExpectedPay, calculateOvertimePay, type Shift } from "../../lib/calculations";
-import { shiftRowToShift, MONTH_KEYS, toYearMonthKey, formatCurrency } from "../../lib/format";
-import { exportShiftsAsCSV } from "../../lib/csv";
-import { ShiftCard } from "../../components/ShiftCard";
-import { PressableScale } from "../../components/PressableScale";
-import { AnimatedCard } from "../../components/AnimatedCard";
-import { RolledNumber } from "../../components/RolledNumber";
-import { hapticHeavy } from "../../lib/haptics";
-import { useTranslation } from "../../lib/i18n";
-import { useThemeColors } from "../../lib/theme-context";
+import { getMonthSummary, getTariffRates, getDistinctMonthsWithShifts, deleteShift, getMonthlyActualPay, setMonthlyActualPay, type TariffRatesRow } from "@/lib/db";
+import type { ShiftRow } from "@/lib/db";
+import { calculateExpectedPay, calculateOvertimePay, type Shift } from "@/lib/calculations";
+import { shiftRowToShift, MONTH_KEYS, toYearMonthKey, formatCurrency } from "@/lib/format";
+import { exportShiftsAsCSV } from "@/lib/csv";
+import { ShiftCard } from "@/components/ShiftCard";
+import { PressableScale } from "@/components/PressableScale";
+import { AnimatedCard } from "@/components/AnimatedCard";
+import { RolledNumber } from "@/components/RolledNumber";
+import { hapticHeavy } from "@/lib/haptics";
+import { useTranslation } from "@/lib/i18n";
+import { useThemeColors } from "@/lib/theme-context";
 
 function StatBox({ value, label }: { value: string; label: string }) {
   return (

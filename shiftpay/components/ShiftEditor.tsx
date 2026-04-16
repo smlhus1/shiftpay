@@ -1,11 +1,11 @@
 import { View, Text, TextInput, ActivityIndicator } from "react-native";
 import { Icon } from "./Icon";
-import type { CsvRowResult } from "../lib/csv";
-import type { Shift, ShiftType } from "../lib/calculations";
-import { useTranslation } from "../lib/i18n";
-import { formatCurrency } from "../lib/format";
+import type { CsvRowResult } from "@/lib/csv";
+import type { Shift, ShiftType } from "@/lib/calculations";
+import { useTranslation } from "@/lib/i18n";
+import { formatCurrency } from "@/lib/format";
 import { PressableScale } from "./PressableScale";
-import { useThemeColors } from "../lib/theme-context";
+import { useThemeColors } from "@/lib/theme-context";
 
 export type ImportSource = "ocr" | "manual" | "gallery" | "csv";
 

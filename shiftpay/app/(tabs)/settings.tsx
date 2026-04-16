@@ -9,13 +9,13 @@ import {
   Platform,
   Linking,
 } from "react-native";
-import { Icon } from "../../components/Icon";
+import { Icon } from "@/components/Icon";
 import * as Haptics from "expo-haptics";
 import Constants from "expo-constants";
-import { getTariffRates, setTariffRates, type TariffRatesInput } from "../../lib/db";
-import { useTranslation, SUPPORTED_LOCALES, SUPPORTED_CURRENCIES, type Locale, type Currency } from "../../lib/i18n";
-import { PressableScale } from "../../components/PressableScale";
-import { useTheme, useThemeColors, type ThemePreference } from "../../lib/theme-context";
+import { getTariffRates, setTariffRates, type TariffRatesInput } from "@/lib/db";
+import { useTranslation, SUPPORTED_LOCALES, SUPPORTED_CURRENCIES, type Locale, type Currency } from "@/lib/i18n";
+import { PressableScale } from "@/components/PressableScale";
+import { useTheme, useThemeColors, type ThemePreference } from "@/lib/theme-context";
 
 const defaultRates: TariffRatesInput = {
   base_rate: 0,

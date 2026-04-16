@@ -1,7 +1,7 @@
 import { View, Text } from "react-native";
 import { CameraView } from "expo-camera";
 import type { RefObject } from "react";
-import { useTranslation } from "../lib/i18n";
+import { useTranslation } from "@/lib/i18n";
 import { PressableScale } from "./PressableScale";
 
 interface CameraCaptureProps {

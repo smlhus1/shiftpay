@@ -15,14 +15,14 @@ import {
   bulkUpdatePayType,
   type ScheduleRow,
   type ShiftRow,
-} from "../../lib/db";
-import { cancelScheduleReminders } from "../../lib/notifications";
-import { sourceLabel } from "../../lib/format";
-import { ShiftCard } from "../../components/ShiftCard";
-import { PressableScale } from "../../components/PressableScale";
-import { AnimatedCard } from "../../components/AnimatedCard";
-import { useTranslation } from "../../lib/i18n";
-import { useThemeColors } from "../../lib/theme-context";
+} from "@/lib/db";
+import { cancelScheduleReminders } from "@/lib/notifications";
+import { sourceLabel } from "@/lib/format";
+import { ShiftCard } from "@/components/ShiftCard";
+import { PressableScale } from "@/components/PressableScale";
+import { AnimatedCard } from "@/components/AnimatedCard";
+import { useTranslation } from "@/lib/i18n";
+import { useThemeColors } from "@/lib/theme-context";
 import * as Haptics from "expo-haptics";
 
 function formatCreated(createdAt: string): string {

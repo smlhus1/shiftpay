@@ -10,14 +10,14 @@ import {
   Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Icon } from "../../components/Icon";
+import { Icon } from "@/components/Icon";
 import * as Haptics from "expo-haptics";
-import { getShiftById, confirmShift, updateShift, updateShiftPayType } from "../../lib/db";
-import type { ShiftRow, PayType } from "../../lib/db";
-import { useTranslation } from "../../lib/i18n";
-import { PressableScale } from "../../components/PressableScale";
-import { AnimatedCard } from "../../components/AnimatedCard";
-import { useThemeColors } from "../../lib/theme-context";
+import { getShiftById, confirmShift, updateShift, updateShiftPayType } from "@/lib/db";
+import type { ShiftRow, PayType } from "@/lib/db";
+import { useTranslation } from "@/lib/i18n";
+import { PressableScale } from "@/components/PressableScale";
+import { AnimatedCard } from "@/components/AnimatedCard";
+import { useThemeColors } from "@/lib/theme-context";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 

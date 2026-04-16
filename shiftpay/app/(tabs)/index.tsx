@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "expo-router";
-import { Icon } from "../../components/Icon";
+import { Icon } from "@/components/Icon";
 import {
   getDistinctMonthsWithShifts,
   getUpcomingShifts,
@@ -16,15 +16,15 @@ import {
   getShiftsInDateRange,
   getTariffRates,
   type ShiftRow,
-} from "../../lib/db";
+} from "@/lib/db";
 import type { Href } from "expo-router";
-import { calculateExpectedPay, calculateOvertimePay, type Shift } from "../../lib/calculations";
-import { shiftRowToShift, MONTH_KEYS, toYearMonthKey, formatCurrency } from "../../lib/format";
-import { ShiftCard } from "../../components/ShiftCard";
-import { PressableScale } from "../../components/PressableScale";
-import { AnimatedCard } from "../../components/AnimatedCard";
-import { useTranslation } from "../../lib/i18n";
-import { useTheme, useThemeColors } from "../../lib/theme-context";
+import { calculateExpectedPay, calculateOvertimePay, type Shift } from "@/lib/calculations";
+import { shiftRowToShift, MONTH_KEYS, toYearMonthKey, formatCurrency } from "@/lib/format";
+import { ShiftCard } from "@/components/ShiftCard";
+import { PressableScale } from "@/components/PressableScale";
+import { AnimatedCard } from "@/components/AnimatedCard";
+import { useTranslation } from "@/lib/i18n";
+import { useTheme, useThemeColors } from "@/lib/theme-context";
 
 function getWeekRange(): { from: string; to: string } {
   const now = new Date();

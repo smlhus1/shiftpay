@@ -1,6 +1,6 @@
 import { Component, type ReactNode } from "react";
 import { View, Text, Pressable } from "react-native";
-import { getTranslation } from "../lib/i18n";
+import { getTranslation } from "@/lib/i18n";
 
 interface Props {
   children: ReactNode;

@@ -1,10 +1,10 @@
 import { View, Text } from "react-native";
 import { Icon } from "./Icon";
-import { statusLabel, statusColor, shiftTypeLabel } from "../lib/format";
-import type { ShiftRow } from "../lib/db";
-import { useTranslation } from "../lib/i18n";
+import { statusLabel, statusColor, shiftTypeLabel } from "@/lib/format";
+import type { ShiftRow } from "@/lib/db";
+import { useTranslation } from "@/lib/i18n";
 import { PressableScale } from "./PressableScale";
-import { useThemeColors } from "../lib/theme-context";
+import { useThemeColors } from "@/lib/theme-context";
 
 interface ShiftCardProps {
   shift: ShiftRow;

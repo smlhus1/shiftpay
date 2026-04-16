@@ -12,11 +12,11 @@ import { InterTight_400Regular, InterTight_500Medium, InterTight_600SemiBold, In
 import { Fraunces_400Regular, Fraunces_400Regular_Italic, Fraunces_500Medium_Italic, Fraunces_600SemiBold, Fraunces_700Bold } from "@expo-google-fonts/fraunces";
 import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from "@expo-google-fonts/jetbrains-mono";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { initDb, getTariffRates } from "../lib/db";
-import { ErrorBoundary } from "../components/ErrorBoundary";
-import { ShiftTintStripe } from "../components/ShiftTintStripe";
-import { LocaleProvider, useTranslation } from "../lib/i18n";
-import { ThemeProvider, useTheme } from "../lib/theme-context";
+import { initDb, getTariffRates } from "@/lib/db";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ShiftTintStripe } from "@/components/ShiftTintStripe";
+import { LocaleProvider, useTranslation } from "@/lib/i18n";
+import { ThemeProvider, useTheme } from "@/lib/theme-context";
 
 const ONBOARDING_DONE_KEY = "shiftpay_onboarding_done";
 

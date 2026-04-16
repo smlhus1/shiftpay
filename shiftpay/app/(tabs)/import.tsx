@@ -9,7 +9,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
 import { useCameraPermissions } from "expo-camera";
-import { Icon } from "../../components/Icon";
+import { Icon } from "@/components/Icon";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -18,31 +18,31 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { MotiView } from "moti";
-import { postOcr } from "../../lib/api";
-import type { OcrShift } from "../../lib/api";
+import { postOcr } from "@/lib/api";
+import type { OcrShift } from "@/lib/api";
 import {
   parseCSVFile,
   type CsvRowResult,
   isValidDate,
   isValidTime,
   normalizeShiftType,
-} from "../../lib/csv";
-import { getTariffRates, insertScheduleWithShifts, getExistingShiftKeys } from "../../lib/db";
-import { dateToComparable } from "../../lib/dates";
+} from "@/lib/csv";
+import { getTariffRates, insertScheduleWithShifts, getExistingShiftKeys } from "@/lib/db";
+import { dateToComparable } from "@/lib/dates";
 import {
   scheduleShiftReminder,
   storeScheduledNotificationId,
   requestNotificationPermission,
-} from "../../lib/notifications";
-import { calculateExpectedPay, type Shift, type ShiftType } from "../../lib/calculations";
+} from "@/lib/notifications";
+import { calculateExpectedPay, type Shift, type ShiftType } from "@/lib/calculations";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
-import { CameraCapture } from "../../components/CameraCapture";
-import { ShiftEditor } from "../../components/ShiftEditor";
-import { PressableScale } from "../../components/PressableScale";
-import { AnimatedCard } from "../../components/AnimatedCard";
-import { useTranslation } from "../../lib/i18n";
-import { useThemeColors } from "../../lib/theme-context";
+import { CameraCapture } from "@/components/CameraCapture";
+import { ShiftEditor } from "@/components/ShiftEditor";
+import { PressableScale } from "@/components/PressableScale";
+import { AnimatedCard } from "@/components/AnimatedCard";
+import { useTranslation } from "@/lib/i18n";
+import { useThemeColors } from "@/lib/theme-context";
 
 function SkeletonCard({ delay }: { delay: number }) {
   return (

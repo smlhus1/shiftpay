@@ -14,7 +14,7 @@
 import { useMemo } from "react";
 import { View, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useThemeColors } from "../lib/theme-context";
+import { useThemeColors } from "@/lib/theme-context";
 
 type ShiftPhase = "morning" | "midday" | "evening" | "night";
 

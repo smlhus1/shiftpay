@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
-import { Icon } from "../../components/Icon";
-import { useTranslation } from "../../lib/i18n";
-import { useThemeColors } from "../../lib/theme-context";
+import { Icon } from "@/components/Icon";
+import { useTranslation } from "@/lib/i18n";
+import { useThemeColors } from "@/lib/theme-context";
 
 export default function TabsLayout() {
   const { t } = useTranslation();
