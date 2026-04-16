@@ -158,6 +158,17 @@ export default function DashboardScreen() {
     router.push(`/summary/${toYearMonthKey(now.getFullYear(), now.getMonth() + 1)}` as Href);
   }, [router]);
 
+  // Editorial margin-note — Fraunces italic, one per screen (DESIGN.md §11.2)
+  // Must be called before any early return to satisfy rules-of-hooks.
+  const marginNote = useMemo(() => {
+    const h = new Date().getHours();
+    if (h < 6)  return "Natta er lang.";
+    if (h < 12) return "Morgenvakt i dag?";
+    if (h < 16) return "Midt i dagen.";
+    if (h < 22) return "Nylig hjem fra vakt?";
+    return "Kveldsro.";
+  }, []);
+
   if (loading && monthsList.length === 0 && !nextShift && dueConfirmation.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
@@ -186,16 +197,6 @@ export default function DashboardScreen() {
   }
 
   const empty = monthsList.length === 0 && !nextShift && dueConfirmation.length === 0;
-
-  // Editorial margin-note — Fraunces italic, one per screen (DESIGN.md §11.2)
-  const marginNote = useMemo(() => {
-    const h = new Date().getHours();
-    if (h < 6)  return "Natta er lang.";
-    if (h < 12) return "Morgenvakt i dag?";
-    if (h < 16) return "Midt i dagen.";
-    if (h < 22) return "Nylig hjem fra vakt?";
-    return "Kveldsro.";
-  }, []);
 
   return (
     <View className="flex-1 bg-app-bg dark:bg-dark-bg">
