@@ -1,5 +1,6 @@
 import * as SQLite from "expo-sqlite";
 import { getRandomValues } from "expo-crypto";
+import { AppState, Platform, type AppStateStatus } from "react-native";
 import { shiftDurationHours } from "./calculations";
 import { dateToComparable } from "./dates";
 
@@ -279,6 +280,37 @@ async function withDb<T>(fn: (database: SQLite.SQLiteDatabase) => Promise<T>): P
     database = await initDb();
     return await fn(database);
   }
+}
+
+/**
+ * AppState listener: when the app returns to foreground on Android, probe the
+ * native SQLite handle with a cheap `SELECT 1`. If it throws the usual
+ * NullPointerException/execAsync-rejected signature, invalidate the singleton
+ * so the next query triggers a clean re-open via initDb. This shifts the
+ * stale-connection recovery from "react to a user-facing error" to "detect
+ * before the user hits it".
+ *
+ * Only wired on native — jest/web don't need the probe (jest doesn't
+ * background, web doesn't have the Android lifecycle gotcha).
+ */
+if (Platform.OS === "android" || Platform.OS === "ios") {
+  let lastState: AppStateStatus = AppState.currentState;
+  AppState.addEventListener("change", async (state) => {
+    const wasBackground = lastState !== "active";
+    lastState = state;
+    if (state !== "active" || !wasBackground || !db) return;
+    try {
+      await db.getFirstAsync("SELECT 1");
+    } catch (e) {
+      if (isDbGoneError(e)) {
+        if (__DEV__) {
+          console.log("[ShiftPay] AppState: invalidating stale DB connection");
+        }
+        db = null;
+        dbInitPromise = null;
+      }
+    }
+  });
 }
 
 export function getDb(): SQLite.SQLiteDatabase | null {
