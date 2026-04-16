@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { Href } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "../../components/Icon";
 import * as Haptics from "expo-haptics";
 import { getMonthSummary, getTariffRates, getDistinctMonthsWithShifts, deleteShift, getMonthlyActualPay, setMonthlyActualPay, type TariffRatesRow } from "../../lib/db";
 import type { ShiftRow } from "../../lib/db";
@@ -21,6 +21,8 @@ import { exportShiftsAsCSV } from "../../lib/csv";
 import { ShiftCard } from "../../components/ShiftCard";
 import { PressableScale } from "../../components/PressableScale";
 import { AnimatedCard } from "../../components/AnimatedCard";
+import { RolledNumber } from "../../components/RolledNumber";
+import { hapticHeavy } from "../../lib/haptics";
 import { useTranslation } from "../../lib/i18n";
 import { useThemeColors } from "../../lib/theme-context";
 
@@ -205,7 +207,7 @@ export default function SummaryScreen() {
             accessibilityLabel={t(`months.${MONTH_KEYS[(adjacentMonths.prev.month - 1)] ?? "jan"}`)}
             className="flex-row items-center gap-1"
           >
-            <Ionicons name="chevron-back" size={18} color={colors.accent} />
+            <Icon name="chevron-back" size={18} color={colors.accent} />
             <Text className="text-sm font-inter-medium text-accent-dark dark:text-accent">
               {t(`months.${MONTH_KEYS[(adjacentMonths.prev.month - 1)] ?? "jan"}`)}
             </Text>
@@ -224,7 +226,7 @@ export default function SummaryScreen() {
             <Text className="text-sm font-inter-medium text-accent-dark dark:text-accent">
               {t(`months.${MONTH_KEYS[(adjacentMonths.next.month - 1)] ?? "jan"}`)}
             </Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.accent} />
+            <Icon name="chevron-forward" size={18} color={colors.accent} />
           </PressableScale>
         ) : <View />}
       </View>
@@ -287,10 +289,33 @@ export default function SummaryScreen() {
           if (absDiff < 1) return null;
           const isOver = diff > 0;
           const direction = isOver ? t("summary.actualPay.over") : t("summary.actualPay.under");
+          const signedDiff = isOver ? absDiff : -absDiff;
+          // Big mono diff-number (DESIGN.md §11.2) — haptic heavy when the reveal
+          // completes, giving weight to the moment Kari sees the gap.
           return (
-            <Text className={`mt-2 font-inter-semibold text-base ${isOver ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-              {t("summary.actualPay.difference", { amount: formatCurrency(absDiff, currency), direction })}
-            </Text>
+            <View className="mt-3">
+              <RolledNumber
+                value={signedDiff}
+                duration={1400}
+                from={0}
+                format={(n) => {
+                  const prefix = n >= 0 ? "+\u00A0" : "−\u00A0";
+                  return prefix + Math.round(Math.abs(n)).toLocaleString("nb-NO").replace(/\u202F/g, "\u00A0") + "\u00A0kr";
+                }}
+                onComplete={hapticHeavy}
+                accessibilityLabel={t("summary.actualPay.difference", { amount: formatCurrency(absDiff, currency), direction })}
+                style={{
+                  fontFamily: "JetBrainsMono_500Medium",
+                  fontSize: 36,
+                  lineHeight: 40,
+                  letterSpacing: -1.2,
+                  color: isOver ? (colors.success) : (colors.error),
+                }}
+              />
+              <Text className="mt-1 italic text-xs text-stone-500 dark:text-stone-400" style={{ fontFamily: "Fraunces_400Regular_Italic" }}>
+                {isOver ? t("summary.actualPay.over") : t("summary.actualPay.under")}
+              </Text>
+            </View>
           );
         })()}
       </AnimatedCard>
@@ -358,7 +383,7 @@ export default function SummaryScreen() {
           accessibilityLabel={t("summary.export")}
           className="mt-4 flex-row items-center justify-center gap-2 rounded-xl border border-blue-600/20 bg-blue-600/10 dark:border-blue-400/20 dark:bg-blue-400/10 py-3"
         >
-          <Ionicons name="download-outline" size={18} color={colors.accent} />
+          <Icon name="download-outline" size={18} color={colors.accent} />
           <Text className="font-inter-semibold text-accent-dark dark:text-accent">{t("summary.export")}</Text>
         </PressableScale>
       )}
@@ -368,7 +393,7 @@ export default function SummaryScreen() {
         accessibilityLabel={t("summary.addShift")}
         className="mt-4 flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-app-border dark:border-dark-border py-3"
       >
-        <Ionicons name="add-circle-outline" size={18} color={colors.textMuted} />
+        <Icon name="add-circle-outline" size={18} color={colors.textMuted} />
         <Text className="font-inter-medium text-stone-600 dark:text-stone-400">{t("summary.addShift")}</Text>
       </PressableScale>
 

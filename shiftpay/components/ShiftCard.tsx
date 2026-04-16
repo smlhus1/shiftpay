@@ -1,5 +1,5 @@
 import { View, Text } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { statusLabel, statusColor, shiftTypeLabel } from "../lib/format";
 import type { ShiftRow } from "../lib/db";
 import { useTranslation } from "../lib/i18n";
@@ -82,7 +82,7 @@ export function ShiftCard({
       )}
       {showOvertimeLabel && isOvertime && (shift.overtime_minutes ?? 0) > 0 && (
         <View className="flex-row items-center gap-1">
-          <Ionicons name="time-outline" size={14} color={colors.accent} />
+          <Icon name="time-outline" size={14} color={colors.accent} />
           <Text className="text-sm text-accent-dark dark:text-accent">
             {t("components.shiftCard.overtime", { minutes: shift.overtime_minutes })}
           </Text>
@@ -114,10 +114,12 @@ export function ShiftCard({
                 hitSlop={8}
                 className="p-2"
               >
-                <Ionicons name="trash-outline" size={18} color={colors.error} />
+                <Icon name="trash-outline" size={18} color={colors.error} />
               </PressableScale>
             )}
-            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} style={{ marginLeft: 4 }} importantForAccessibility="no" />
+            <View style={{ marginLeft: 4 }}>
+              <Icon name="chevron-forward" size={18} color={colors.textMuted} importantForAccessibility="no" />
+            </View>
           </View>
         </View>
       </PressableScale>
@@ -138,7 +140,7 @@ export function ShiftCard({
             hitSlop={8}
             className="p-2"
           >
-            <Ionicons name="trash-outline" size={18} color={colors.error} />
+            <Icon name="trash-outline" size={18} color={colors.error} />
           </PressableScale>
         )}
       </View>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "../../components/Icon";
 import {
   getDistinctMonthsWithShifts,
   getUpcomingShifts,
@@ -158,6 +158,17 @@ export default function DashboardScreen() {
     router.push(`/summary/${toYearMonthKey(now.getFullYear(), now.getMonth() + 1)}` as Href);
   }, [router]);
 
+  // Editorial margin-note — Fraunces italic, one per screen (DESIGN.md §11.2)
+  // Must be called before any early return to satisfy rules-of-hooks.
+  const marginNote = useMemo(() => {
+    const h = new Date().getHours();
+    if (h < 6)  return "Natta er lang.";
+    if (h < 12) return "Morgenvakt i dag?";
+    if (h < 16) return "Midt i dagen.";
+    if (h < 22) return "Nylig hjem fra vakt?";
+    return "Kveldsro.";
+  }, []);
+
   if (loading && monthsList.length === 0 && !nextShift && dueConfirmation.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
@@ -193,10 +204,15 @@ export default function DashboardScreen() {
       className="flex-1"
       contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
     >
+      {!empty && (
+        <Text className="mb-3 italic text-[13px] text-stone-500 dark:text-stone-400" style={{ fontFamily: "Fraunces_400Regular_Italic" }}>
+          {marginNote}
+        </Text>
+      )}
       {empty && (
         <View className="flex-1 items-center justify-center py-12">
           <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-500/15">
-            <Ionicons name="wallet-outline" size={48} color={theme === "dark" ? "#F59E0B" : "#D97706"} />
+            <Icon name="wallet-outline" size={48} color={colors.warm} />
           </View>
           <Text className="text-lg font-inter-semibold text-stone-900 dark:text-stone-100">{t("dashboard.empty.title")}</Text>
           <Text className="mt-2 text-center text-stone-600 dark:text-stone-400">
@@ -210,7 +226,7 @@ export default function DashboardScreen() {
             accessibilityLabel={t("dashboard.empty.cta")}
             className="mt-6 flex-row items-center gap-2 rounded-xl bg-accent-dark dark:bg-accent px-6 py-4"
           >
-            <Ionicons name="camera-outline" size={20} color={theme === "dark" ? "#1C1917" : "#FFFFFF"} />
+            <Icon name="camera-outline" size={20} color="#F5EFE4" />
             <Text className="font-inter-semibold text-white dark:text-stone-900">{t("dashboard.empty.cta")}</Text>
           </PressableScale>
         </View>
@@ -344,7 +360,7 @@ export default function DashboardScreen() {
                       </Text>
                     )}
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} importantForAccessibility="no" />
+                  <Icon name="chevron-forward" size={20} color={colors.textMuted} importantForAccessibility="no" />
                 </View>
               </PressableScale>
             );
@@ -360,7 +376,7 @@ export default function DashboardScreen() {
       className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-accent-dark dark:bg-accent"
       style={{ elevation: 8, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4 }}
     >
-      <Ionicons name="add" size={28} color={theme === "dark" ? "#1C1917" : "#FFFFFF"} />
+      <Icon name="add" size={28} color="#F5EFE4" />
     </PressableScale>
     </View>
   );

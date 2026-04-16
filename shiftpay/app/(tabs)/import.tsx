@@ -9,7 +9,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
 import { useCameraPermissions } from "expo-camera";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "../../components/Icon";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -88,7 +88,7 @@ function OcrLoadingState({ progress }: { progress: string | null }) {
     <View className="py-8" accessibilityLiveRegion="polite">
       <View className="items-center mb-6">
         <Animated.View style={spinStyle}>
-          <Ionicons name="scan-outline" size={48} color={colors.accent} />
+          <Icon name="scan-outline" size={48} color={colors.accent} />
         </Animated.View>
         <Text className="mt-3 text-lg font-inter-semibold text-stone-900 dark:text-stone-100">
           {t("import.loading")}
@@ -129,7 +129,7 @@ function SavedSuccessView({
   return (
     <View className="items-center py-12">
       <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/15">
-        <Ionicons name="checkmark-circle" size={40} color={colors.success} />
+        <Icon name="checkmark-circle" size={40} color={colors.success} />
       </View>
       <Text className="text-xl font-inter-semibold text-stone-900 dark:text-stone-100">
         {t("import.saved.title")}

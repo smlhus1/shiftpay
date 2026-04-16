@@ -10,7 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "../../components/Icon";
 import * as Haptics from "expo-haptics";
 import { getShiftById, confirmShift, updateShift, updateShiftPayType } from "../../lib/db";
 import type { ShiftRow, PayType } from "../../lib/db";
@@ -196,7 +196,7 @@ export default function ConfirmShiftScreen() {
         <AnimatedCard index={0}>
           <View className="items-center">
             <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/15" importantForAccessibility="no">
-              <Ionicons name="checkmark-circle" size={40} color={colors.success} />
+              <Icon name="checkmark-circle" size={40} color={colors.success} />
             </View>
             <Text className="text-xl font-inter-semibold text-stone-900 dark:text-stone-100">{t("confirm.success")}</Text>
             <Text className="mt-2 text-center text-stone-600 dark:text-stone-400">{formatShiftLabel(shift)}</Text>
@@ -260,7 +260,7 @@ export default function ConfirmShiftScreen() {
             className="flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4"
           >
             <Text className="text-sm font-inter-medium text-stone-700 dark:text-stone-300">{t("confirm.editFields.title")}</Text>
-            <Ionicons name={showEditFields ? "chevron-up" : "chevron-down"} size={18} color={colors.textMuted} />
+            <Icon name={showEditFields ? "chevron-up" : "chevron-down"} size={18} color={colors.textMuted} />
           </PressableScale>
           {showEditFields && (
             <View className="mt-2 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">

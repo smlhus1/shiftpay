@@ -1,5 +1,5 @@
 import { View, Text, TextInput, ActivityIndicator } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import type { CsvRowResult } from "../lib/csv";
 import type { Shift, ShiftType } from "../lib/calculations";
 import { useTranslation } from "../lib/i18n";
@@ -102,7 +102,7 @@ export function ShiftEditor({
                 className="ml-auto rounded-lg p-2"
                 accessibilityLabel={t("components.shiftCard.deleteA11y", { date })}
               >
-                <Ionicons name="trash-outline" size={22} color={colors.error} />
+                <Icon name="trash-outline" size={22} color={colors.error} />
               </PressableScale>
             </View>
             {/* Row 2: Shift type pills */}
