@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# Cancel in-flight runs for the same branch/PR when new commits land.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Jest (shiftpay)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: shiftpay
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: shiftpay/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run Jest
+        run: npm run test:ci
+        env:
+          TZ: Europe/Oslo
+          CI: "true"
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: shiftpay/coverage/
+          retention-days: 7
+
+  # Placeholder — lint + typecheck land in Pass 1 (foundation refactor)
+  # Maestro E2E lands in a later pass on a macOS runner
