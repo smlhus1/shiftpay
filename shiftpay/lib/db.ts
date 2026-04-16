@@ -193,18 +193,14 @@ async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
   const pending = migrations.filter((m) => m.version > current);
   if (pending.length === 0) return;
   for (const m of pending) {
-    // withTransactionAsync wraps each migration in BEGIN/COMMIT on the
-    // main connection. At init time nothing else can query (initDb has
-    // not resolved yet), so the stronger exclusive-transaction guarantee
-    // is not needed here — and expo-sqlite-mock's :memory: backend opens
-    // a fresh in-memory DB per exclusive transaction, which would drop
-    // all schema between migration and user_version bump.
-    //
-    // Fail-mid leaves user_version at pre-migration, so the next boot
-    // retries cleanly.
-    await database.withTransactionAsync(async () => {
-      await m.up(database);
-      await database.execAsync(`PRAGMA user_version = ${m.version}`);
+    // withExclusiveTransactionAsync opens a dedicated connection for the
+    // transaction body, so no other query on the shared pool can race
+    // this migration (on-device there usually is no concurrent writer
+    // at init time, but this is belt + braces). Fail-mid leaves
+    // user_version at pre-migration so the next boot retries cleanly.
+    await database.withExclusiveTransactionAsync(async (tx) => {
+      await m.up(tx);
+      await tx.execAsync(`PRAGMA user_version = ${m.version}`);
     });
     if (__DEV__) {
       console.log(`[ShiftPay] Migrated to version ${m.version} (${m.name})`);
@@ -505,14 +501,18 @@ export async function insertScheduleWithShifts(
       }
       return true;
     });
-    await database.withTransactionAsync(async () => {
-      await database.runAsync(
+    // Exclusive: other fire-and-forget writes (notification confirm-shift,
+    // tariff save) cannot silently join this transaction and roll back
+    // with it. See research/refactor/pass-2-data.md §1 "withTransactionAsync
+    // vs withExclusiveTransactionAsync" for the Expo footgun this avoids.
+    await database.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync(
         "INSERT INTO schedules (id, period_start, period_end, source, created_at) VALUES (?, ?, ?, ?, ?)",
         [scheduleId, periodStart, periodEnd, source, createdAt]
       );
       for (const s of validShifts) {
         const id = generateId();
-        await database.runAsync(
+        await tx.runAsync(
           "INSERT INTO shifts (id, schedule_id, date, start_time, end_time, shift_type, status, overtime_minutes, created_at) VALUES (?, ?, ?, ?, ?, ?, 'planned', 0, ?)",
           [id, scheduleId, s.date, s.start_time, s.end_time, s.shift_type, createdAt]
         );
@@ -708,9 +708,9 @@ export async function getScheduleById(id: string): Promise<ScheduleRow | null> {
 
 export async function deleteSchedule(id: string): Promise<void> {
   await withDb(async (database) => {
-    await database.withTransactionAsync(async () => {
-      await database.runAsync("DELETE FROM shifts WHERE schedule_id = ?", [id]);
-      await database.runAsync("DELETE FROM schedules WHERE id = ?", [id]);
+    await database.withExclusiveTransactionAsync(async (tx) => {
+      await tx.runAsync("DELETE FROM shifts WHERE schedule_id = ?", [id]);
+      await tx.runAsync("DELETE FROM schedules WHERE id = ?", [id]);
     });
   });
 }
