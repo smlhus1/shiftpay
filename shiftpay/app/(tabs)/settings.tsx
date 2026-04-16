@@ -9,7 +9,7 @@ import {
   Platform,
   Linking,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "../../components/Icon";
 import * as Haptics from "expo-haptics";
 import Constants from "expo-constants";
 import { getTariffRates, setTariffRates, type TariffRatesInput } from "../../lib/db";
@@ -52,10 +52,10 @@ const CURRENCY_OPTIONS: { code: Currency; label: string; symbol: string }[] = [
   { code: "EUR", label: "EUR", symbol: "€" },
 ];
 
-const THEME_OPTIONS: { value: ThemePreference; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { value: "system", icon: "phone-portrait-outline" },
-  { value: "light", icon: "sunny-outline" },
-  { value: "dark", icon: "moon-outline" },
+const THEME_OPTIONS: { value: ThemePreference; icon: string }[] = [
+  { value: "system", icon: "phone" },
+  { value: "light", icon: "sun" },
+  { value: "dark", icon: "moon" },
 ];
 
 export default function SettingsScreen() {
@@ -197,7 +197,7 @@ export default function SettingsScreen() {
             className="flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4"
           >
             <Text className="text-sm font-inter-medium text-stone-700 dark:text-stone-300">{t("settings.payPeriods.toggle")}</Text>
-            <Ionicons name={showPayPeriods ? "chevron-up" : "chevron-down"} size={18} color={colors.textMuted} />
+            <Icon name={showPayPeriods ? "chevron-up" : "chevron-down"} size={18} color={colors.textMuted} />
           </PressableScale>
           {showPayPeriods && (
             <View className="mt-2 rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface p-4">
@@ -255,7 +255,7 @@ export default function SettingsScreen() {
             >
               <Text className="text-stone-900 dark:text-stone-100">{opt.label}</Text>
               {locale === opt.code && (
-                <Ionicons name="checkmark" size={20} color={colors.accent} />
+                <Icon name="checkmark" size={20} color={colors.accent} />
               )}
             </PressableScale>
           ))}
@@ -274,7 +274,7 @@ export default function SettingsScreen() {
             >
               <Text className="text-stone-900 dark:text-stone-100">{opt.symbol} {opt.label}</Text>
               {currency === opt.code && (
-                <Ionicons name="checkmark" size={20} color={colors.accent} />
+                <Icon name="checkmark" size={20} color={colors.accent} />
               )}
             </PressableScale>
           ))}
@@ -292,11 +292,11 @@ export default function SettingsScreen() {
               className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border dark:border-dark-border bg-app-surface dark:bg-dark-surface px-4 py-3"
             >
               <View className="flex-row items-center gap-3">
-                <Ionicons name={opt.icon} size={20} color={colors.textSecondary} />
+                <Icon name={opt.icon} size={20} color={colors.textSecondary} />
                 <Text className="text-stone-900 dark:text-stone-100">{t(`settings.theme.${opt.value}`)}</Text>
               </View>
               {preference === opt.value && (
-                <Ionicons name="checkmark" size={20} color={colors.accent} />
+                <Icon name="checkmark" size={20} color={colors.accent} />
               )}
             </PressableScale>
           ))}
@@ -314,7 +314,7 @@ export default function SettingsScreen() {
             className="mb-2 flex-row items-center gap-2"
             style={{ minHeight: 48 }}
           >
-            <Ionicons name="logo-github" size={18} color={colors.accent} />
+            <Icon name="logo-github" size={18} color={colors.accent} />
             <Text className="text-sm text-accent-dark dark:text-accent">GitHub</Text>
           </PressableScale>
           <PressableScale
@@ -324,7 +324,7 @@ export default function SettingsScreen() {
             className="mb-3 flex-row items-center gap-2"
             style={{ minHeight: 48 }}
           >
-            <Ionicons name="mail-outline" size={18} color={colors.accent} />
+            <Icon name="mail-outline" size={18} color={colors.accent} />
             <Text className="text-sm text-accent-dark dark:text-accent">shiftpay@smlhus.com</Text>
           </PressableScale>
           <Text className="text-xs text-stone-500">ShiftPay v{Constants.expoConfig?.version ?? "1.0.0"}</Text>

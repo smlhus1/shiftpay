@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { Href } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "../../components/Icon";
 import * as Haptics from "expo-haptics";
 import { getMonthSummary, getTariffRates, getDistinctMonthsWithShifts, deleteShift, getMonthlyActualPay, setMonthlyActualPay, type TariffRatesRow } from "../../lib/db";
 import type { ShiftRow } from "../../lib/db";
@@ -207,7 +207,7 @@ export default function SummaryScreen() {
             accessibilityLabel={t(`months.${MONTH_KEYS[(adjacentMonths.prev.month - 1)] ?? "jan"}`)}
             className="flex-row items-center gap-1"
           >
-            <Ionicons name="chevron-back" size={18} color={colors.accent} />
+            <Icon name="chevron-back" size={18} color={colors.accent} />
             <Text className="text-sm font-inter-medium text-accent-dark dark:text-accent">
               {t(`months.${MONTH_KEYS[(adjacentMonths.prev.month - 1)] ?? "jan"}`)}
             </Text>
@@ -226,7 +226,7 @@ export default function SummaryScreen() {
             <Text className="text-sm font-inter-medium text-accent-dark dark:text-accent">
               {t(`months.${MONTH_KEYS[(adjacentMonths.next.month - 1)] ?? "jan"}`)}
             </Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.accent} />
+            <Icon name="chevron-forward" size={18} color={colors.accent} />
           </PressableScale>
         ) : <View />}
       </View>
@@ -383,7 +383,7 @@ export default function SummaryScreen() {
           accessibilityLabel={t("summary.export")}
           className="mt-4 flex-row items-center justify-center gap-2 rounded-xl border border-blue-600/20 bg-blue-600/10 dark:border-blue-400/20 dark:bg-blue-400/10 py-3"
         >
-          <Ionicons name="download-outline" size={18} color={colors.accent} />
+          <Icon name="download-outline" size={18} color={colors.accent} />
           <Text className="font-inter-semibold text-accent-dark dark:text-accent">{t("summary.export")}</Text>
         </PressableScale>
       )}
@@ -393,7 +393,7 @@ export default function SummaryScreen() {
         accessibilityLabel={t("summary.addShift")}
         className="mt-4 flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-app-border dark:border-dark-border py-3"
       >
-        <Ionicons name="add-circle-outline" size={18} color={colors.textMuted} />
+        <Icon name="add-circle-outline" size={18} color={colors.textMuted} />
         <Text className="font-inter-medium text-stone-600 dark:text-stone-400">{t("summary.addShift")}</Text>
       </PressableScale>
 
