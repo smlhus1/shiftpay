@@ -14,7 +14,11 @@ export interface ShiftForReminder {
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
+    // SDK 54 split `shouldShowAlert` into `shouldShowBanner` + `shouldShowList`;
+    // keep the legacy flag set for backward compat with older runtimes.
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),

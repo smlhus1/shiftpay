@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { Text, TextProps, AccessibilityInfo } from "react-native";
+import { Text, type TextProps, AccessibilityInfo } from "react-native";
 
 interface RolledNumberProps extends TextProps {
   value: number;

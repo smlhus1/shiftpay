@@ -38,7 +38,7 @@ import { SunIcon } from "phosphor-react-native/src/icons/Sun";
 import { TrashIcon } from "phosphor-react-native/src/icons/Trash";
 import { WalletIcon } from "phosphor-react-native/src/icons/Wallet";
 import { type IconProps as PhosphorProps } from "phosphor-react-native";
-import { ComponentType } from "react";
+import { type ComponentType } from "react";
 
 /** Every Ionicons name used in the app, mapped to its Phosphor component. */
 const MAP: Record<string, ComponentType<PhosphorProps>> = {

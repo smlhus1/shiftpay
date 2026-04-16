@@ -5,6 +5,10 @@
  * Date: DD.MM.YYYY, time: HH:MM, shift_type: tidlig | mellom | kveld | natt.
  */
 
+// SDK 54 promoted File/Paths classes to the root export but still ships
+// the legacy functional API (readAsStringAsync, writeAsStringAsync,
+// EncodingType, cacheDirectory). Pass 5 migrates this module to the
+// class-based API. Legacy surface is declared in types/expo-file-system.d.ts.
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import type { Shift, ShiftType } from "./calculations";

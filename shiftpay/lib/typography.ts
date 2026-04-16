@@ -15,7 +15,7 @@
  * font-mono-medium (see tailwind.config.js).
  */
 
-import { TextStyle } from "react-native";
+import { type TextStyle } from "react-native";
 
 export const typography = {
   // ─── Display (Fraunces — use sparingly) ──────────────────────
