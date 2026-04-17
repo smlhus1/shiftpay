@@ -6,6 +6,7 @@ import { encodeBase64 } from "jsr:@std/encoding/base64";
 import Anthropic from "npm:@anthropic-ai/sdk@0.39.0";
 import * as v from "npm:valibot@^1";
 import { ClaudeRawOutputSchema, OcrShiftSchema } from "./schema.ts";
+import { checkRateLimit, getClientIp } from "./rate-limit.ts";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -139,6 +140,26 @@ Deno.serve(async (req: Request) => {
   const provided = req.headers.get("x-api-key") ?? "";
   if (!provided || !(await safeCompare(provided, appApiKey))) {
     return jsonResponse({ detail: "Unauthorized" }, 401, req);
+  }
+
+  // Rate limit AFTER auth so unauthenticated traffic doesn't cost us
+  // Redis commands, but BEFORE we open the file / call Anthropic so a
+  // limited caller never triggers the expensive path.
+  const rateLimit = await checkRateLimit(getClientIp(req));
+  if (!rateLimit.allowed) {
+    return new Response(
+      JSON.stringify({
+        detail: "Too many requests — try again shortly.",
+      }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": String(rateLimit.retryAfterSec),
+          ...getCorsHeaders(req),
+        },
+      }
+    );
   }
 
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
