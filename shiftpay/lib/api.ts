@@ -1,11 +1,21 @@
 /**
- * OCR backend client — Supabase Edge Function or local backend.
- * Client-side resize (expo-image-manipulator) will be re-enabled after next dev build.
+ * OCR backend client — Supabase Edge Function.
+ *
  * EXPO_PUBLIC_API_URL = full OCR endpoint URL (e.g. https://xxx.supabase.co/functions/v1/ocr).
  * EXPO_PUBLIC_OCR_API_KEY = shared secret for OCR endpoint authentication.
+ *
+ * Response shape validated with Valibot at the boundary (lib/ocr-schema.ts).
+ * Any shape drift between server and client throws a visible error instead
+ * of corrupting imported shifts. Same schema lives in
+ * supabase/functions/ocr/schema.ts; update both files together.
  */
 
+import * as v from "valibot";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { getTranslation } from "./i18n";
+import { OcrResponseSchema, type OcrResponse, type OcrShift } from "./ocr-schema";
+
+export type { OcrResponse, OcrShift };
 
 const getOcrUrl = (): string => {
   const url = process.env.EXPO_PUBLIC_API_URL;
@@ -17,65 +27,41 @@ const getOcrApiKey = (): string | undefined => {
   return process.env.EXPO_PUBLIC_OCR_API_KEY || undefined;
 };
 
-export interface OcrShift {
-  date: string;
-  start_time: string;
-  end_time: string;
-  shift_type: string;
-  confidence?: number;
-}
-
-export interface OcrResponse {
-  shifts: OcrShift[];
-  confidence: number;
-  method: "tesseract" | "vision" | "claude-vision";
-}
-
 const OCR_TIMEOUT_MS = 30_000;
 
-const DATE_RE = /^\d{1,2}\.\d{1,2}\.\d{4}$/;
-const TIME_RE = /^\d{1,2}:\d{2}$/;
+// Resize cap chosen so Claude Haiku Vision still sees timesheet cell text
+// clearly but we cut common phone photos (12-48 MP) down to ~2 MB and,
+// crucially, drop GPS/EXIF metadata. manipulateAsync re-encodes the image
+// as JPEG which removes the EXIF block as a side effect.
+const RESIZE_MAX_DIMENSION = 2048;
+const RESIZE_JPEG_QUALITY = 0.85;
 
-/** Validate and sanitize OCR response from server. */
-function validateOcrResponse(data: unknown): OcrResponse {
-  if (!data || typeof data !== "object") {
-    throw new Error("Invalid OCR response format");
-  }
-  const obj = data as Record<string, unknown>;
-  if (!Array.isArray(obj.shifts)) {
-    throw new Error("Invalid OCR response: missing shifts array");
-  }
-  const shifts: OcrShift[] = obj.shifts
-    .filter(
-      (s: unknown) =>
-        s &&
-        typeof s === "object" &&
-        typeof (s as Record<string, unknown>).date === "string" &&
-        typeof (s as Record<string, unknown>).start_time === "string" &&
-        typeof (s as Record<string, unknown>).end_time === "string" &&
-        DATE_RE.test((s as Record<string, unknown>).date as string) &&
-        TIME_RE.test((s as Record<string, unknown>).start_time as string) &&
-        TIME_RE.test((s as Record<string, unknown>).end_time as string)
-    )
-    .map((s: unknown) => {
-      const shift = s as Record<string, unknown>;
-      return {
-        date: shift.date as string,
-        start_time: shift.start_time as string,
-        end_time: shift.end_time as string,
-        shift_type: typeof shift.shift_type === "string" ? shift.shift_type : "tidlig",
-        confidence: typeof shift.confidence === "number" ? shift.confidence : undefined,
-      };
+/**
+ * Re-encode the image to a capped JPEG. The re-encode is the point — it
+ * strips EXIF metadata (GPS coordinates that often point straight at a
+ * hospital or care home) before the photo ever leaves the device.
+ */
+async function resizeAndStripExif(imageUri: string): Promise<string> {
+  try {
+    const result = await manipulateAsync(imageUri, [{ resize: { width: RESIZE_MAX_DIMENSION } }], {
+      compress: RESIZE_JPEG_QUALITY,
+      format: SaveFormat.JPEG,
     });
-  return {
-    shifts,
-    confidence: typeof obj.confidence === "number" ? obj.confidence : 0,
-    method: (obj.method as OcrResponse["method"]) ?? "claude-vision",
-  };
+    return result.uri;
+  } catch {
+    // Manipulation failure is not fatal — we still prefer a potentially-
+    // EXIF-bearing upload to blocking the user's only OCR path. The
+    // server-side magic-number probe + no-storage guarantee bounds the
+    // worst case.
+    return imageUri;
+  }
 }
 
 export async function postOcr(imageUri: string): Promise<OcrResponse> {
-  const uriToSend = imageUri;
+  // Always resize before upload — the re-encode strips EXIF (GPS/time
+  // metadata) that can leak the user's workplace location. See the
+  // research for Pass 3 §7.
+  const uriToSend = await resizeAndStripExif(imageUri);
 
   const formData = new FormData();
   formData.append("file", {
@@ -114,7 +100,14 @@ export async function postOcr(imageUri: string): Promise<OcrResponse> {
     }
 
     const raw = await res.json();
-    return validateOcrResponse(raw);
+    const parsed = v.safeParse(OcrResponseSchema, raw);
+    if (!parsed.success) {
+      if (__DEV__) {
+        console.warn("[ShiftPay] OCR response shape mismatch:", parsed.issues);
+      }
+      throw new Error(getTranslation("api.ocrError", { status: 502 }));
+    }
+    return parsed.output;
   } catch (e) {
     clearTimeout(timeoutId);
     if (e instanceof Error) {
