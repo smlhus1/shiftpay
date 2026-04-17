@@ -40,3 +40,6 @@ npm-debug.log*
 
 # Vercel
 .vercel/
+
+# APKs (too large for git; keep locally or use release attachments)
+*.apk
