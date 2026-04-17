@@ -53,3 +53,38 @@ jest.mock("nativewind", () => ({
 // calculations.ts/dates.ts rely on getDay() and Date parsing to agree with
 // the user's actual wall clock.
 process.env.TZ = "Europe/Oslo";
+
+// expo-sqlite-mock defaults to :memory: per NativeDatabase instance, which
+// breaks withExclusiveTransactionAsync (opens a new connection, gets an
+// empty DB). Point the mock at a per-worker file so multi-connection
+// operations see shared state. The file is created in os.tmpdir() and
+// reset between tests via jest.resetModules + unlink.
+const path = require("path");
+const os = require("os");
+const fs = require("fs");
+const tmpDir = path.join(os.tmpdir(), "shiftpay-jest");
+try {
+  fs.mkdirSync(tmpDir, { recursive: true });
+} catch {
+  // ignore
+}
+const workerId = process.env.JEST_WORKER_ID ?? "1";
+const dbPath = path.join(tmpDir, `test-${workerId}.sqlite`);
+// Ensure a clean slate per worker process boot.
+try {
+  fs.unlinkSync(dbPath);
+} catch {
+  // ignore — file may not exist yet
+}
+process.env.EXPO_SQLITE_MOCK = dbPath;
+
+// Wipe the file between tests so jest.resetModules + re-import gives a
+// truly fresh schema. beforeEach in db.test.ts does jest.resetModules,
+// but the underlying SQLite file survives unless we delete it here.
+beforeEach(() => {
+  try {
+    fs.unlinkSync(dbPath);
+  } catch {
+    // ignore
+  }
+});

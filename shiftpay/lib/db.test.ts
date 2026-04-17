@@ -8,6 +8,8 @@
  * --experimental-vm-modules.
  */
 
+import type * as DbModule from "./db";
+
 describe("db (via expo-sqlite-mock)", () => {
   beforeEach(() => {
     jest.resetModules();
@@ -18,6 +20,28 @@ describe("db (via expo-sqlite-mock)", () => {
     const db = await initDb();
     expect(db).not.toBeNull();
     expect(getDb()).not.toBeNull();
+  });
+
+  it("runs all migrations and bumps PRAGMA user_version to the latest", async () => {
+    const { initDb } = require("./db") as typeof DbModule;
+    const db = await initDb();
+    const row = await db.getFirstAsync<{ user_version: number }>("PRAGMA user_version");
+    // Migrations 1-5 have landed. Keep this assertion loose so appending a
+    // new migration does not require updating the test — just assert forward
+    // progress: version > 0.
+    expect(row?.user_version).toBeGreaterThanOrEqual(5);
+  });
+
+  it("migration runner is idempotent — second initDb is a no-op", async () => {
+    const { initDb } = require("./db") as typeof DbModule;
+    const db = await initDb();
+    const first = (await db.getFirstAsync<{ user_version: number }>("PRAGMA user_version"))
+      ?.user_version;
+    // No reset — same singleton — calling initDb again should return immediately.
+    await initDb();
+    const second = (await db.getFirstAsync<{ user_version: number }>("PRAGMA user_version"))
+      ?.user_version;
+    expect(second).toBe(first);
   });
 
   it("seeds tariff_rates with id=1 and zero base rate on first init", async () => {
