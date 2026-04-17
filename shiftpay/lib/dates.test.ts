@@ -2,7 +2,13 @@
  * Baseline tests for lib/dates.ts.
  * Freezes current behaviour — including one known bug (Pass 4 fixes).
  */
-import { parseDateSafe, parseDateTimeSafe, dateToComparable } from "./dates";
+import {
+  parseDateSafe,
+  parseDateTimeSafe,
+  dateToComparable,
+  displayToIso,
+  isoToDisplay,
+} from "./dates";
 
 describe("parseDateSafe", () => {
   it("parses a valid DD.MM.YYYY date", () => {
@@ -60,6 +66,33 @@ describe("dateToComparable", () => {
     const c = dateToComparable("01.04.2026");
     expect(a < b).toBe(true);
     expect(b < c).toBe(true);
+  });
+});
+
+describe("displayToIso / isoToDisplay", () => {
+  it("converts DD.MM.YYYY → YYYY-MM-DD", () => {
+    expect(displayToIso("02.03.2026")).toBe("2026-03-02");
+    expect(displayToIso("17.05.2026")).toBe("2026-05-17");
+  });
+
+  it("converts YYYY-MM-DD → DD.MM.YYYY", () => {
+    expect(isoToDisplay("2026-03-02")).toBe("02.03.2026");
+    expect(isoToDisplay("2026-05-17")).toBe("17.05.2026");
+  });
+
+  it("is idempotent — passing the wrong direction returns input unchanged", () => {
+    expect(displayToIso("2026-03-02")).toBe("2026-03-02");
+    expect(isoToDisplay("02.03.2026")).toBe("02.03.2026");
+  });
+
+  it("round-trips on every well-formed display date", () => {
+    expect(isoToDisplay(displayToIso("01.01.2026"))).toBe("01.01.2026");
+    expect(displayToIso(isoToDisplay("2026-12-31"))).toBe("2026-12-31");
+  });
+
+  it("trims whitespace", () => {
+    expect(displayToIso("  02.03.2026  ")).toBe("2026-03-02");
+    expect(isoToDisplay("  2026-03-02  ")).toBe("02.03.2026");
   });
 });
 

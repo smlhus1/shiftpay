@@ -2,7 +2,7 @@ import * as SQLite from "expo-sqlite";
 import { getRandomValues } from "expo-crypto";
 import { AppState, Platform, type AppStateStatus } from "react-native";
 import { shiftDurationHours } from "./calculations";
-import { dateToComparable } from "./dates";
+import { displayToIso, isoToDisplay } from "./dates";
 
 const DB_NAME = "shiftpay.db";
 
@@ -221,6 +221,37 @@ const migrations: Migration[] = [
       }
     },
   },
+  {
+    version: 7,
+    name: "migrate_dates_to_iso",
+    up: async (database) => {
+      // Storage migrates DD.MM.YYYY → ISO YYYY-MM-DD. ISO sorts lexically,
+      // so SQL `WHERE date >= ?` and `BETWEEN` finally behave correctly,
+      // and the previously needed filter-in-JS scans (getMonthSummary,
+      // getUpcomingShifts, getShiftsDueForConfirmation, getShiftsInDateRange,
+      // getDistinctMonthsWithShifts) become real indexed queries.
+      //
+      // Idempotent: only converts rows that match the DD.MM.YYYY shape;
+      // already-ISO rows pass the LIKE test and are left alone. This means
+      // re-running the migration on a partially-migrated DB (e.g. fail-mid
+      // and retry) is safe.
+      // GLOB pattern '[0-9][0-9].[0-9][0-9].[0-9][0-9][0-9][0-9]' matches
+      // DD.MM.YYYY. ISO rows fail the GLOB and pass through untouched.
+      await database.execAsync(`
+        UPDATE shifts
+           SET date = substr(date, 7, 4) || '-' || substr(date, 4, 2) || '-' || substr(date, 1, 2)
+         WHERE date GLOB '[0-9][0-9].[0-9][0-9].[0-9][0-9][0-9][0-9]';
+
+        UPDATE schedules
+           SET period_start = substr(period_start, 7, 4) || '-' || substr(period_start, 4, 2) || '-' || substr(period_start, 1, 2)
+         WHERE period_start GLOB '[0-9][0-9].[0-9][0-9].[0-9][0-9][0-9][0-9]';
+
+        UPDATE schedules
+           SET period_end = substr(period_end, 7, 4) || '-' || substr(period_end, 4, 2) || '-' || substr(period_end, 1, 2)
+         WHERE period_end GLOB '[0-9][0-9].[0-9][0-9].[0-9][0-9][0-9][0-9]';
+      `);
+    },
+  },
 ];
 
 async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
@@ -350,6 +381,25 @@ export function getDb(): SQLite.SQLiteDatabase | null {
   return db;
 }
 
+/**
+ * Close the active connection and clear the singleton. Test-only —
+ * production never wants to close while the app is running. Used by
+ * jest-setup.ts to release the SQLite file handle before unlinking
+ * the per-worker DB file between tests.
+ */
+export async function _closeDbForTests(): Promise<void> {
+  const handle = db;
+  db = null;
+  dbInitPromise = null;
+  if (handle) {
+    try {
+      await handle.closeAsync();
+    } catch {
+      // ignore — connection may already be torn down
+    }
+  }
+}
+
 export interface TariffRatesRow {
   id: number;
   base_rate: number;
@@ -420,10 +470,30 @@ function generateId(): string {
 
 const MAX_SHIFT_HOURS = 16;
 
+/**
+ * Maps a row as it sits in SQLite (ISO dates since v7) to the public
+ * shape used by the rest of the app (DD.MM.YYYY display dates).
+ *
+ * Single-source post-processor: every getAllAsync<ShiftRow>/<ScheduleRow>
+ * result must pipe through this so callers cannot accidentally see ISO.
+ */
+function mapShiftRow(row: ShiftRow): ShiftRow {
+  return { ...row, date: isoToDisplay(row.date) };
+}
+function mapScheduleRow(row: ScheduleRow): ScheduleRow {
+  return {
+    ...row,
+    period_start: isoToDisplay(row.period_start),
+    period_end: isoToDisplay(row.period_end),
+  };
+}
+
 function sortShiftsByDate(shifts: ShiftRow[]): ShiftRow[] {
   return shifts.sort((a, b) => {
-    const da = dateToComparable(a.date);
-    const db = dateToComparable(b.date);
+    // Display dates compare correctly day-then-month-then-year only after
+    // conversion, so go via display→iso for the compare key.
+    const da = displayToIso(a.date);
+    const db = displayToIso(b.date);
     if (da !== db) return da < db ? -1 : 1;
     return a.start_time < b.start_time ? -1 : a.start_time > b.start_time ? 1 : 0;
   });
@@ -525,7 +595,7 @@ export async function insertSchedule(
   await withDb(async (database) => {
     await database.runAsync(
       "INSERT INTO schedules (id, period_start, period_end, source, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-      [id, periodStart, periodEnd, source, createdAt, createdAt]
+      [id, displayToIso(periodStart), displayToIso(periodEnd), source, createdAt, createdAt]
     );
   });
   return id;
@@ -547,7 +617,7 @@ export async function insertShift(scheduleId: string, shift: ShiftInsert): Promi
       [
         id,
         scheduleId,
-        shift.date,
+        displayToIso(shift.date),
         shift.start_time,
         shift.end_time,
         shift.shift_type,
@@ -588,20 +658,38 @@ export async function insertScheduleWithShifts(
     await database.withExclusiveTransactionAsync(async (tx) => {
       await tx.runAsync(
         "INSERT INTO schedules (id, period_start, period_end, source, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-        [scheduleId, periodStart, periodEnd, source, createdAt, createdAt]
+        [
+          scheduleId,
+          displayToIso(periodStart),
+          displayToIso(periodEnd),
+          source,
+          createdAt,
+          createdAt,
+        ]
       );
       for (const s of validShifts) {
         const id = generateId();
         await tx.runAsync(
           "INSERT INTO shifts (id, schedule_id, date, start_time, end_time, shift_type, status, overtime_minutes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 'planned', 0, ?, ?)",
-          [id, scheduleId, s.date, s.start_time, s.end_time, s.shift_type, createdAt, createdAt]
+          [
+            id,
+            scheduleId,
+            displayToIso(s.date),
+            s.start_time,
+            s.end_time,
+            s.shift_type,
+            createdAt,
+            createdAt,
+          ]
         );
       }
     });
-    const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE schedule_id = ? AND deleted_at IS NULL",
-      [scheduleId]
-    );
+    const rows = (
+      await database.getAllAsync<ShiftRow>(
+        "SELECT * FROM shifts WHERE schedule_id = ? AND deleted_at IS NULL",
+        [scheduleId]
+      )
+    ).map(mapShiftRow);
     if (__DEV__) {
       console.log(
         "[ShiftPay] insertScheduleWithShifts: scheduleId=",
@@ -616,11 +704,13 @@ export async function insertScheduleWithShifts(
 
 export async function getShiftsBySchedule(scheduleId: string): Promise<ShiftRow[]> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE schedule_id = ? AND deleted_at IS NULL",
-      [scheduleId]
-    );
-    return sortShiftsByDate(rows);
+    const rows = (
+      await database.getAllAsync<ShiftRow>(
+        "SELECT * FROM shifts WHERE schedule_id = ? AND deleted_at IS NULL ORDER BY date ASC, start_time ASC",
+        [scheduleId]
+      )
+    ).map(mapShiftRow);
+    return rows;
   });
 }
 
@@ -628,22 +718,25 @@ export async function getShiftsBySchedule(scheduleId: string): Promise<ShiftRow[
 export async function getUpcomingShifts(limit = 10): Promise<ShiftRow[]> {
   return withDb(async (database) => {
     const now = new Date();
-    const today = formatDateForCompare(now);
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE status = 'planned' AND deleted_at IS NULL"
-    );
-    const filtered = rows.filter((r) => {
-      const d = dateToComparable(r.date);
-      const [h, m] = r.start_time.split(":").map(Number);
-      const shiftMinutes = (h ?? 0) * 60 + (m ?? 0);
-      return d > today || (d === today && shiftMinutes >= nowMinutes);
-    });
-    return sortShiftsByDate(filtered).slice(0, limit);
+    const todayIso = isoDateToday(now);
+    const nowTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    // Filter and sort in SQL — ISO storage means lexical compare = chronological.
+    const rows = (
+      await database.getAllAsync<ShiftRow>(
+        `SELECT * FROM shifts
+         WHERE status = 'planned'
+           AND deleted_at IS NULL
+           AND (date > ? OR (date = ? AND start_time >= ?))
+         ORDER BY date ASC, start_time ASC
+         LIMIT ?`,
+        [todayIso, todayIso, nowTime, limit]
+      )
+    ).map(mapShiftRow);
+    return rows;
   });
 }
 
-function formatDateForCompare(d: Date): string {
+function isoDateToday(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
@@ -653,24 +746,28 @@ function formatDateForCompare(d: Date): string {
 /** Vakter der end_time har passert og status fortsatt er planned. Sortert eldst→nyest. */
 export async function getShiftsDueForConfirmation(): Promise<ShiftRow[]> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE status = 'planned' AND deleted_at IS NULL"
-    );
     const now = new Date();
+    const todayIso = isoDateToday(now);
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    // SQL filters yesterday-or-earlier shifts cheaply; today-but-end-passed
+    // still needs JS for the +15 min grace window since SQL can't compare
+    // HH:MM minute arithmetic without a CTE.
+    const rows = (
+      await database.getAllAsync<ShiftRow>(
+        `SELECT * FROM shifts
+         WHERE status = 'planned' AND deleted_at IS NULL AND date <= ?
+         ORDER BY date ASC, end_time ASC`,
+        [todayIso]
+      )
+    ).map(mapShiftRow);
     const filtered = rows.filter((r) => {
-      const c = dateToComparable(r.date);
-      const today = formatDateForCompare(now);
+      const c = displayToIso(r.date);
       const [eh, em] = r.end_time.split(":").map(Number);
       const endMinutes = (eh ?? 0) * 60 + (em ?? 0);
-      return c < today || (c === today && endMinutes + 15 <= nowMinutes);
+      return c < todayIso || (c === todayIso && endMinutes + 15 <= nowMinutes);
     });
-    return filtered.sort((a, b) => {
-      const ca = dateToComparable(a.date);
-      const cb = dateToComparable(b.date);
-      if (ca !== cb) return ca < cb ? -1 : 1;
-      return a.end_time < b.end_time ? -1 : a.end_time > b.end_time ? 1 : 0;
-    });
+    // Already sorted by SQL ORDER BY (date asc, end_time asc).
+    return filtered;
   });
 }
 
@@ -714,38 +811,30 @@ export interface MonthSummary {
 
 export async function getDistinctMonthsWithShifts(): Promise<{ year: number; month: number }[]> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<{ date: string }>(
-      "SELECT DISTINCT date FROM shifts WHERE deleted_at IS NULL"
+    // ISO storage = the first 7 chars are YYYY-MM. SUBSTR + DISTINCT does
+    // the work in SQL and the JS post-processing is just split + parseInt.
+    const rows = await database.getAllAsync<{ ym: string }>(
+      "SELECT DISTINCT substr(date, 1, 7) AS ym FROM shifts WHERE deleted_at IS NULL ORDER BY ym DESC"
     );
-    const seen = new Set<string>();
-    for (const r of rows) {
-      const parts = r.date.split(".");
-      const m = parts[1];
-      const y = parts[2];
-      if (m && y) seen.add(`${y}-${m.padStart(2, "0")}`);
-    }
-    return Array.from(seen)
-      .map((k) => {
-        const [y, m] = k.split("-").map(Number);
-        return { year: y ?? 0, month: m ?? 0 };
-      })
-      .sort((a, b) => b.year - a.year || b.month - a.month);
+    return rows.map((r) => {
+      const [y, m] = r.ym.split("-").map(Number);
+      return { year: y ?? 0, month: m ?? 0 };
+    });
   });
 }
 
 export async function getMonthSummary(year: number, month: number): Promise<MonthSummary> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE deleted_at IS NULL"
-    );
-    const shifts = sortShiftsByDate(
-      rows.filter((r) => {
-        const parts = r.date.split(".");
-        const m = Number(parts[1]);
-        const y = Number(parts[2]);
-        return y === year && m === month;
-      })
-    );
+    // SQL filter on the first-7 ISO prefix — picks just this month's rows
+    // server-side instead of pulling the entire table into JS.
+    const ym = `${year}-${String(month).padStart(2, "0")}`;
+    const rows = (
+      await database.getAllAsync<ShiftRow>(
+        "SELECT * FROM shifts WHERE deleted_at IS NULL AND substr(date, 1, 7) = ? ORDER BY date ASC, start_time ASC",
+        [ym]
+      )
+    ).map(mapShiftRow);
+    const shifts = rows;
     let plannedHours = 0;
     let actualHours = 0;
     let overtimeHours = 0;
@@ -782,9 +871,11 @@ export async function getMonthSummary(year: number, month: number): Promise<Mont
 
 export async function getAllSchedules(): Promise<ScheduleRow[]> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<ScheduleRow>(
-      "SELECT * FROM schedules WHERE deleted_at IS NULL ORDER BY created_at DESC"
-    );
+    const rows = (
+      await database.getAllAsync<ScheduleRow>(
+        "SELECT * FROM schedules WHERE deleted_at IS NULL ORDER BY created_at DESC"
+      )
+    ).map(mapScheduleRow);
     return rows;
   });
 }
@@ -795,7 +886,7 @@ export async function getScheduleById(id: string): Promise<ScheduleRow | null> {
       "SELECT * FROM schedules WHERE id = ? AND deleted_at IS NULL",
       [id]
     );
-    return rows.length > 0 ? rows[0] : null;
+    return rows.length > 0 ? mapScheduleRow(rows[0]!) : null;
   });
 }
 
@@ -852,7 +943,7 @@ export async function updateShift(
     const values: (string | number)[] = [];
     if (updates.date !== undefined) {
       sets.push("date = ?");
-      values.push(updates.date);
+      values.push(displayToIso(updates.date));
     }
     if (updates.start_time !== undefined) {
       sets.push("start_time = ?");
@@ -903,11 +994,10 @@ export async function getShiftById(id: string): Promise<ShiftRow | null> {
       "SELECT * FROM shifts WHERE id = ? AND deleted_at IS NULL",
       [id]
     );
-    return rows.length > 0 ? rows[0] : null;
+    return rows.length > 0 ? mapShiftRow(rows[0]!) : null;
   });
 }
 
-/** All shifts in date range (inclusive). date format DD.MM.YYYY. */
 /** Returns a Set of "date|start_time|end_time" keys for all existing shifts — used for deduplication on import. */
 export async function getExistingShiftKeys(): Promise<Set<string>> {
   const rows = await withDb((database) =>
@@ -915,7 +1005,9 @@ export async function getExistingShiftKeys(): Promise<Set<string>> {
       "SELECT date, start_time, end_time FROM shifts WHERE deleted_at IS NULL"
     )
   );
-  return new Set(rows.map((r) => `${r.date}|${r.start_time}|${r.end_time}`));
+  // Keys use the public DD.MM.YYYY shape so callers comparing against shift
+  // input (also DD.MM.YYYY) match correctly.
+  return new Set(rows.map((r) => `${isoToDisplay(r.date)}|${r.start_time}|${r.end_time}`));
 }
 
 export async function getMonthlyActualPay(year: number, month: number): Promise<number | null> {
@@ -948,15 +1040,15 @@ export async function setMonthlyActualPay(
 }
 
 export async function getShiftsInDateRange(fromDate: string, toDate: string): Promise<ShiftRow[]> {
-  const rows = await withDb((database) =>
-    database.getAllAsync<ShiftRow>("SELECT * FROM shifts WHERE deleted_at IS NULL")
-  );
-  return sortShiftsByDate(
-    rows.filter((r) => {
-      const c = dateToComparable(r.date);
-      const from = dateToComparable(fromDate);
-      const to = dateToComparable(toDate);
-      return c >= from && c <= to;
-    })
-  );
+  const fromIso = displayToIso(fromDate);
+  const toIso = displayToIso(toDate);
+  const rows = (
+    await withDb((database) =>
+      database.getAllAsync<ShiftRow>(
+        "SELECT * FROM shifts WHERE deleted_at IS NULL AND date BETWEEN ? AND ? ORDER BY date ASC, start_time ASC",
+        [fromIso, toIso]
+      )
+    )
+  ).map(mapShiftRow);
+  return rows;
 }
