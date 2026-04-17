@@ -3,6 +3,7 @@ import { getRandomValues } from "expo-crypto";
 import { AppState, Platform, type AppStateStatus } from "react-native";
 import { shiftDurationHours } from "./calculations";
 import { displayToIso, isoToDisplay } from "./dates";
+import { kdb, runQuery } from "./kdb";
 
 const DB_NAME = "shiftpay.db";
 
@@ -704,12 +705,17 @@ export async function insertScheduleWithShifts(
 
 export async function getShiftsBySchedule(scheduleId: string): Promise<ShiftRow[]> {
   return withDb(async (database) => {
-    const rows = (
-      await database.getAllAsync<ShiftRow>(
-        "SELECT * FROM shifts WHERE schedule_id = ? AND deleted_at IS NULL ORDER BY date ASC, start_time ASC",
-        [scheduleId]
-      )
-    ).map(mapShiftRow);
+    // Kysely-typed: column-name typos and accidental cross-table references
+    // become TS errors at this call site. Compiled to SQL and handed to
+    // expo-sqlite (no runtime overhead beyond a function call).
+    const query = kdb
+      .selectFrom("shifts")
+      .selectAll()
+      .where("schedule_id", "=", scheduleId)
+      .where("deleted_at", "is", null)
+      .orderBy("date", "asc")
+      .orderBy("start_time", "asc");
+    const rows = (await runQuery<ShiftRow>(database, query)).map(mapShiftRow);
     return rows;
   });
 }
