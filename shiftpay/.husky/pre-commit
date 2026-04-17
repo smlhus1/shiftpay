@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+# Pre-commit hook — runs lint-staged on staged files in shiftpay/.
+# `git` invokes this from the repo root (vibe_games/), so cd in.
+cd "$(dirname "$0")/.." || exit 1
+npx lint-staged
