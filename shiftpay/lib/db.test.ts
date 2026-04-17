@@ -130,6 +130,64 @@ describe("db (via expo-sqlite-mock)", () => {
     expect(fetched[0].deleted_at).toBeNull();
   });
 
+  it("stores dates as ISO internally but returns DD.MM.YYYY at the API boundary", async () => {
+    const { initDb, insertScheduleWithShifts, getShiftsBySchedule } =
+      require("./db") as typeof DbModule;
+    const db = await initDb();
+    const { scheduleId } = await insertScheduleWithShifts("01.03.2026", "31.03.2026", "manual", [
+      { date: "02.03.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ]);
+
+    // Public API gives DD.MM.YYYY back.
+    const fetched = await getShiftsBySchedule(scheduleId);
+    expect(fetched[0]?.date).toBe("02.03.2026");
+
+    // Direct read confirms ISO on disk.
+    const raw = await db.getFirstAsync<{ date: string; period_start: string }>(
+      `SELECT shifts.date AS date, schedules.period_start AS period_start
+         FROM shifts JOIN schedules ON shifts.schedule_id = schedules.id
+        WHERE shifts.schedule_id = ?`,
+      [scheduleId]
+    );
+    expect(raw?.date).toBe("2026-03-02");
+    expect(raw?.period_start).toBe("2026-03-01");
+  });
+
+  it("getDistinctMonthsWithShifts returns sorted year/month pairs from SQL aggregate", async () => {
+    const { initDb, insertScheduleWithShifts, getDistinctMonthsWithShifts } =
+      require("./db") as typeof DbModule;
+    await initDb();
+    await insertScheduleWithShifts("01.02.2026", "28.02.2026", "manual", [
+      { date: "10.02.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ]);
+    await insertScheduleWithShifts("01.03.2026", "31.03.2026", "manual", [
+      { date: "10.03.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+      { date: "20.03.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ]);
+
+    const months = await getDistinctMonthsWithShifts();
+    // Newest first (per SQL ORDER BY ym DESC)
+    expect(months).toEqual([
+      { year: 2026, month: 3 },
+      { year: 2026, month: 2 },
+    ]);
+  });
+
+  it("getMonthSummary filters via SQL prefix and returns shifts in that month only", async () => {
+    const { initDb, insertScheduleWithShifts, getMonthSummary } =
+      require("./db") as typeof DbModule;
+    await initDb();
+    await insertScheduleWithShifts("01.02.2026", "31.03.2026", "manual", [
+      { date: "10.02.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+      { date: "10.03.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+      { date: "11.03.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ]);
+
+    const march = await getMonthSummary(2026, 3);
+    expect(march.plannedShifts).toBe(2);
+    expect(march.shifts.every((s) => s.date.endsWith(".03.2026"))).toBe(true);
+  });
+
   it("deleteSchedule tombstones rather than removing rows", async () => {
     const {
       initDb,

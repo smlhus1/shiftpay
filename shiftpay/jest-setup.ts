@@ -79,9 +79,20 @@ try {
 process.env.EXPO_SQLITE_MOCK = dbPath;
 
 // Wipe the file between tests so jest.resetModules + re-import gives a
-// truly fresh schema. beforeEach in db.test.ts does jest.resetModules,
-// but the underlying SQLite file survives unless we delete it here.
-beforeEach(() => {
+// truly fresh schema. The singleton in lib/db.ts holds an open SQLite
+// handle that prevents Windows fs.unlinkSync from deleting the file
+// (POSIX would let it through, but mixing platforms is fragile). Close
+// the handle first, then unlink, then resetModules in the test runs
+// initDb against an empty file.
+beforeEach(async () => {
+  try {
+    const dbModule = require("./lib/db");
+    if (typeof dbModule._closeDbForTests === "function") {
+      await dbModule._closeDbForTests();
+    }
+  } catch {
+    // module not loaded yet — fine
+  }
   try {
     fs.unlinkSync(dbPath);
   } catch {
