@@ -1,0 +1,127 @@
+{
+  "capturedAt": "2026-04-13",
+  "tool": "claude-in-chrome (live session sniff)",
+  "context": {
+    "developerId": "7413483010949790813",
+    "apps": [
+      {
+        "name": "RACK",
+        "packageName": "com.rack.app",
+        "appId": "4972280428520410998",
+        "state": "closed testing",
+        "reviews": 0
+      }
+    ]
+  },
+  "auth": {
+    "type": "SAPISIDHASH",
+    "origin": "https://play.google.com",
+    "algorithm": "SHA1(`${timestampMs} ${sapisid_cookie} ${origin}`)",
+    "headerFormat": "SAPISIDHASH {timestampMs}_{sha1hex}",
+    "apiKey": "AIzaSyBAha_rcoO_aGsmiR5fWbNfdOjqT0gXwbk",
+    "cookiesRequired": [
+      "SAPISID",
+      "SID",
+      "HSID",
+      "SSID",
+      "APISID",
+      "__Secure-1PSID",
+      "__Secure-3PSID"
+    ],
+    "additionalHeaders": {
+      "X-Goog-AuthUser": "0",
+      "X-Play-Console-Session-Id": "8-hex uppercase, generated client-side per page load",
+      "Content-Type": "application/json+protobuf"
+    },
+    "transportQuirks": [
+      "Headers may be URL-encoded in $httpHeaders query param (CRLF-separated Key:Value)",
+      "HTTP method can be spoofed via $httpMethod=PATCH|DELETE query param"
+    ]
+  },
+  "domains": {
+    "platform": "playconsoleplatform-pa.clients6.google.com",
+    "apps": "playconsoleapps-pa.clients6.google.com",
+    "ratings": "playconsoleratings-pa.clients6.google.com"
+  },
+  "endpoints": [
+    {
+      "name": "listReleaseSummaries",
+      "method": "GET",
+      "path": "/v1/developers/{devId}/apps/{appId}/tracks/{trackId}/releases:listSummaries",
+      "query": { "view": "RELEASE_SUMMARY_VIEW_FULL" },
+      "domain": "apps",
+      "verified": true
+    },
+    {
+      "name": "getRatingSummary",
+      "method": "GET",
+      "path": "/v1/developers/{devId}/apps/{appId}/ratingSummary",
+      "domain": "ratings",
+      "verified": true
+    },
+    {
+      "name": "getCustomerSupportContact",
+      "method": "GET",
+      "path": "/v1/developers/{devId}/customersupportcontact",
+      "domain": "apps",
+      "verified": true
+    },
+    {
+      "name": "listEmailLists",
+      "method": "GET",
+      "path": "/v1/developers/{devId}/emaillists",
+      "domain": "apps",
+      "verified": true,
+      "notes": "Used for tester management"
+    },
+    {
+      "name": "updateUserSettings",
+      "method": "POST (with $httpMethod=PATCH)",
+      "path": "/v1/developers/{devId}/usersettings",
+      "query": { "updateMask.paths": "page_header_statuses" },
+      "domain": "platform",
+      "verified": true
+    },
+    {
+      "name": "featureEvents",
+      "method": "POST",
+      "path": "/v1/developers/featureEvents",
+      "domain": "platform",
+      "verified": true,
+      "notes": "Telemetry only — ignore"
+    }
+  ],
+  "endpointsToVerify": [
+    {
+      "name": "listReviews",
+      "pattern": "/v1/developers/{devId}/apps/{appId}/reviews:list or :search",
+      "notes": "Not triggered — RACK has 0 reviews"
+    },
+    {
+      "name": "replyToReview",
+      "pattern": "/v1/developers/{devId}/apps/{appId}/reviews/{reviewId}:reply",
+      "method": "POST"
+    },
+    {
+      "name": "uploadBundle",
+      "pattern": "Likely on upload.googleapis.com with resumable upload protocol",
+      "notes": "Needs active upload session to capture"
+    },
+    {
+      "name": "createRelease",
+      "pattern": "POST /v1/developers/{devId}/apps/{appId}/tracks/{trackId}/releases"
+    },
+    {
+      "name": "promoteRelease",
+      "pattern": "POST .../tracks/{toTrackId}/releases:promoteFrom or similar"
+    }
+  ],
+  "knownIds": {
+    "RACK": {
+      "appId": "4972280428520410998",
+      "tracks": {
+        "internal-testing": "4701452456607240251"
+      }
+    }
+  }
+}
