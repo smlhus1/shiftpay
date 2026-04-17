@@ -114,4 +114,52 @@ describe("db (via expo-sqlite-mock)", () => {
     expect(fetched).toHaveLength(2);
     expect(fetched[0].status).toBe("planned");
   });
+
+  it("populates updated_at on insert", async () => {
+    const { initDb, insertScheduleWithShifts, getShiftsBySchedule } = require("./db");
+    await initDb();
+    const { scheduleId, shifts } = await insertScheduleWithShifts(
+      "01.03.2026",
+      "31.03.2026",
+      "manual",
+      [{ date: "02.03.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" }]
+    );
+    const fetched = await getShiftsBySchedule(scheduleId);
+    expect(fetched[0].updated_at).toBe(shifts[0].updated_at);
+    expect(fetched[0].updated_at.length).toBeGreaterThan(0);
+    expect(fetched[0].deleted_at).toBeNull();
+  });
+
+  it("deleteSchedule tombstones rather than removing rows", async () => {
+    const {
+      initDb,
+      insertScheduleWithShifts,
+      deleteSchedule,
+      getShiftsBySchedule,
+      getScheduleById,
+    } = require("./db") as typeof DbModule;
+    const db = await initDb();
+    const { scheduleId } = await insertScheduleWithShifts("01.03.2026", "31.03.2026", "manual", [
+      { date: "02.03.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ]);
+
+    await deleteSchedule(scheduleId);
+
+    // Live API hides them
+    expect(await getScheduleById(scheduleId)).toBeNull();
+    expect(await getShiftsBySchedule(scheduleId)).toHaveLength(0);
+
+    // But the rows still exist with deleted_at set — direct read confirms.
+    const ghostSchedule = await db.getFirstAsync<{ id: string; deleted_at: string | null }>(
+      "SELECT id, deleted_at FROM schedules WHERE id = ?",
+      [scheduleId]
+    );
+    expect(ghostSchedule?.deleted_at).not.toBeNull();
+    const ghostShifts = await db.getAllAsync<{ deleted_at: string | null }>(
+      "SELECT deleted_at FROM shifts WHERE schedule_id = ?",
+      [scheduleId]
+    );
+    expect(ghostShifts).toHaveLength(1);
+    expect(ghostShifts[0]?.deleted_at).not.toBeNull();
+  });
 });
