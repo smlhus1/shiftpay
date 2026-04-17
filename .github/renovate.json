@@ -1,0 +1,51 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":timezone(Europe/Oslo)"
+  ],
+  "description": "Renovate configuration for ShiftPay. Conservative by design — every PR requires a human review before merge. Auto-merge is NOT enabled and is the #1 supply-chain attack vector per the Pass 3 security research.",
+
+  "minimumReleaseAge": "7 days",
+  "rangeStrategy": "bump",
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 5,
+  "schedule": ["before 4am on Monday"],
+  "labels": ["deps"],
+  "assignees": ["smlhus1"],
+
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "labels": ["deps", "security"],
+    "minimumReleaseAge": "0 days",
+    "schedule": []
+  },
+
+  "packageRules": [
+    {
+      "description": "Expo SDK and core React Native are pinned together — only Stian decides when to bump these",
+      "matchPackagePatterns": ["^expo$", "^react-native$", "^react$"],
+      "enabled": false
+    },
+    {
+      "description": "TypeScript stays within current major; wider bumps land with a dedicated PR",
+      "matchPackageNames": ["typescript"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Dev-only deps get grouped to keep PR volume manageable",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "groupName": "devDependencies (patch/minor)",
+      "automerge": false
+    },
+    {
+      "description": "Bundle the @expo-google-fonts-* packages since they version together",
+      "matchPackagePatterns": ["^@expo-google-fonts/"],
+      "groupName": "Google Fonts packages"
+    }
+  ]
+}
