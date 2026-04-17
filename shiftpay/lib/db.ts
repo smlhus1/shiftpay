@@ -463,8 +463,9 @@ const TARIFF_ID = 1;
 function generateId(): string {
   const bytes = new Uint8Array(16);
   getRandomValues(bytes);
-  bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
-  bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 1
+  // Explicit ! assertions: Uint8Array of size 16 always has these indexes.
+  bytes[6] = (bytes[6]! & 0x0f) | 0x40; // version 4
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80; // variant 1
   const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
@@ -508,7 +509,7 @@ export async function getTariffRates(): Promise<TariffRatesRow> {
       "SELECT * FROM tariff_rates WHERE id = ?",
       [TARIFF_ID]
     );
-    if (rows.length > 0) {
+    if (rows[0]) {
       return rows[0];
     }
     const now = new Date().toISOString();
@@ -1022,7 +1023,7 @@ export async function getMonthlyActualPay(year: number, month: number): Promise<
       "SELECT actual_pay FROM monthly_pay WHERE year = ? AND month = ?",
       [year, month]
     );
-    return rows.length > 0 ? rows[0].actual_pay : null;
+    return rows[0]?.actual_pay ?? null;
   });
 }
 

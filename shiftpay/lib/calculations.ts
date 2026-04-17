@@ -23,17 +23,31 @@ export interface TariffRates {
   overtime_supplement: number;
 }
 
-/** Parse "HH:MM" to minutes since midnight. */
+/**
+ * Parse "HH:MM" to minutes since midnight.
+ *
+ * `??` only catches null/undefined — `Number("abc")` is NaN, not
+ * undefined, so malformed input used to leak NaN downstream. Guard with
+ * Number.isFinite so callers get 0 for garbage (logged upstream) rather
+ * than silently propagating NaN into pay calculations.
+ */
 function parseTimeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
-  return (h ?? 0) * 60 + (m ?? 0);
+  const hours = Number.isFinite(h) ? (h as number) : 0;
+  const minutes = Number.isFinite(m) ? (m as number) : 0;
+  return hours * 60 + minutes;
 }
 
-/** Duration in hours; handles overnight (e.g. 22:00–06:00 = 8h). */
+/**
+ * Duration in hours. Handles overnight (22:00→06:00 = 8h). Equal start
+ * and end collapse to 0 — a 24-hour shift is not a real use case and
+ * was an artefact of the old `end <= start` overnight-wrap rule.
+ */
 export function shiftDurationHours(startTime: string, endTime: string): number {
-  let start = parseTimeToMinutes(startTime);
+  const start = parseTimeToMinutes(startTime);
   let end = parseTimeToMinutes(endTime);
-  if (end <= start) {
+  if (end === start) return 0;
+  if (end < start) {
     end += 24 * 60;
   }
   return (end - start) / 60;

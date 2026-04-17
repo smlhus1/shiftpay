@@ -12,14 +12,26 @@
  * everywhere.
  */
 
-/** DD.MM.YYYY → Date or null if invalid. */
+/**
+ * DD.MM.YYYY → Date or null if invalid.
+ *
+ * Round-trip validation rejects rollover dates: `new Date(2026, 1, 31)`
+ * silently becomes 03.03.2026, which the old guard (`!Number.isNaN`) let
+ * through. Now we construct the Date, then read back getDate/getMonth/
+ * getFullYear — if any component differs from the input, the date was
+ * bogus. 31.02.2026 / 30.02.2026 / 29.02.2025 (non-leap) etc. all fail.
+ */
 export function parseDateSafe(dateStr: string): Date | null {
   const parts = dateStr.trim().split(".");
   if (parts.length !== 3) return null;
   const [d, m, y] = parts.map(Number);
+  if (d === undefined || m === undefined || y === undefined) return null;
   if (!(d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 2000 && y <= 2100)) return null;
   const date = new Date(y, m - 1, d);
   if (Number.isNaN(date.getTime())) return null;
+  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
+    return null;
+  }
   return date;
 }
 
@@ -56,14 +68,21 @@ export function isoToDisplay(dateStr: string): string {
   return `${d}.${m}.${y}`;
 }
 
-/** DD.MM.YYYY + HH:MM → Date with time, or null. */
+/**
+ * DD.MM.YYYY + HH:MM → Date with time, or null.
+ *
+ * `Number.isFinite` catches the NaN-from-"ab" case the old `h == null`
+ * guard missed — `Number("ab")` is NaN, not undefined, so nullish checks
+ * silently passed it through and the function returned a `Date{NaN}`.
+ */
 export function parseDateTimeSafe(dateStr: string, timeStr: string): Date | null {
   const date = parseDateSafe(dateStr);
   if (!date) return null;
   const parts = timeStr.trim().split(":");
   if (parts.length < 2) return null;
   const [h, min] = parts.map(Number);
-  if (h == null || min == null || h < 0 || h > 23 || min < 0 || min > 59) return null;
-  date.setHours(h, min, 0, 0);
+  if (!Number.isFinite(h) || !Number.isFinite(min)) return null;
+  if (h! < 0 || h! > 23 || min! < 0 || min! > 59) return null;
+  date.setHours(h!, min!, 0, 0);
   return date;
 }
