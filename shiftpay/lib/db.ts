@@ -178,6 +178,49 @@ const migrations: Migration[] = [
       await database.execAsync("DROP TABLE IF EXISTS timesheets");
     },
   },
+  {
+    version: 6,
+    name: "add_updated_at_and_tombstones",
+    up: async (database) => {
+      // shifts and schedules get soft-delete + change-tracking columns.
+      // updated_at backfills from created_at so existing rows are not
+      // accidentally "older than they actually are" for any future sync.
+      // deleted_at is NULL for live rows, ISO timestamp for tombstoned.
+      const shiftCols = await database.getAllAsync<{ name: string }>("PRAGMA table_info(shifts)");
+      if (!shiftCols.some((c) => c.name === "updated_at")) {
+        await database.execAsync(
+          "ALTER TABLE shifts ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''"
+        );
+        await database.execAsync("UPDATE shifts SET updated_at = created_at WHERE updated_at = ''");
+      }
+      if (!shiftCols.some((c) => c.name === "deleted_at")) {
+        await database.execAsync("ALTER TABLE shifts ADD COLUMN deleted_at TEXT");
+        // Index speeds up the WHERE deleted_at IS NULL filter on every
+        // shift read. Negligible cost on insert, big payoff on read.
+        await database.execAsync(
+          "CREATE INDEX IF NOT EXISTS idx_shifts_deleted_at ON shifts(deleted_at)"
+        );
+      }
+
+      const schedCols = await database.getAllAsync<{ name: string }>(
+        "PRAGMA table_info(schedules)"
+      );
+      if (!schedCols.some((c) => c.name === "updated_at")) {
+        await database.execAsync(
+          "ALTER TABLE schedules ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''"
+        );
+        await database.execAsync(
+          "UPDATE schedules SET updated_at = created_at WHERE updated_at = ''"
+        );
+      }
+      if (!schedCols.some((c) => c.name === "deleted_at")) {
+        await database.execAsync("ALTER TABLE schedules ADD COLUMN deleted_at TEXT");
+        await database.execAsync(
+          "CREATE INDEX IF NOT EXISTS idx_schedules_deleted_at ON schedules(deleted_at)"
+        );
+      }
+    },
+  },
 ];
 
 async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
@@ -326,6 +369,9 @@ export interface ScheduleRow {
   period_end: string;
   source: string;
   created_at: string;
+  updated_at: string;
+  /** ISO timestamp when the row was tombstoned. NULL = live row. */
+  deleted_at: string | null;
 }
 
 export type ShiftStatus = "planned" | "completed" | "missed" | "overtime";
@@ -345,6 +391,9 @@ export interface ShiftRow {
   overtime_minutes: number;
   confirmed_at: string | null;
   created_at: string;
+  updated_at: string;
+  /** ISO timestamp when the row was tombstoned. NULL = live row. */
+  deleted_at: string | null;
 }
 
 /** Legacy: kept for migration only. Prefer ScheduleRow + getShiftsBySchedule. */
@@ -475,8 +524,8 @@ export async function insertSchedule(
   const createdAt = new Date().toISOString();
   await withDb(async (database) => {
     await database.runAsync(
-      "INSERT INTO schedules (id, period_start, period_end, source, created_at) VALUES (?, ?, ?, ?, ?)",
-      [id, periodStart, periodEnd, source, createdAt]
+      "INSERT INTO schedules (id, period_start, period_end, source, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+      [id, periodStart, periodEnd, source, createdAt, createdAt]
     );
   });
   return id;
@@ -494,8 +543,17 @@ export async function insertShift(scheduleId: string, shift: ShiftInsert): Promi
   const createdAt = new Date().toISOString();
   await withDb(async (database) => {
     await database.runAsync(
-      "INSERT INTO shifts (id, schedule_id, date, start_time, end_time, shift_type, status, overtime_minutes, created_at) VALUES (?, ?, ?, ?, ?, ?, 'planned', 0, ?)",
-      [id, scheduleId, shift.date, shift.start_time, shift.end_time, shift.shift_type, createdAt]
+      "INSERT INTO shifts (id, schedule_id, date, start_time, end_time, shift_type, status, overtime_minutes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 'planned', 0, ?, ?)",
+      [
+        id,
+        scheduleId,
+        shift.date,
+        shift.start_time,
+        shift.end_time,
+        shift.shift_type,
+        createdAt,
+        createdAt,
+      ]
     );
   });
   return id;
@@ -529,19 +587,19 @@ export async function insertScheduleWithShifts(
     // vs withExclusiveTransactionAsync" for the Expo footgun this avoids.
     await database.withExclusiveTransactionAsync(async (tx) => {
       await tx.runAsync(
-        "INSERT INTO schedules (id, period_start, period_end, source, created_at) VALUES (?, ?, ?, ?, ?)",
-        [scheduleId, periodStart, periodEnd, source, createdAt]
+        "INSERT INTO schedules (id, period_start, period_end, source, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        [scheduleId, periodStart, periodEnd, source, createdAt, createdAt]
       );
       for (const s of validShifts) {
         const id = generateId();
         await tx.runAsync(
-          "INSERT INTO shifts (id, schedule_id, date, start_time, end_time, shift_type, status, overtime_minutes, created_at) VALUES (?, ?, ?, ?, ?, ?, 'planned', 0, ?)",
-          [id, scheduleId, s.date, s.start_time, s.end_time, s.shift_type, createdAt]
+          "INSERT INTO shifts (id, schedule_id, date, start_time, end_time, shift_type, status, overtime_minutes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 'planned', 0, ?, ?)",
+          [id, scheduleId, s.date, s.start_time, s.end_time, s.shift_type, createdAt, createdAt]
         );
       }
     });
     const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE schedule_id = ?",
+      "SELECT * FROM shifts WHERE schedule_id = ? AND deleted_at IS NULL",
       [scheduleId]
     );
     if (__DEV__) {
@@ -559,7 +617,7 @@ export async function insertScheduleWithShifts(
 export async function getShiftsBySchedule(scheduleId: string): Promise<ShiftRow[]> {
   return withDb(async (database) => {
     const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE schedule_id = ?",
+      "SELECT * FROM shifts WHERE schedule_id = ? AND deleted_at IS NULL",
       [scheduleId]
     );
     return sortShiftsByDate(rows);
@@ -573,7 +631,7 @@ export async function getUpcomingShifts(limit = 10): Promise<ShiftRow[]> {
     const today = formatDateForCompare(now);
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
     const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE status = 'planned'"
+      "SELECT * FROM shifts WHERE status = 'planned' AND deleted_at IS NULL"
     );
     const filtered = rows.filter((r) => {
       const d = dateToComparable(r.date);
@@ -596,7 +654,7 @@ function formatDateForCompare(d: Date): string {
 export async function getShiftsDueForConfirmation(): Promise<ShiftRow[]> {
   return withDb(async (database) => {
     const rows = await database.getAllAsync<ShiftRow>(
-      "SELECT * FROM shifts WHERE status = 'planned'"
+      "SELECT * FROM shifts WHERE status = 'planned' AND deleted_at IS NULL"
     );
     const now = new Date();
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
@@ -626,8 +684,16 @@ export async function confirmShift(
   const confirmedAt = new Date().toISOString();
   await withDb(async (database) => {
     await database.runAsync(
-      "UPDATE shifts SET status = ?, overtime_minutes = ?, actual_start = ?, actual_end = ?, confirmed_at = ? WHERE id = ?",
-      [status, overtimeMinutes ?? 0, actualStart ?? null, actualEnd ?? null, confirmedAt, shiftId]
+      "UPDATE shifts SET status = ?, overtime_minutes = ?, actual_start = ?, actual_end = ?, confirmed_at = ?, updated_at = ? WHERE id = ?",
+      [
+        status,
+        overtimeMinutes ?? 0,
+        actualStart ?? null,
+        actualEnd ?? null,
+        confirmedAt,
+        confirmedAt,
+        shiftId,
+      ]
     );
   });
 }
@@ -648,7 +714,9 @@ export interface MonthSummary {
 
 export async function getDistinctMonthsWithShifts(): Promise<{ year: number; month: number }[]> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<{ date: string }>("SELECT DISTINCT date FROM shifts");
+    const rows = await database.getAllAsync<{ date: string }>(
+      "SELECT DISTINCT date FROM shifts WHERE deleted_at IS NULL"
+    );
     const seen = new Set<string>();
     for (const r of rows) {
       const parts = r.date.split(".");
@@ -667,7 +735,9 @@ export async function getDistinctMonthsWithShifts(): Promise<{ year: number; mon
 
 export async function getMonthSummary(year: number, month: number): Promise<MonthSummary> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<ShiftRow>("SELECT * FROM shifts");
+    const rows = await database.getAllAsync<ShiftRow>(
+      "SELECT * FROM shifts WHERE deleted_at IS NULL"
+    );
     const shifts = sortShiftsByDate(
       rows.filter((r) => {
         const parts = r.date.split(".");
@@ -713,7 +783,7 @@ export async function getMonthSummary(year: number, month: number): Promise<Mont
 export async function getAllSchedules(): Promise<ScheduleRow[]> {
   return withDb(async (database) => {
     const rows = await database.getAllAsync<ScheduleRow>(
-      "SELECT * FROM schedules ORDER BY created_at DESC"
+      "SELECT * FROM schedules WHERE deleted_at IS NULL ORDER BY created_at DESC"
     );
     return rows;
   });
@@ -721,25 +791,42 @@ export async function getAllSchedules(): Promise<ScheduleRow[]> {
 
 export async function getScheduleById(id: string): Promise<ScheduleRow | null> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<ScheduleRow>("SELECT * FROM schedules WHERE id = ?", [
-      id,
-    ]);
+    const rows = await database.getAllAsync<ScheduleRow>(
+      "SELECT * FROM schedules WHERE id = ? AND deleted_at IS NULL",
+      [id]
+    );
     return rows.length > 0 ? rows[0] : null;
   });
 }
 
+/**
+ * Soft-deletes the schedule and its shifts. Sets `deleted_at = now()` instead
+ * of removing rows, so v2 cloud sync can replay deletes and the in-session
+ * "undo delete" stays cheap. Hard purge is a future maintenance operation.
+ */
 export async function deleteSchedule(id: string): Promise<void> {
+  const now = new Date().toISOString();
   await withDb(async (database) => {
     await database.withExclusiveTransactionAsync(async (tx) => {
-      await tx.runAsync("DELETE FROM shifts WHERE schedule_id = ?", [id]);
-      await tx.runAsync("DELETE FROM schedules WHERE id = ?", [id]);
+      await tx.runAsync(
+        "UPDATE shifts SET deleted_at = ?, updated_at = ? WHERE schedule_id = ? AND deleted_at IS NULL",
+        [now, now, id]
+      );
+      await tx.runAsync(
+        "UPDATE schedules SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL",
+        [now, now, id]
+      );
     });
   });
 }
 
 export async function deleteShift(shiftId: string): Promise<void> {
+  const now = new Date().toISOString();
   await withDb(async (database) => {
-    await database.runAsync("DELETE FROM shifts WHERE id = ?", [shiftId]);
+    await database.runAsync(
+      "UPDATE shifts SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL",
+      [now, now, shiftId]
+    );
   });
 }
 
@@ -780,29 +867,42 @@ export async function updateShift(
       values.push(updates.shift_type);
     }
     if (sets.length === 0) return;
+    sets.push("updated_at = ?");
+    values.push(new Date().toISOString());
     values.push(shiftId);
-    await database.runAsync(`UPDATE shifts SET ${sets.join(", ")} WHERE id = ?`, values);
+    await database.runAsync(
+      `UPDATE shifts SET ${sets.join(", ")} WHERE id = ? AND deleted_at IS NULL`,
+      values
+    );
   });
 }
 
 export async function updateShiftPayType(shiftId: string, payType: PayType): Promise<void> {
+  const now = new Date().toISOString();
   await withDb(async (database) => {
-    await database.runAsync("UPDATE shifts SET pay_type = ? WHERE id = ?", [payType, shiftId]);
+    await database.runAsync(
+      "UPDATE shifts SET pay_type = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL",
+      [payType, now, shiftId]
+    );
   });
 }
 
 export async function bulkUpdatePayType(scheduleId: string, payType: PayType): Promise<void> {
+  const now = new Date().toISOString();
   await withDb(async (database) => {
-    await database.runAsync("UPDATE shifts SET pay_type = ? WHERE schedule_id = ?", [
-      payType,
-      scheduleId,
-    ]);
+    await database.runAsync(
+      "UPDATE shifts SET pay_type = ?, updated_at = ? WHERE schedule_id = ? AND deleted_at IS NULL",
+      [payType, now, scheduleId]
+    );
   });
 }
 
 export async function getShiftById(id: string): Promise<ShiftRow | null> {
   return withDb(async (database) => {
-    const rows = await database.getAllAsync<ShiftRow>("SELECT * FROM shifts WHERE id = ?", [id]);
+    const rows = await database.getAllAsync<ShiftRow>(
+      "SELECT * FROM shifts WHERE id = ? AND deleted_at IS NULL",
+      [id]
+    );
     return rows.length > 0 ? rows[0] : null;
   });
 }
@@ -812,7 +912,7 @@ export async function getShiftById(id: string): Promise<ShiftRow | null> {
 export async function getExistingShiftKeys(): Promise<Set<string>> {
   const rows = await withDb((database) =>
     database.getAllAsync<{ date: string; start_time: string; end_time: string }>(
-      "SELECT date, start_time, end_time FROM shifts"
+      "SELECT date, start_time, end_time FROM shifts WHERE deleted_at IS NULL"
     )
   );
   return new Set(rows.map((r) => `${r.date}|${r.start_time}|${r.end_time}`));
@@ -848,7 +948,9 @@ export async function setMonthlyActualPay(
 }
 
 export async function getShiftsInDateRange(fromDate: string, toDate: string): Promise<ShiftRow[]> {
-  const rows = await withDb((database) => database.getAllAsync<ShiftRow>("SELECT * FROM shifts"));
+  const rows = await withDb((database) =>
+    database.getAllAsync<ShiftRow>("SELECT * FROM shifts WHERE deleted_at IS NULL")
+  );
   return sortShiftsByDate(
     rows.filter((r) => {
       const c = dateToComparable(r.date);
