@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Commit message hook — validates Conventional Commits format.
+cd "$(dirname "$0")/.." || exit 1
+npx --no-install commitlint --edit "$1"
