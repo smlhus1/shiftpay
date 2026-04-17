@@ -21,11 +21,9 @@ export const readAsStringAsync = jest.fn(async (uri: string): Promise<string> =>
   return v;
 });
 
-export const writeAsStringAsync = jest.fn(
-  async (uri: string, content: string): Promise<void> => {
-    store.set(uri, content);
-  }
-);
+export const writeAsStringAsync = jest.fn(async (uri: string, content: string): Promise<void> => {
+  store.set(uri, content);
+});
 
 export const getInfoAsync = jest.fn(async (uri: string) => ({
   exists: store.has(uri),

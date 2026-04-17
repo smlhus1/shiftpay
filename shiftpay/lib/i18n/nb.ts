@@ -93,13 +93,12 @@ const nb = {
     alerts: {
       ocrFailed: "OCR feilet",
       missingData: "Manglende data",
-      missingDataSave:
-        "Fyll inn dato, starttid og sluttid for minst ett skift for å lagre.",
+      missingDataSave: "Fyll inn dato, starttid og sluttid for minst ett skift for å lagre.",
       missingDataCalculate:
         "Fyll inn dato, starttid og sluttid for minst ett skift. Rader merket «må rettes» inkluderes ikke før de er gyldige.",
-      csvEmpty:
-        "Ingen datarader i CSV. Bruk kolonner: date, start_time, end_time, shift_type.",
-      csvError: "Noen rader ble ikke med (manglende eller ugyldig dato/tid). Retting eller fjern rader som må rettes.",
+      csvEmpty: "Ingen datarader i CSV. Bruk kolonner: date, start_time, end_time, shift_type.",
+      csvError:
+        "Noen rader ble ikke med (manglende eller ugyldig dato/tid). Retting eller fjern rader som må rettes.",
       saveError: "Kunne ikke lagre",
     },
     saved: {
@@ -153,8 +152,10 @@ const nb = {
     },
     about: {
       title: "Om ShiftPay",
-      description: "ShiftPay hjelper skiftarbeidere med å sjekke om de har fått riktig lønn. Ta bilde av timelisten, legg inn satsene dine, og sammenlign med lønnsslippen.",
-      privacy: "All data lagres lokalt på enheten din. Ingen konto, ingen skylagring, ingen sporing.",
+      description:
+        "ShiftPay hjelper skiftarbeidere med å sjekke om de har fått riktig lønn. Ta bilde av timelisten, legg inn satsene dine, og sammenlign med lønnsslippen.",
+      privacy:
+        "All data lagres lokalt på enheten din. Ingen konto, ingen skylagring, ingen sporing.",
     },
   },
   notifications: {
@@ -204,7 +205,7 @@ const nb = {
     },
     saveOvertime: "Lagre overtid",
     backBtn: "Tilbake",
-    alreadyConfirmed: 'Denne vakten er allerede bekreftet som «%{status}».',
+    alreadyConfirmed: "Denne vakten er allerede bekreftet som «%{status}».",
     success: "Vakt bekreftet!",
     errors: {
       notFound: "Vakten ble ikke funnet.",

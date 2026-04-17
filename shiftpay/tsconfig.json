@@ -1,6 +1,20 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "allowUnreachableCode": false,
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true,
+    // noUncheckedIndexedAccess — defer to Pass 4 (business-logic pass). The 41
+    // errors it produces are concentrated in dates.ts, csv.ts, and db.ts where
+    // tuple destructuring and array access slip undefined through. Fixing them
+    // overlaps with the bug fixes documented in research/refactor/pass-4-*.md.
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   }
 }

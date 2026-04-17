@@ -95,13 +95,12 @@ const da: TranslationShape = {
     alerts: {
       ocrFailed: "OCR fejlede",
       missingData: "Manglende data",
-      missingDataSave:
-        "Udfyld dato, starttid og sluttid for mindst én vagt for at gemme.",
+      missingDataSave: "Udfyld dato, starttid og sluttid for mindst én vagt for at gemme.",
       missingDataCalculate:
         "Udfyld dato, starttid og sluttid for mindst én vagt. Rækker markeret som fejl medtages ikke, før de er rettet.",
-      csvEmpty:
-        "Ingen datarækker i CSV. Brug kolonnerne: date, start_time, end_time, shift_type.",
-      csvError: "Nogle rækker blev sprunget over (manglende eller ugyldig dato/tid). Ret eller fjern fejlrækkerne.",
+      csvEmpty: "Ingen datarækker i CSV. Brug kolonnerne: date, start_time, end_time, shift_type.",
+      csvError:
+        "Nogle rækker blev sprunget over (manglende eller ugyldig dato/tid). Ret eller fjern fejlrækkerne.",
       saveError: "Kunne ikke gemme",
     },
     saved: {
@@ -155,8 +154,10 @@ const da: TranslationShape = {
     },
     about: {
       title: "Om ShiftPay",
-      description: "ShiftPay hjælper vagtarbejdere med at kontrollere, om de har fået den rigtige løn. Tag foto af timesedlen, indtast dine satser og sammenlign med lønsedlen.",
-      privacy: "Alle data gemmes lokalt på din enhed. Ingen konti, ingen cloudlagring, ingen sporing.",
+      description:
+        "ShiftPay hjælper vagtarbejdere med at kontrollere, om de har fået den rigtige løn. Tag foto af timesedlen, indtast dine satser og sammenlign med lønsedlen.",
+      privacy:
+        "Alle data gemmes lokalt på din enhed. Ingen konti, ingen cloudlagring, ingen sporing.",
     },
   },
   notifications: {
@@ -182,7 +183,8 @@ const da: TranslationShape = {
     invalidEnd: "Ugyldig sluttid (brug TT:MM).",
     invalidRow: "Kunne ikke fortolke rækken.",
     noHeader: "CSV skal have en overskriftsrække og mindst én datarække.",
-    missingColumns: "CSV skal have kolonnerne: date, start_time, end_time (og eventuelt shift_type).",
+    missingColumns:
+      "CSV skal have kolonnerne: date, start_time, end_time (og eventuelt shift_type).",
   },
   shiftTypes: {
     label: "Vagttype",

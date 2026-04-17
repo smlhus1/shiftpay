@@ -95,13 +95,12 @@ const en: TranslationShape = {
     alerts: {
       ocrFailed: "OCR failed",
       missingData: "Missing data",
-      missingDataSave:
-        "Enter date, start time and end time for at least one shift to save.",
+      missingDataSave: "Enter date, start time and end time for at least one shift to save.",
       missingDataCalculate:
         "Enter date, start time and end time for at least one shift. Rows marked as errors are not included until corrected.",
-      csvEmpty:
-        "No data rows in CSV. Use columns: date, start_time, end_time, shift_type.",
-      csvError: "Some rows were skipped (missing or invalid date/time). Fix or remove the error rows.",
+      csvEmpty: "No data rows in CSV. Use columns: date, start_time, end_time, shift_type.",
+      csvError:
+        "Some rows were skipped (missing or invalid date/time). Fix or remove the error rows.",
       saveError: "Could not save",
     },
     saved: {
@@ -155,8 +154,10 @@ const en: TranslationShape = {
     },
     about: {
       title: "About ShiftPay",
-      description: "ShiftPay helps shift workers check if they've been paid correctly. Take a photo of your timesheet, enter your rates, and compare with your payslip.",
-      privacy: "All data is stored locally on your device. No accounts, no cloud storage, no tracking.",
+      description:
+        "ShiftPay helps shift workers check if they've been paid correctly. Take a photo of your timesheet, enter your rates, and compare with your payslip.",
+      privacy:
+        "All data is stored locally on your device. No accounts, no cloud storage, no tracking.",
     },
   },
   notifications: {
@@ -182,7 +183,8 @@ const en: TranslationShape = {
     invalidEnd: "Invalid end time (use HH:MM).",
     invalidRow: "Could not parse the row.",
     noHeader: "CSV must have a header row and at least one data row.",
-    missingColumns: "CSV must have columns: date, start_time, end_time (and optionally shift_type).",
+    missingColumns:
+      "CSV must have columns: date, start_time, end_time (and optionally shift_type).",
   },
   shiftTypes: {
     label: "Shift type",

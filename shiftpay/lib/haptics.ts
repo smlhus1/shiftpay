@@ -15,31 +15,41 @@ import * as Haptics from "expo-haptics";
 export async function hapticLight(): Promise<void> {
   try {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  } catch { /* no taptic, no problem */ }
+  } catch {
+    /* no taptic, no problem */
+  }
 }
 
 export async function hapticMedium(): Promise<void> {
   try {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }
 
 export async function hapticHeavy(): Promise<void> {
   try {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }
 
 /** Success notification — used when confirming a shift. */
 export async function hapticSuccess(): Promise<void> {
   try {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }
 
 /** Warning notification — used when flagging an unpaid amount. */
 export async function hapticWarning(): Promise<void> {
   try {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }

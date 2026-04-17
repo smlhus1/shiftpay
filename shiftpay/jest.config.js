@@ -4,10 +4,11 @@
  */
 module.exports = {
   preset: "jest-expo",
-  setupFilesAfterEnv: [
-    "<rootDir>/jest-setup.ts",
-    "expo-sqlite-mock/src/setup.ts",
-  ],
+  setupFilesAfterEnv: ["<rootDir>/jest-setup.ts", "expo-sqlite-mock/src/setup.ts"],
+  moduleNameMapper: {
+    // Mirror tsconfig paths so Jest can resolve `@/*` imports.
+    "^@/(.*)$": "<rootDir>/$1",
+  },
   transformIgnorePatterns: [
     "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|react-native-reanimated|react-native-worklets|moti|nativewind|phosphor-react-native|@testing-library/.*)",
   ],
@@ -41,11 +42,5 @@ module.exports = {
     "./lib/dates.ts": { branches: 80, lines: 90 },
   },
   testTimeout: 10000,
-  testPathIgnorePatterns: [
-    "/node_modules/",
-    "/android/",
-    "/ios/",
-    "/\\.expo/",
-    "/\\.maestro/",
-  ],
+  testPathIgnorePatterns: ["/node_modules/", "/android/", "/ios/", "/\\.expo/", "/\\.maestro/"],
 };

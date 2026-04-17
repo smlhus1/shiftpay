@@ -5,10 +5,14 @@
  * Date: DD.MM.YYYY, time: HH:MM, shift_type: tidlig | mellom | kveld | natt.
  */
 
+// SDK 54 promoted File/Paths classes to the root export but still ships
+// the legacy functional API (readAsStringAsync, writeAsStringAsync,
+// EncodingType, cacheDirectory). Pass 5 migrates this module to the
+// class-based API. Legacy surface is declared in types/expo-file-system.d.ts.
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import type { Shift, ShiftType } from "./calculations";
-import type { ShiftRow, TariffRatesRow } from "./db";
+import type { ShiftRow } from "./db";
 import { getTranslation } from "./i18n";
 
 export type CsvRowResult =
@@ -41,14 +45,7 @@ export function normalizeShiftType(s: string): ShiftType {
 export function isValidDate(s: string): boolean {
   if (!/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(s.trim())) return false;
   const [day, month, year] = s.trim().split(".").map(Number);
-  return (
-    day >= 1 &&
-    day <= 31 &&
-    month >= 1 &&
-    month <= 12 &&
-    year >= 2000 &&
-    year <= 2100
-  );
+  return day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2000 && year <= 2100;
 }
 
 /** HH:MM or H:MM — format and realistic bounds (hour 0–23, minute 0–59). */
@@ -57,7 +54,6 @@ export function isValidTime(s: string): boolean {
   const [hour, min] = s.trim().split(":").map(Number);
   return hour >= 0 && hour <= 23 && min >= 0 && min <= 59;
 }
-
 
 /** User-friendly reason for a failed row. */
 function rowReason(
@@ -179,17 +175,20 @@ export function parseCSVContent(content: string): ParseResult {
 
 function escapeCsvField(value: string | number | null | undefined): string {
   const str = String(value ?? "");
-  if (/[",\r\n]/.test(str) || str.startsWith("=") || str.startsWith("+") || str.startsWith("@") || str.startsWith("-")) {
+  if (
+    /[",\r\n]/.test(str) ||
+    str.startsWith("=") ||
+    str.startsWith("+") ||
+    str.startsWith("@") ||
+    str.startsWith("-")
+  ) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;
 }
 
 /** Export shifts as CSV and open share dialog. */
-export async function exportShiftsAsCSV(
-  shifts: ShiftRow[],
-  monthLabel: string
-): Promise<void> {
+export async function exportShiftsAsCSV(shifts: ShiftRow[], monthLabel: string): Promise<void> {
   const header = "date,start_time,end_time,shift_type,status,overtime_minutes";
   const lines = shifts.map((s) =>
     [s.date, s.start_time, s.end_time, s.shift_type, s.status, s.overtime_minutes]

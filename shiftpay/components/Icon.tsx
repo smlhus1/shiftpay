@@ -38,7 +38,7 @@ import { SunIcon } from "phosphor-react-native/src/icons/Sun";
 import { TrashIcon } from "phosphor-react-native/src/icons/Trash";
 import { WalletIcon } from "phosphor-react-native/src/icons/Wallet";
 import { type IconProps as PhosphorProps } from "phosphor-react-native";
-import { ComponentType } from "react";
+import { type ComponentType } from "react";
 
 /** Every Ionicons name used in the app, mapped to its Phosphor component. */
 const MAP: Record<string, ComponentType<PhosphorProps>> = {
@@ -78,13 +78,7 @@ interface IconProps {
   importantForAccessibility?: "auto" | "yes" | "no" | "no-hide-descendants";
 }
 
-export function Icon({
-  name,
-  size = 24,
-  color = "#000",
-  weight = "duotone",
-  ...rest
-}: IconProps) {
+export function Icon({ name, size = 24, color = "#000", weight = "duotone", ...rest }: IconProps) {
   const Component = MAP[name];
   if (!Component) {
     if (__DEV__) console.warn(`Icon: unknown name "${name}" — falling back to Sliders`);

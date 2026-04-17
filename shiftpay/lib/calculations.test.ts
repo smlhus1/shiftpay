@@ -138,20 +138,17 @@ describe("calculateOvertimePay", () => {
   it("computes overtime with % supplement", () => {
     // 60 min = 1 h × (250 × 1.5) = 375
     expect(
-      calculateOvertimePay(
-        [{ overtime_minutes: 60 }],
-        { base_rate: 250, overtime_supplement: 50 }
-      )
+      calculateOvertimePay([{ overtime_minutes: 60 }], { base_rate: 250, overtime_supplement: 50 })
     ).toBe(375);
   });
 
   it("sums across multiple shifts", () => {
     // 30 + 90 = 120 min = 2 h × 375 kr/h = 750
     expect(
-      calculateOvertimePay(
-        [{ overtime_minutes: 30 }, { overtime_minutes: 90 }],
-        { base_rate: 250, overtime_supplement: 50 }
-      )
+      calculateOvertimePay([{ overtime_minutes: 30 }, { overtime_minutes: 90 }], {
+        base_rate: 250,
+        overtime_supplement: 50,
+      })
     ).toBe(750);
   });
 });

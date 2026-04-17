@@ -95,13 +95,12 @@ const sv: TranslationShape = {
     alerts: {
       ocrFailed: "OCR misslyckades",
       missingData: "Saknad data",
-      missingDataSave:
-        "Fyll i datum, starttid och sluttid för minst ett skift för att spara.",
+      missingDataSave: "Fyll i datum, starttid och sluttid för minst ett skift för att spara.",
       missingDataCalculate:
         "Fyll i datum, starttid och sluttid för minst ett skift. Rader markerade som fel inkluderas inte förrän de är korrigerade.",
-      csvEmpty:
-        "Inga datarader i CSV. Använd kolumner: date, start_time, end_time, shift_type.",
-      csvError: "Vissa rader hoppades över (saknat eller ogiltigt datum/tid). Rätta eller ta bort felraderna.",
+      csvEmpty: "Inga datarader i CSV. Använd kolumner: date, start_time, end_time, shift_type.",
+      csvError:
+        "Vissa rader hoppades över (saknat eller ogiltigt datum/tid). Rätta eller ta bort felraderna.",
       saveError: "Kunde inte spara",
     },
     saved: {
@@ -155,8 +154,10 @@ const sv: TranslationShape = {
     },
     about: {
       title: "Om ShiftPay",
-      description: "ShiftPay hjälper skiftarbetare att kontrollera om de fått rätt lön. Ta foto av tidlistan, ange dina taxor och jämför med lönebeskedet.",
-      privacy: "All data lagras lokalt på din enhet. Inga konton, ingen molnlagring, ingen spårning.",
+      description:
+        "ShiftPay hjälper skiftarbetare att kontrollera om de fått rätt lön. Ta foto av tidlistan, ange dina taxor och jämför med lönebeskedet.",
+      privacy:
+        "All data lagras lokalt på din enhet. Inga konton, ingen molnlagring, ingen spårning.",
     },
   },
   notifications: {

@@ -2,16 +2,29 @@
  * Shared display helpers — status labels, colors, source labels, and row conversion.
  */
 
-export const MONTH_KEYS = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"] as const;
-export type MonthKey = typeof MONTH_KEYS[number];
+import type { ShiftStatus, ShiftRow } from "./db";
+import type { Shift } from "./calculations";
+
+export const MONTH_KEYS = [
+  "jan",
+  "feb",
+  "mar",
+  "apr",
+  "may",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "oct",
+  "nov",
+  "dec",
+] as const;
+export type MonthKey = (typeof MONTH_KEYS)[number];
 
 /** "YYYY-MM" key from year + month number (1-based). */
 export function toYearMonthKey(year: number, month: number): string {
   return `${year}-${String(month).padStart(2, "0")}`;
 }
-
-import type { ShiftStatus, ShiftRow } from "./db";
-import type { Shift } from "./calculations";
 
 const CURRENCY_LOCALE: Record<string, string> = {
   NOK: "nb-NO",
@@ -39,8 +52,10 @@ export function statusLabel(s: ShiftStatus, t: (key: string) => string): string 
 }
 
 export function statusColor(s: ShiftStatus): string {
-  if (s === "planned") return "bg-stone-100 dark:bg-stone-400/15 text-stone-600 dark:text-stone-400";
-  if (s === "completed") return "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400";
+  if (s === "planned")
+    return "bg-stone-100 dark:bg-stone-400/15 text-stone-600 dark:text-stone-400";
+  if (s === "completed")
+    return "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400";
   if (s === "missed") return "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-400";
   return "bg-violet-50 dark:bg-violet-500/15 text-violet-700 dark:text-violet-400";
 }

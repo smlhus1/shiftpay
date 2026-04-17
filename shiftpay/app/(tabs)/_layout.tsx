@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
-import { Icon } from "../../components/Icon";
-import { useTranslation } from "../../lib/i18n";
-import { useThemeColors } from "../../lib/theme-context";
+import { Icon } from "@/components/Icon";
+import { useTranslation } from "@/lib/i18n";
+import { useThemeColors } from "@/lib/theme-context";
 
 export default function TabsLayout() {
   const { t } = useTranslation();
@@ -12,7 +12,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.tabActive,
         tabBarInactiveTintColor: colors.tabInactive,
         headerStyle: { backgroundColor: colors.bg },
-        headerTitleStyle: { color: colors.textPrimary, fontFamily: 'Inter_600SemiBold' },
+        headerTitleStyle: { color: colors.textPrimary, fontFamily: "Inter_600SemiBold" },
         headerShadowVisible: false,
         tabBarStyle: {
           borderTopColor: colors.border,
@@ -26,9 +26,7 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.overview"),
           tabBarLabel: t("tabs.overview"),
-          tabBarIcon: ({ color, size }) => (
-            <Icon name="time-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Icon name="time-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen

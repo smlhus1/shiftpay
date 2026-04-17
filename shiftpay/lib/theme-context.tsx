@@ -42,9 +42,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Resolve theme
   const resolved: ResolvedTheme =
-    preference === "system"
-      ? (systemScheme === "light" ? "light" : "dark")
-      : preference;
+    preference === "system" ? (systemScheme === "light" ? "light" : "dark") : preference;
 
   // Sync NativeWind
   useEffect(() => {
@@ -57,7 +55,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   if (!loaded) return null;
 
   return (
-    <ThemeContext.Provider value={{ theme: resolved, preference, setPreference, colors: themeColors }}>
+    <ThemeContext.Provider
+      value={{ theme: resolved, preference, setPreference, colors: themeColors }}
+    >
       {children}
     </ThemeContext.Provider>
   );
