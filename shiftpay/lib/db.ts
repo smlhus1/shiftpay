@@ -76,9 +76,7 @@ const migrations: Migration[] = [
     version: 2,
     name: "add_overtime_supplement",
     up: async (database) => {
-      const cols = await database.getAllAsync<{ name: string }>(
-        "PRAGMA table_info(tariff_rates)"
-      );
+      const cols = await database.getAllAsync<{ name: string }>("PRAGMA table_info(tariff_rates)");
       if (!cols.some((c) => c.name === "overtime_supplement")) {
         await database.execAsync(
           "ALTER TABLE tariff_rates ADD COLUMN overtime_supplement REAL NOT NULL DEFAULT 40"
@@ -90,9 +88,7 @@ const migrations: Migration[] = [
     version: 3,
     name: "add_pay_type_and_periods",
     up: async (database) => {
-      const shiftCols = await database.getAllAsync<{ name: string }>(
-        "PRAGMA table_info(shifts)"
-      );
+      const shiftCols = await database.getAllAsync<{ name: string }>("PRAGMA table_info(shifts)");
       if (!shiftCols.some((c) => c.name === "pay_type")) {
         await database.execAsync(
           "ALTER TABLE shifts ADD COLUMN pay_type TEXT NOT NULL DEFAULT 'regular'"
@@ -146,9 +142,7 @@ const migrations: Migration[] = [
         shifts: string;
         source: string;
         created_at: string;
-      }>(
-        "SELECT id, period_start, period_end, shifts, source, created_at FROM timesheets"
-      );
+      }>("SELECT id, period_start, period_end, shifts, source, created_at FROM timesheets");
       for (const row of rows) {
         await database.runAsync(
           "INSERT OR IGNORE INTO schedules (id, period_start, period_end, source, created_at) VALUES (?, ?, ?, ?, ?)",
@@ -187,9 +181,7 @@ const migrations: Migration[] = [
 ];
 
 async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
-  const row = await database.getFirstAsync<{ user_version: number }>(
-    "PRAGMA user_version"
-  );
+  const row = await database.getFirstAsync<{ user_version: number }>("PRAGMA user_version");
   const current = row?.user_version ?? 0;
   const pending = migrations.filter((m) => m.version > current);
   if (pending.length === 0) return;
@@ -231,9 +223,7 @@ export async function initDb(): Promise<SQLite.SQLiteDatabase> {
     // persisted. WAL gives us concurrent reads + single writer; foreign_keys
     // enforces cascade semantics (off by default in SQLite). journal_mode
     // is a no-op on :memory: databases used in tests.
-    await database.execAsync(
-      "PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;"
-    );
+    await database.execAsync("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;");
     await runMigrations(database);
     return database;
   };
