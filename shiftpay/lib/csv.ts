@@ -45,6 +45,9 @@ export function normalizeShiftType(s: string): ShiftType {
 export function isValidDate(s: string): boolean {
   if (!/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(s.trim())) return false;
   const [day, month, year] = s.trim().split(".").map(Number);
+  // noUncheckedIndexedAccess: destructure can be undefined despite the regex
+  // pre-check, so ensure they're all numbers before comparing.
+  if (day === undefined || month === undefined || year === undefined) return false;
   return day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 2000 && year <= 2100;
 }
 
@@ -52,6 +55,7 @@ export function isValidDate(s: string): boolean {
 export function isValidTime(s: string): boolean {
   if (!/^\d{1,2}:\d{2}$/.test(s.trim())) return false;
   const [hour, min] = s.trim().split(":").map(Number);
+  if (hour === undefined || min === undefined) return false;
   return hour >= 0 && hour <= 23 && min >= 0 && min <= 59;
 }
 
@@ -96,7 +100,7 @@ export function parseCSVContent(content: string): ParseResult {
     return { rows: [], errors: ["CSV må ha en headerrad og minst én datarad."] };
   }
 
-  const header = lines[0].toLowerCase();
+  const header = (lines[0] ?? "").toLowerCase();
   const cols = header.split(/[,;\t]/).map((c) => c.trim().toLowerCase());
   const dateIdx = cols.findIndex((c) => c === "date" || c === "dato");
   const startIdx = cols.findIndex((c) => c === "start_time" || c === "start" || c === "fra");
@@ -114,6 +118,7 @@ export function parseCSVContent(content: string): ParseResult {
 
   for (let i = 1; i < lines.length; i++) {
     const row = lines[i];
+    if (row === undefined) continue;
     const cells = row.split(/[,;\t]/).map((c) => c.trim());
     const date = (cells[dateIdx] ?? "").trim();
     const start_time = (cells[startIdx] ?? "").trim();

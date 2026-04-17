@@ -39,14 +39,16 @@ describe("parseDateSafe", () => {
     expect(parseDateSafe("  02.03.2026  ")).not.toBeNull();
   });
 
-  // BUG (Pass 4): parseDateSafe accepts 31.02.2026 and silently rolls over to 03.03.2026
-  // because `new Date(2026, 1, 31)` JS auto-rollover passes !isNaN.
-  it("accepts invalid rollover date 31.02.2026 (BUG — Pass 4 fixes)", () => {
-    const d = parseDateSafe("31.02.2026");
-    expect(d).not.toBeNull();
-    // Silently rolls over to March 3
-    expect(d!.getMonth()).toBe(2);
-    expect(d!.getDate()).toBe(3);
+  it("rejects impossible dates that JS would auto-roll-over", () => {
+    expect(parseDateSafe("31.02.2026")).toBeNull(); // Feb 31 → was rolling to Mar 3
+    expect(parseDateSafe("30.02.2026")).toBeNull(); // Feb 30 → Mar 2
+    expect(parseDateSafe("31.04.2026")).toBeNull(); // Apr has 30 days
+    expect(parseDateSafe("29.02.2025")).toBeNull(); // 2025 is not a leap year
+  });
+
+  it("accepts 29 Feb in leap years", () => {
+    expect(parseDateSafe("29.02.2024")).not.toBeNull();
+    expect(parseDateSafe("29.02.2028")).not.toBeNull();
   });
 });
 
@@ -112,12 +114,9 @@ describe("parseDateTimeSafe", () => {
     expect(parseDateTimeSafe("02.03.2026", "25:00")).toBeNull();
   });
 
-  // BUG (Pass 4): NaN-valued time components slip past the `h == null` check and
-  // produce an invalid Date. A strict isNaN guard or `Number.isInteger` fixes it.
-  it("returns an invalid Date for non-numeric time components (BUG — Pass 4 fixes)", () => {
-    const d = parseDateTimeSafe("02.03.2026", "ab:cd");
-    expect(d).toBeInstanceOf(Date);
-    expect(Number.isNaN(d!.getTime())).toBe(true);
+  it("rejects non-numeric time components", () => {
+    expect(parseDateTimeSafe("02.03.2026", "ab:cd")).toBeNull();
+    expect(parseDateTimeSafe("02.03.2026", "08:cd")).toBeNull();
   });
 
   it("handles 00:00 as midnight", () => {

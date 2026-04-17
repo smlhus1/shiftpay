@@ -84,7 +84,7 @@ export default function DashboardScreen() {
         Promise.resolve(getWeekRange()),
       ]);
       setMonthsList(months);
-      setNextShift(upcoming.length > 0 ? upcoming[0] : null);
+      setNextShift(upcoming[0] ?? null);
       setDueConfirmation(due);
 
       const week = await getShiftsInDateRange(weekRange.from, weekRange.to);
@@ -294,7 +294,10 @@ export default function DashboardScreen() {
         {dueConfirmation.length > 0 && (
           <AnimatedCard index={2} className="mb-4">
             <PressableScale
-              onPress={() => onPressConfirm(dueConfirmation[0].id)}
+              onPress={() => {
+                const first = dueConfirmation[0];
+                if (first) onPressConfirm(first.id);
+              }}
               accessibilityLabel={t("dashboard.pending.title") + " " + dueConfirmation.length}
               className="rounded-xl border border-app-border bg-app-surface p-5 dark:border-dark-border dark:bg-dark-surface"
             >

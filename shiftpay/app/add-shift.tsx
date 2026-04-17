@@ -83,13 +83,14 @@ export default function AddShiftScreen() {
       const result = await insertScheduleWithShifts(date, date, "manual", [
         { date, start_time: startTime, end_time: endTime, shift_type: autoType },
       ]);
+      const firstShift = result.shifts[0];
       // Set pay_type if extra
-      if (payType === "extra" && result.shifts.length > 0) {
-        await updateShiftPayType(result.shifts[0].id, "extra");
+      if (payType === "extra" && firstShift) {
+        await updateShiftPayType(firstShift.id, "extra");
       }
       // Schedule notification for future shifts
-      if (result.shifts.length > 0) {
-        await scheduleShiftReminder(result.shifts[0]).catch(() => {});
+      if (firstShift) {
+        await scheduleShiftReminder(firstShift).catch(() => {});
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setSaved(true);

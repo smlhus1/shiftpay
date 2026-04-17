@@ -8,6 +8,7 @@
     "allowUnreachableCode": false,
     "forceConsistentCasingInFileNames": true,
     "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],

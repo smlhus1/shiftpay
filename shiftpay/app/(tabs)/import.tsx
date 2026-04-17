@@ -240,9 +240,11 @@ export default function ImportScreen() {
     const allRows: CsvRowResult[] = [];
     const errors: string[] = [];
     for (let i = 0; i < uris.length; i++) {
+      const uri = uris[i];
+      if (!uri) continue;
       setOcrProgress(t("import.progress", { current: i + 1, total: uris.length }));
       try {
-        const ocrResult = await postOcr(uris[i]);
+        const ocrResult = await postOcr(uri);
         for (const s of ocrResult.shifts) {
           allRows.push({ ok: true as const, shift: ocrShiftToShift(s) });
         }
@@ -319,11 +321,13 @@ export default function ImportScreen() {
         copyToCacheDirectory: true,
       });
       if (result.canceled) return;
+      const firstAsset = result.assets[0];
+      if (!firstAsset) return;
       setLoading(true);
-      const { rows: parsedRows, errors: parseErrors } = await parseCSVFile(result.assets[0].uri);
+      const { rows: parsedRows, errors: parseErrors } = await parseCSVFile(firstAsset.uri);
       setRows(parsedRows);
       setExpectedPay(null);
-      if (parseErrors.length > 0) {
+      if (parseErrors[0]) {
         setError(parseErrors[0]);
       } else if (parsedRows.length === 0) {
         setError(t("import.alerts.csvEmpty"));

@@ -35,19 +35,17 @@ describe("shiftDurationHours", () => {
     expect(shiftDurationHours("22:00", "06:00")).toBe(8);
   });
 
-  it("treats equal start/end as 24-hour shift (current behaviour — Pass 4 will revisit)", () => {
-    expect(shiftDurationHours("08:00", "08:00")).toBe(24);
+  it("treats equal start/end as zero-hour shift", () => {
+    expect(shiftDurationHours("08:00", "08:00")).toBe(0);
   });
 
   it("handles a shift ending at midnight 00:00 via wrap", () => {
     expect(shiftDurationHours("05:00", "00:00")).toBe(19);
   });
 
-  // BUG (Pass 4): malformed times produce NaN because Number("abc") = NaN bypasses
-  // the `??` fallback (?? only catches null/undefined, not NaN). Any pay computed
-  // from such a shift is also NaN.
-  it("returns NaN for malformed time strings (BUG — Pass 4 fixes)", () => {
-    expect(Number.isNaN(shiftDurationHours("abc", "def"))).toBe(true);
+  it("returns 0 for malformed time strings (garbage-in = zero-out)", () => {
+    // NaN no longer leaks through — Number.isFinite guard floors to 0.
+    expect(shiftDurationHours("abc", "def")).toBe(0);
   });
 });
 
