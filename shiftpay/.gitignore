@@ -46,3 +46,7 @@ com.facebook.react.*
 *.hprof
 *.crash
 .vercel
+
+# Jest
+/coverage
+.jest-cache
