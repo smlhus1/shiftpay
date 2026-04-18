@@ -14,8 +14,9 @@ Dagens `calculateExpectedPay` har fem kritiske feil som gjør at appen **systema
 |---|---|
 | `01-calc-review-internal-2026-04-18.md` | Intern gjennomgang av nåværende kode — hva som er feil, konkrete scenarier som bryter, manglende dimensjoner |
 | `02-norsk-tariff-beregning-2026-04-18.md` | Deep-research-rapport med faktiske satser og regler for KS, Spekter, Virke HUK, butikk, vekter, renhold, bygg. Inkluderer foreslått ny datamodell (SQL) + 10 test cases |
+| `03-staten-og-lo-guides-2026-04-18.md` | Utvidelse: Staten (politi, kriminalomsorg, forsvar) + LO-fagforbundenes egne lønnskalkulatorer. Viktig innsikt: Staten bruker faste NOK-satser (ikke prosent), politi har to lønnsstrømmer (§15 + ATB). + 5 Staten-test cases. + UX-læring fra Fagforbundet/NSF/Delta-kalkulatorer. |
 
-Les i denne rekkefølgen: `01` først (forstå problemet), deretter `02` (forstå virkeligheten + se planen).
+Les i denne rekkefølgen: `01` først (forstå problemet), `02` (forstå tariff-virkeligheten), `03` (utvidelse til statens sektor + UX-inspirasjon).
 
 ## Kort oppsummering (for de som ikke vil lese alt)
 
