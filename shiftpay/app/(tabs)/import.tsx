@@ -43,7 +43,7 @@ import {
   initialImportState,
   type ImportSource,
   type SavedResult,
-} from "./import-state";
+} from "@/lib/import-state";
 
 function SkeletonCard({ delay }: { delay: number }) {
   return (
