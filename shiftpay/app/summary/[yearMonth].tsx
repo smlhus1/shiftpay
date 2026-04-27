@@ -233,7 +233,7 @@ export default function SummaryScreen() {
               className="flex-row items-center gap-1"
             >
               <Icon name="chevron-back" size={18} color={colors.accent} />
-              <Text className="font-inter-medium text-sm text-accent-dark dark:text-accent">
+              <Text className="font-inter-medium text-sm text-accent-dark dark:text-accent-soft">
                 {t(`months.${MONTH_KEYS[adjacentMonths.prev.month - 1] ?? "jan"}`)}
               </Text>
             </PressableScale>
@@ -250,7 +250,7 @@ export default function SummaryScreen() {
               accessibilityLabel={t(`months.${MONTH_KEYS[adjacentMonths.next.month - 1] ?? "jan"}`)}
               className="flex-row items-center gap-1"
             >
-              <Text className="font-inter-medium text-sm text-accent-dark dark:text-accent">
+              <Text className="font-inter-medium text-sm text-accent-dark dark:text-accent-soft">
                 {t(`months.${MONTH_KEYS[adjacentMonths.next.month - 1] ?? "jan"}`)}
               </Text>
               <Icon name="chevron-forward" size={18} color={colors.accent} />
@@ -414,7 +414,7 @@ export default function SummaryScreen() {
               {t("summary.shifts.missed", { count: summary.missedShifts })}
             </Text>
             {summary.overtimeHours > 0 && (
-              <Text className="text-accent-dark dark:text-accent">
+              <Text className="text-accent-dark dark:text-accent-soft">
                 {t("summary.shifts.overtimeHours", { hours: summary.overtimeHours.toFixed(1) })}
               </Text>
             )}
@@ -461,7 +461,7 @@ export default function SummaryScreen() {
             className="mt-4 flex-row items-center justify-center gap-2 rounded-xl border border-blue-600/20 bg-blue-600/10 py-3 dark:border-blue-400/20 dark:bg-blue-400/10"
           >
             <Icon name="download-outline" size={18} color={colors.accent} />
-            <Text className="font-inter-semibold text-accent-dark dark:text-accent">
+            <Text className="font-inter-semibold text-accent-dark dark:text-accent-soft">
               {t("summary.export")}
             </Text>
           </PressableScale>

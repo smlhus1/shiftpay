@@ -450,7 +450,7 @@ export default function SettingsScreen() {
             style={{ minHeight: 48 }}
           >
             <Icon name="logo-github" size={18} color={colors.accent} />
-            <Text className="text-sm text-accent-dark dark:text-accent">GitHub</Text>
+            <Text className="text-sm text-accent-dark dark:text-accent-soft">GitHub</Text>
           </PressableScale>
           <PressableScale
             onPress={() => Linking.openURL("mailto:shiftpay@smlhus.com").catch(() => {})}
@@ -460,7 +460,9 @@ export default function SettingsScreen() {
             style={{ minHeight: 48 }}
           >
             <Icon name="mail-outline" size={18} color={colors.accent} />
-            <Text className="text-sm text-accent-dark dark:text-accent">shiftpay@smlhus.com</Text>
+            <Text className="text-sm text-accent-dark dark:text-accent-soft">
+              shiftpay@smlhus.com
+            </Text>
           </PressableScale>
           <Text className="text-xs text-stone-500">
             ShiftPay v{Constants.expoConfig?.version ?? "1.0.0"}
