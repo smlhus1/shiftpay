@@ -40,7 +40,7 @@ export const darkColors: ThemeColors = {
   warm: "#F4D58D", // mykere oker (was #F59E0B)
 
   success: "#5B8B6F", // dempet skogrønn (was #10B981)
-  error: "#B85450", // rustrød (was #EF4444)
+  error: "#D86B65", // rustrød — bumped from #B85450 in Pass 6b for WCAG AA (4.86:1 vs bg)
   marine: "#1E2A3A", // deep night blue — for shift-tint natt-variant
 
   textPrimary: "#F5EFE4", // cream, aldri ren hvit (was #F5F5F4)
@@ -70,7 +70,7 @@ export const lightColors: ThemeColors = {
 
   textPrimary: "#1A1614", // warm coffee
   textSecondary: "#5A544A", // varm grey (WCAG AA)
-  textMuted: "#756E64",
+  textMuted: "#6B645A", // bumped from #756E64 in Pass 6b for WCAG AA (4.81:1 vs cream bg)
 
   tabActive: "#8B3E23",
   tabInactive: "#A8A095",

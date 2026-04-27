@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Icon } from "@/components/Icon";
 import {
@@ -116,6 +117,7 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { t, currency } = useTranslation();
   const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
 
   const { data, status, error, refetch } = useDbQuery<DashboardData>(["dashboard"], loadDashboard);
 
@@ -184,7 +186,10 @@ export default function DashboardScreen() {
 
   return (
     <View className="flex-1 bg-app-bg dark:bg-dark-bg">
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 80 }}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 16, paddingBottom: 80 + insets.bottom }}
+      >
         {!empty && (
           <Text
             className="mb-3 text-[13px] italic text-stone-500 dark:text-stone-400"
@@ -232,7 +237,7 @@ export default function DashboardScreen() {
             <Text className="mt-1 font-inter-semibold text-xl text-stone-900 dark:text-stone-100">
               {nextShift.date} · {nextShift.start_time}–{nextShift.end_time}
             </Text>
-            <Text className="mt-1 text-sm text-accent-dark dark:text-accent">
+            <Text className="mt-1 text-sm text-accent-dark dark:text-accent-soft">
               {countdownToShift(nextShift, t)}
             </Text>
             {isShiftEndPassed(nextShift) && (
@@ -323,7 +328,7 @@ export default function DashboardScreen() {
                 <Text className="text-stone-900 dark:text-stone-100">
                   {s.date} {s.start_time}–{s.end_time}
                 </Text>
-                <Text className="font-inter-medium text-sm text-accent-dark dark:text-accent">
+                <Text className="font-inter-medium text-sm text-accent-dark dark:text-accent-soft">
                   {t("dashboard.pending.confirmBtn")}
                 </Text>
               </PressableScale>
@@ -406,8 +411,9 @@ export default function DashboardScreen() {
       <PressableScale
         onPress={() => router.push("/add-shift" as Href)}
         accessibilityLabel={t("dashboard.addShift")}
-        className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-accent-dark dark:bg-accent"
+        className="absolute right-6 h-14 w-14 items-center justify-center rounded-full bg-accent-dark dark:bg-accent"
         style={{
+          bottom: 24 + insets.bottom,
           elevation: 8,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },

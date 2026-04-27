@@ -166,7 +166,7 @@ export default function PeriodDetailScreen() {
             accessibilityLabel={t("period.viewSummary")}
             className="mt-3 rounded-xl border border-blue-600/20 bg-blue-600/10 py-2 dark:border-blue-400/20 dark:bg-blue-400/10"
           >
-            <Text className="text-center font-inter-semibold text-sm text-accent-dark dark:text-accent">
+            <Text className="text-center font-inter-semibold text-sm text-accent-dark dark:text-accent-soft">
               {t("period.viewSummary")}
             </Text>
           </PressableScale>

@@ -33,6 +33,8 @@ jobs:
         run: npm run lint
       - name: TypeScript typecheck
         run: npm run typecheck
+      - name: WCAG contrast verifier
+        run: npm run verify:contrast
 
   test:
     name: Jest (shiftpay)

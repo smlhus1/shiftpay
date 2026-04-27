@@ -91,7 +91,7 @@ export function ShiftCard({
       {showOvertimeLabel && isOvertime && (shift.overtime_minutes ?? 0) > 0 && (
         <View className="flex-row items-center gap-1">
           <Icon name="time-outline" size={14} color={colors.accent} />
-          <Text className="text-sm text-accent-dark dark:text-accent">
+          <Text className="text-sm text-accent-dark dark:text-accent-soft">
             {t("components.shiftCard.overtime", { minutes: shift.overtime_minutes })}
           </Text>
         </View>

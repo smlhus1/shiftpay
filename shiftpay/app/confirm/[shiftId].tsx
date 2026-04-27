@@ -425,7 +425,7 @@ export default function ConfirmShiftScreen() {
               className="mb-3 rounded-xl border border-blue-600/20 bg-blue-600/10 py-4 dark:border-blue-400/20 dark:bg-blue-400/10"
               style={submitting ? { opacity: 0.6 } : undefined}
             >
-              <Text className="text-center font-inter-medium text-accent-dark dark:text-accent">
+              <Text className="text-center font-inter-medium text-accent-dark dark:text-accent-soft">
                 {t("confirm.overtime")}
               </Text>
             </PressableScale>

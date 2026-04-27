@@ -10,9 +10,9 @@ import Animated, {
   useAnimatedStyle,
   withRepeat,
   withTiming,
+  withDelay,
   Easing,
 } from "react-native-reanimated";
-import { MotiView } from "moti";
 import { postOcr } from "@/lib/api";
 import type { OcrShift } from "@/lib/api";
 import {
@@ -47,11 +47,18 @@ import {
 } from "@/lib/import-state";
 
 function SkeletonCard({ delay }: { delay: number }) {
+  // Looping pulse 0.3 ↔ 0.7. withRepeat(_, -1, true) reverses on each
+  // iteration so the value bounces between min/max without a jarring
+  // snap-back. Migrated from moti in Pass 6b — see AnimatedCard for
+  // why the dep was dropped.
+  const opacity = useSharedValue(0.3);
+  useEffect(() => {
+    opacity.value = withDelay(delay, withRepeat(withTiming(0.7, { duration: 1000 }), -1, true));
+  }, [delay, opacity]);
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
   return (
-    <MotiView
-      from={{ opacity: 0.3 }}
-      animate={{ opacity: 0.7 }}
-      transition={{ loop: true, type: "timing", duration: 1000, delay }}
+    <Animated.View
+      style={animatedStyle}
       className="mb-3 rounded-xl border border-app-border bg-app-surface p-3 dark:border-dark-border dark:bg-dark-surface"
     >
       <View className="flex-row items-center gap-2">
@@ -65,7 +72,7 @@ function SkeletonCard({ delay }: { delay: number }) {
         <View className="h-8 flex-1 rounded-full bg-stone-200 dark:bg-stone-700" />
         <View className="h-8 flex-1 rounded-full bg-stone-200 dark:bg-stone-700" />
       </View>
-    </MotiView>
+    </Animated.View>
   );
 }
 
@@ -661,7 +668,7 @@ export default function ImportScreen() {
                 accessibilityLabel={t("import.csvBtn")}
                 className="mt-1 py-2"
               >
-                <Text className="text-center font-inter-medium text-sm text-accent-dark dark:text-accent">
+                <Text className="text-center font-inter-medium text-sm text-accent-dark dark:text-accent-soft">
                   {t("import.csvBtn")}
                 </Text>
               </PressableScale>
@@ -670,7 +677,7 @@ export default function ImportScreen() {
                 accessibilityLabel={t("import.manualBtn")}
                 className="mt-2 py-2"
               >
-                <Text className="text-center font-inter-medium text-sm text-accent-dark dark:text-accent">
+                <Text className="text-center font-inter-medium text-sm text-accent-dark dark:text-accent-soft">
                   {t("import.manualBtn")}
                 </Text>
               </PressableScale>
