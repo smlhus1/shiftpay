@@ -30,12 +30,12 @@ import {
   JetBrainsMono_400Regular,
   JetBrainsMono_500Medium,
 } from "@expo-google-fonts/jetbrains-mono";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initDb, getTariffRates } from "@/lib/db";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ShiftTintStripe } from "@/components/ShiftTintStripe";
 import { LocaleProvider, useTranslation } from "@/lib/i18n";
 import { ThemeProvider, useTheme } from "@/lib/theme-context";
+import { getString, migrateAsyncStorageKey, setString } from "@/lib/storage";
 
 const ONBOARDING_DONE_KEY = "shiftpay_onboarding_done";
 
@@ -78,13 +78,17 @@ function RootLayoutInner() {
     setInitError(null);
     try {
       await initDb();
-      const done = await AsyncStorage.getItem(ONBOARDING_DONE_KEY);
+      // Idempotent migration of the legacy AsyncStorage onboarding flag.
+      await migrateAsyncStorageKey<string>(ONBOARDING_DONE_KEY, (raw) =>
+        raw === "1" ? "1" : null
+      );
+      const done = getString(ONBOARDING_DONE_KEY);
       if (done !== "1") {
         const rates = await getTariffRates();
         if (rates.base_rate <= 0) {
           setShowOnboarding(true);
         } else {
-          await AsyncStorage.setItem(ONBOARDING_DONE_KEY, "1");
+          setString(ONBOARDING_DONE_KEY, "1");
         }
       }
     } catch (e) {
@@ -109,8 +113,8 @@ function RootLayoutInner() {
     return () => sub.remove();
   }, [router]);
 
-  const dismissOnboarding = async () => {
-    await AsyncStorage.setItem(ONBOARDING_DONE_KEY, "1");
+  const dismissOnboarding = () => {
+    setString(ONBOARDING_DONE_KEY, "1");
     setShowOnboarding(false);
     router.replace("/(tabs)/settings");
   };

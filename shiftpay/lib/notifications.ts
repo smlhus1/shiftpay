@@ -1,11 +1,29 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as v from "valibot";
 import { type Clock, realClock } from "./clock";
 import { parseDateTimeSafe } from "./dates";
 import { getTranslation } from "./i18n";
+import { getJSON, migrateAsyncStorageKey, setJSON } from "./storage";
 
 const STORAGE_KEY = "shiftpay_schedule_notifs";
+
+const NotifMapSchema = v.record(v.string(), v.array(v.string()));
+type NotifMap = v.InferOutput<typeof NotifMapSchema>;
+
+let migratedOnce = false;
+async function migrateOnce(): Promise<void> {
+  if (migratedOnce) return;
+  migratedOnce = true;
+  await migrateAsyncStorageKey<NotifMap>(STORAGE_KEY, (raw) => {
+    try {
+      const parsed = v.safeParse(NotifMapSchema, JSON.parse(raw));
+      return parsed.success ? parsed.output : null;
+    } catch {
+      return null;
+    }
+  });
+}
 
 export interface ShiftForReminder {
   id: string;
@@ -78,32 +96,28 @@ export async function scheduleShiftReminder(
   }
 }
 
-async function getStoredNotifs(): Promise<Record<string, string[]>> {
-  try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {
-    if (__DEV__) console.warn("[ShiftPay] getStoredNotifs failed:", e);
-  }
-  return {};
+function getStoredNotifs(): NotifMap {
+  return getJSON(STORAGE_KEY, NotifMapSchema, {});
 }
 
-async function setStoredNotifs(record: Record<string, string[]>): Promise<void> {
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(record));
+function setStoredNotifs(record: NotifMap): void {
+  setJSON(STORAGE_KEY, record);
 }
 
 export async function storeScheduledNotificationId(
   scheduleId: string,
   notificationId: string
 ): Promise<void> {
-  const record = await getStoredNotifs();
+  await migrateOnce();
+  const record = getStoredNotifs();
   if (!record[scheduleId]) record[scheduleId] = [];
   record[scheduleId].push(notificationId);
-  await setStoredNotifs(record);
+  setStoredNotifs(record);
 }
 
 export async function cancelScheduleReminders(scheduleId: string): Promise<void> {
-  const record = await getStoredNotifs();
+  await migrateOnce();
+  const record = getStoredNotifs();
   const ids = record[scheduleId];
   if (!ids) return;
   for (const id of ids) {
@@ -114,5 +128,5 @@ export async function cancelScheduleReminders(scheduleId: string): Promise<void>
     }
   }
   delete record[scheduleId];
-  await setStoredNotifs(record);
+  setStoredNotifs(record);
 }

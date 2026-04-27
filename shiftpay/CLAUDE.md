@@ -42,7 +42,7 @@ No linter or test runner is configured. No test files exist yet.
 
 ### Provider hierarchy (app/_layout.tsx)
 
-`LocaleProvider` → `ThemeProvider` → `RootLayoutInner` (Stack navigator, onboarding modal, error modal). Both providers load persisted preferences from AsyncStorage before rendering children.
+`LocaleProvider` → `ThemeProvider` → `RootLayoutInner` (Stack navigator, onboarding modal, error modal). Both providers read persisted preferences synchronously from MMKV at mount time — no `loaded` flag, no theme flash on subsequent boots. A one-shot async migration in each provider drains any leftover AsyncStorage values into MMKV on the first post-upgrade boot.
 
 ### Routing (Expo Router, file-based)
 - `app/index.tsx` — redirects to `/(tabs)`
@@ -67,13 +67,13 @@ No linter or test runner is configured. No test files exist yet.
 - `kveld`: 16:00–21:59
 - `natt`: 22:00–05:59
 
-**Onboarding:** First launch checks if `base_rate > 0` in tariff_rates. If not, shows modal prompting user to settings. Tracked via AsyncStorage key `shiftpay_onboarding_done`.
+**Onboarding:** First launch checks if `base_rate > 0` in tariff_rates. If not, shows modal prompting user to settings. Tracked via MMKV key `shiftpay_onboarding_done`.
 
 **Overnight shifts:** `shiftDurationHours()` handles end_time < start_time by adding 24h.
 
 ### Theme system
 
-`lib/theme.ts` defines `ThemeColors` interface and `lightColors`/`darkColors` token objects. `lib/theme-context.tsx` provides `ThemeProvider` with system/light/dark preference, persisted in AsyncStorage (`shiftpay_theme`). NativeWind `colorScheme.set()` is synced via `useEffect`.
+`lib/theme.ts` defines `ThemeColors` interface and `lightColors`/`darkColors` token objects. `lib/theme-context.tsx` provides `ThemeProvider` with system/light/dark preference, persisted in MMKV (`shiftpay_theme`). NativeWind `colorScheme.set()` is synced via `useEffect`.
 
 - **In components:** Use `useThemeColors()` for inline styles (tab bar, icons, ActivityIndicator), NativeWind `dark:` classes for everything else.
 - **`app.json`:** `userInterfaceStyle: "automatic"` is required — do NOT change to "dark" or "light" (breaks runtime theme switching).
@@ -81,7 +81,7 @@ No linter or test runner is configured. No test files exist yet.
 
 ### i18n system
 
-`lib/i18n/` with 4 locales: `nb` (default), `en`, `sv`, `da`. Uses `i18n-js` with `expo-localization` for device detection. `LocaleProvider` persists choice in AsyncStorage (`shiftpay_locale`).
+`lib/i18n/` with 4 locales: `nb` (default), `en`, `sv`, `da`. Uses `i18n-js` with `expo-localization` for device detection. `LocaleProvider` persists choice in MMKV (`shiftpay_locale`).
 
 - **In React components:** `useTranslation()` returns `{ t, locale, setLocale, currency, setCurrency }`.
 - **Outside React:** `getTranslation(key)` reads from i18n singleton.

@@ -69,7 +69,8 @@
             "usesCleartextTraffic": false
           }
         }
-      ]
+      ],
+      "./plugins/with-release-signing.js"
     ]
   }
 }
