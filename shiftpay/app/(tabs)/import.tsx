@@ -384,7 +384,7 @@ export default function ImportScreen() {
     setError(null);
     try {
       const rates = await getTariffRates();
-      const total = calculateExpectedPay(validShifts, rates);
+      const total = calculateExpectedPay(validShifts, rates, rates.stacking_policy);
       setExpectedPay(total);
       if (validShifts.length < rows.length) {
         setError(t("import.alerts.csvError"));
@@ -423,7 +423,7 @@ export default function ImportScreen() {
     try {
       // Auto-calculate expected pay before saving
       const rates = await getTariffRates();
-      const pay = calculateExpectedPay(validShifts, rates);
+      const pay = calculateExpectedPay(validShifts, rates, rates.stacking_policy);
       setExpectedPay(pay);
 
       await requestNotificationPermission();

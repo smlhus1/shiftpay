@@ -134,6 +134,16 @@ const da: TranslationShape = {
       extraLabel: "Ekstra vagter starter dag",
       hint: "De fleste har 1. for fast og 12. for ekstra",
     },
+    stackingPolicy: {
+      title: "Tillægsstabling",
+      hint: "Hvordan weekend- og helligdagstillæg kombineres, når en vagt falder på begge.",
+      additive: "Begge lægges sammen",
+      additiveHint: "Standard for de fleste overenskomster.",
+      replace: "Helligdag erstatter weekend",
+      replaceHint: "Konservativ fortolkning af aftalen.",
+      max: "Kun det største",
+      maxHint: "Den mindst gunstige fortolkning.",
+    },
     save: "Gem",
     saved: "Gemt.",
     language: {

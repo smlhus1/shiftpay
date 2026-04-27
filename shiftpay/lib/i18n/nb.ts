@@ -132,6 +132,16 @@ const nb = {
       extraLabel: "Ekstra vakter starter dag",
       hint: "De fleste har 1. for fast og 12. for ekstra",
     },
+    stackingPolicy: {
+      title: "Tilleggsstabling",
+      hint: "Hvordan helg- og helligdagstillegg kombineres når en vakt faller på begge.",
+      additive: "Begge legges sammen",
+      additiveHint: "Standard for de fleste tariffer (NSF/KS).",
+      replace: "Helligdag erstatter helg",
+      replaceHint: "Konservativ tolkning (Virke, deler av Spekter).",
+      max: "Bare det største tillegget",
+      maxHint: "Den minst gunstige tolkningen.",
+    },
     save: "Lagre",
     saved: "Lagret.",
     language: {

@@ -28,6 +28,7 @@ describe("backup (snapshot export/import)", () => {
       overtime_supplement: 50,
       regular_period_start_day: 1,
       extra_period_start_day: 15,
+      stacking_policy: "additive",
     });
     await insertScheduleWithShifts("01.03.2026", "31.03.2026", "manual", [
       { date: "02.03.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
@@ -57,6 +58,7 @@ describe("backup (snapshot export/import)", () => {
       overtime_supplement: 0,
       regular_period_start_day: 1,
       extra_period_start_day: 15,
+      stacking_policy: "additive",
     });
     await insertScheduleWithShifts("01.03.2026", "31.03.2026", "manual", [
       { date: "02.03.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
@@ -125,6 +127,7 @@ describe("backup (snapshot export/import)", () => {
         overtime_supplement: 0,
         regular_period_start_day: 1,
         extra_period_start_day: 15,
+        stacking_policy: "additive",
       });
       await insertScheduleWithShifts("01.04.2026", "30.04.2026", "manual", [
         { date: "10.04.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },

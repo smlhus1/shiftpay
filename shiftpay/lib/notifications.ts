@@ -1,6 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { type Clock, realClock } from "./clock";
 import { parseDateTimeSafe } from "./dates";
 import { getTranslation } from "./i18n";
 
@@ -53,10 +54,13 @@ async function ensureChannel(): Promise<void> {
   }
 }
 
-export async function scheduleShiftReminder(shift: ShiftForReminder): Promise<string | null> {
+export async function scheduleShiftReminder(
+  shift: ShiftForReminder,
+  clock: Clock = realClock
+): Promise<string | null> {
   if (Platform.OS === "web") return null;
   const fireDate = parseShiftEndDate(shift.date, shift.end_time);
-  if (!fireDate || fireDate.getTime() <= Date.now()) return null;
+  if (!fireDate || fireDate.getTime() <= clock().getTime()) return null;
   try {
     await ensureChannel();
     const id = await Notifications.scheduleNotificationAsync({
