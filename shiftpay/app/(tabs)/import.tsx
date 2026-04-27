@@ -38,6 +38,7 @@ import { PressableScale } from "@/components/PressableScale";
 import { AnimatedCard } from "@/components/AnimatedCard";
 import { useTranslation } from "@/lib/i18n";
 import { useThemeColors } from "@/lib/theme-context";
+import { useAnnounceWhen } from "@/lib/ui/announce";
 import {
   importReducer,
   initialImportState,
@@ -81,12 +82,17 @@ function OcrLoadingState({ progress }: { progress: string | null }) {
     );
   }, [rotation]);
 
+  // Announce progress to screen readers each time it changes (e.g.
+  // "2 of 5"). Imperative replacement for accessibilityLiveRegion since
+  // Fabric doesn't fire the declarative version reliably.
+  useAnnounceWhen(progress ?? t("import.loading"));
+
   const spinStyle = useAnimatedStyle(() => ({
     transform: [{ rotateZ: `${rotation.value}deg` }],
   }));
 
   return (
-    <View className="py-8" accessibilityLiveRegion="polite">
+    <View className="py-8">
       <View className="mb-6 items-center">
         <Animated.View style={spinStyle}>
           <Icon name="scan-outline" size={48} color={colors.accent} />
@@ -539,6 +545,11 @@ export default function ImportScreen() {
     });
   };
 
+  // Announce error banner contents imperatively — Fabric doesn't fire
+  // accessibilityLiveRegion="assertive" reliably. Must be called before
+  // any conditional return to satisfy rules-of-hooks.
+  useAnnounceWhen(state.error);
+
   if (showCamera) {
     return (
       <CameraCapture
@@ -572,7 +583,6 @@ export default function ImportScreen() {
         <View
           className="mb-4 rounded-xl bg-red-50 p-3 dark:bg-red-500/10"
           accessibilityRole="alert"
-          accessibilityLiveRegion="assertive"
         >
           <Text className="text-red-600 dark:text-red-400">{error}</Text>
         </View>
@@ -638,7 +648,7 @@ export default function ImportScreen() {
             onPress={() => setShowMore((v) => !v)}
             accessibilityLabel={t("import.moreOptions")}
             className="mt-3 py-2"
-            haptic={false}
+            haptic="none"
           >
             <Text className="text-center text-sm text-stone-500">
               {t("import.moreOptions")} {showMore ? "▲" : "▼"}

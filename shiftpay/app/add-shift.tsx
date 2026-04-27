@@ -1,13 +1,6 @@
 import { useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from "react-native";
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert } from "react-native";
+import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import {
@@ -20,6 +13,7 @@ import { scheduleShiftReminder } from "@/lib/notifications";
 import { useTranslation } from "@/lib/i18n";
 import { useThemeColors } from "@/lib/theme-context";
 import { PressableScale } from "@/components/PressableScale";
+import { useAnnounceWhen } from "@/lib/ui/announce";
 
 const SHIFT_TYPES = ["tidlig", "mellom", "kveld", "natt"] as const;
 
@@ -102,12 +96,11 @@ export default function AddShiftScreen() {
     }
   }, [date, startTime, endTime, shiftType, payType, router, t]);
 
+  useAnnounceWhen(saved ? t("addShift.saved") : null);
+
   if (saved) {
     return (
-      <View
-        className="flex-1 items-center justify-center bg-app-bg p-8 dark:bg-dark-bg"
-        accessibilityLiveRegion="polite"
-      >
+      <View className="flex-1 items-center justify-center bg-app-bg p-8 dark:bg-dark-bg">
         <Text className="font-inter-semibold text-xl text-emerald-600 dark:text-emerald-400">
           {t("addShift.saved")}
         </Text>
@@ -129,7 +122,7 @@ export default function AddShiftScreen() {
           <Text className="mb-1.5 font-inter-medium text-sm text-stone-700 dark:text-stone-300">
             {t("addShift.date")}
           </Text>
-          <TextInput
+          <ThemedTextInput
             value={date}
             onChangeText={setDate}
             placeholder="DD.MM.YYYY"
@@ -146,7 +139,7 @@ export default function AddShiftScreen() {
             <Text className="mb-1.5 font-inter-medium text-sm text-stone-700 dark:text-stone-300">
               {t("addShift.startTime")}
             </Text>
-            <TextInput
+            <ThemedTextInput
               value={startTime}
               onChangeText={(v) => {
                 setStartTime(v);
@@ -164,7 +157,7 @@ export default function AddShiftScreen() {
             <Text className="mb-1.5 font-inter-medium text-sm text-stone-700 dark:text-stone-300">
               {t("addShift.endTime")}
             </Text>
-            <TextInput
+            <ThemedTextInput
               value={endTime}
               onChangeText={setEndTime}
               placeholder="15:00"

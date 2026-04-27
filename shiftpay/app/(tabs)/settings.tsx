@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Linking,
 } from "react-native";
+import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { useForm, Controller, type Control } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import * as v from "valibot";
@@ -19,6 +19,7 @@ import { getTariffRates, setTariffRates, STACKING_POLICIES, type TariffRatesInpu
 import { useTranslation, type Locale, type Currency } from "@/lib/i18n";
 import { PressableScale } from "@/components/PressableScale";
 import { useTheme, useThemeColors, type ThemePreference } from "@/lib/theme-context";
+import { useAnnounceWhen } from "@/lib/ui/announce";
 
 const defaultRates: TariffRatesInput = {
   base_rate: 0,
@@ -136,10 +137,12 @@ export default function SettingsScreen() {
 
   const onSubmit = handleSubmit(async (data) => {
     await setTariffRates(data);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   });
+
+  useAnnounceWhen(saved ? t("settings.saved") : null);
 
   if (loading) {
     return (
@@ -291,6 +294,7 @@ export default function SettingsScreen() {
                   <PressableScale
                     key={opt}
                     onPress={() => onChange(opt)}
+                    haptic="selection"
                     accessibilityRole="radio"
                     accessibilityState={{ checked: value === opt }}
                     className="mb-2 rounded-xl border border-app-border bg-app-surface px-4 py-3 dark:border-dark-border dark:bg-dark-surface"
@@ -329,10 +333,7 @@ export default function SettingsScreen() {
         </PressableScale>
 
         {saved && (
-          <Text
-            className="mt-3 text-center text-emerald-600 dark:text-emerald-400"
-            accessibilityLiveRegion="polite"
-          >
+          <Text className="mt-3 text-center text-emerald-600 dark:text-emerald-400">
             {t("settings.saved")}
           </Text>
         )}
@@ -353,6 +354,7 @@ export default function SettingsScreen() {
             <PressableScale
               key={opt.code}
               onPress={() => setLocale(opt.code)}
+              haptic="selection"
               accessibilityRole="radio"
               accessibilityState={{ checked: locale === opt.code }}
               className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border bg-app-surface px-4 py-3 dark:border-dark-border dark:bg-dark-surface"
@@ -379,6 +381,7 @@ export default function SettingsScreen() {
             <PressableScale
               key={opt.code}
               onPress={() => setCurrency(opt.code)}
+              haptic="selection"
               accessibilityRole="radio"
               accessibilityState={{ checked: currency === opt.code }}
               className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border bg-app-surface px-4 py-3 dark:border-dark-border dark:bg-dark-surface"
@@ -407,6 +410,7 @@ export default function SettingsScreen() {
             <PressableScale
               key={opt.value}
               onPress={() => setPreference(opt.value)}
+              haptic="selection"
               accessibilityRole="radio"
               accessibilityState={{ checked: preference === opt.value }}
               className="mb-2 flex-row items-center justify-between rounded-xl border border-app-border bg-app-surface px-4 py-3 dark:border-dark-border dark:bg-dark-surface"
@@ -496,7 +500,7 @@ function NumericField({
             {label}
           </Text>
           <View className="flex-row items-center">
-            <TextInput
+            <ThemedTextInput
               value={toStr(value)}
               onChangeText={(s) => onChange(toNum(s))}
               keyboardType="decimal-pad"

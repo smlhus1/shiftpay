@@ -1,5 +1,6 @@
-import { View, Text, TextInput, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { Icon } from "./Icon";
+import { ThemedTextInput } from "./ThemedTextInput";
 import type { CsvRowResult } from "@/lib/csv";
 import type { Shift, ShiftType } from "@/lib/calculations";
 import { useTranslation } from "@/lib/i18n";
@@ -71,7 +72,7 @@ export function ShiftEditor({
             )}
             {/* Row 1: Date, times, delete */}
             <View className="flex-row items-center gap-2">
-              <TextInput
+              <ThemedTextInput
                 value={date}
                 onChangeText={(s) => onUpdateRow(index, "date", s)}
                 placeholder="DD.MM.YYYY"
@@ -80,7 +81,7 @@ export function ShiftEditor({
                 className="min-w-[100px] flex-1 rounded-lg border border-app-border bg-app-elevated px-2 py-1 text-stone-900 dark:border-dark-border dark:bg-dark-elevated dark:text-stone-100"
                 style={{ minHeight: 44 }}
               />
-              <TextInput
+              <ThemedTextInput
                 value={start_time}
                 onChangeText={(s) => onUpdateRow(index, "start_time", s)}
                 placeholder="HH:MM"
@@ -90,7 +91,7 @@ export function ShiftEditor({
                 style={{ minHeight: 44 }}
               />
               <Text className="text-stone-600 dark:text-stone-400">{"\u2013"}</Text>
-              <TextInput
+              <ThemedTextInput
                 value={end_time}
                 onChangeText={(s) => onUpdateRow(index, "end_time", s)}
                 placeholder="HH:MM"
@@ -103,6 +104,7 @@ export function ShiftEditor({
                 onPress={() => onRemoveRow(index)}
                 className="ml-auto rounded-lg p-2"
                 accessibilityLabel={t("components.shiftCard.deleteA11y", { date })}
+                hitSlop={12}
               >
                 <Icon name="trash-outline" size={22} color={colors.error} />
               </PressableScale>
@@ -117,6 +119,7 @@ export function ShiftEditor({
                 <PressableScale
                   key={type}
                   onPress={() => onUpdateRow(index, "shift_type", type)}
+                  haptic="selection"
                   accessibilityRole="radio"
                   accessibilityState={{ checked: displayType === type }}
                   accessibilityLabel={t(`shiftTypes.${type}`)}

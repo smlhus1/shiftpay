@@ -3,12 +3,12 @@ import {
   View,
   Text,
   ScrollView,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
   Alert,
 } from "react-native";
+import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { Href } from "expo-router";
 import { Icon } from "@/components/Icon";
@@ -309,7 +309,7 @@ export default function SummaryScreen() {
             {t("summary.actualPay.title")}
           </Text>
           <View className="mt-2 flex-row items-center gap-2">
-            <TextInput
+            <ThemedTextInput
               value={actualPay}
               onChangeText={setActualPay}
               keyboardType="decimal-pad"

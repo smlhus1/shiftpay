@@ -123,7 +123,7 @@ export function ShiftCard({
               <PressableScale
                 onPress={() => onDelete(shift.id)}
                 accessibilityLabel={t("components.shiftCard.deleteA11y", { date: shift.date })}
-                hitSlop={8}
+                hitSlop={12}
                 className="p-2"
               >
                 <Icon name="trash-outline" size={18} color={colors.error} />
@@ -158,7 +158,7 @@ export function ShiftCard({
           <PressableScale
             onPress={() => onDelete(shift.id)}
             accessibilityLabel={t("components.shiftCard.deleteA11y", { date: shift.date })}
-            hitSlop={8}
+            hitSlop={12}
             className="p-2"
           >
             <Icon name="trash-outline" size={18} color={colors.error} />
