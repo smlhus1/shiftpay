@@ -225,6 +225,16 @@ export default function ImportScreen() {
   const cameraRef = useRef<CameraViewRef | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
 
+  // Aborts any in-flight OCR uploads when the screen unmounts (or when a
+  // new batch starts and previous calls are still pending). Spinning up a
+  // fresh controller per batch keeps the abort surface tight.
+  const ocrAbortRef = useRef<AbortController | null>(null);
+  useEffect(() => {
+    return () => {
+      ocrAbortRef.current?.abort();
+    };
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       getTariffRates()
@@ -235,25 +245,34 @@ export default function ImportScreen() {
 
   /** Run OCR on multiple images and merge all shifts into rows. */
   const processMultipleImages = async (uris: string[]) => {
+    // Cancel any in-flight controller from a previous batch, then arm a
+    // fresh one so this batch can be aborted on unmount.
+    ocrAbortRef.current?.abort();
+    ocrAbortRef.current = new AbortController();
+    const signal = ocrAbortRef.current.signal;
+
     setLoading(true);
     setOcrProgress(t("import.progress", { current: 1, total: uris.length }));
     const allRows: CsvRowResult[] = [];
     const errors: string[] = [];
     for (let i = 0; i < uris.length; i++) {
+      if (signal.aborted) break;
       const uri = uris[i];
       if (!uri) continue;
       setOcrProgress(t("import.progress", { current: i + 1, total: uris.length }));
       try {
-        const ocrResult = await postOcr(uri);
+        const ocrResult = await postOcr(uri, signal);
         for (const s of ocrResult.shifts) {
           allRows.push({ ok: true as const, shift: ocrShiftToShift(s) });
         }
       } catch (e) {
+        if (signal.aborted) return;
         errors.push(
           `Image ${i + 1}: ${e instanceof Error ? e.message : t("import.alerts.ocrFailed")}`
         );
       }
     }
+    if (signal.aborted) return;
     // Deduplicate: same date + start_time + end_time = same shift
     // Checks both within the batch and against already-saved shifts in the DB
     const existingKeys = await getExistingShiftKeys();
@@ -357,15 +376,21 @@ export default function ImportScreen() {
 
   const takePhoto = async () => {
     if (!cameraRef.current) return;
+    ocrAbortRef.current?.abort();
+    ocrAbortRef.current = new AbortController();
+    const signal = ocrAbortRef.current.signal;
     try {
       const photo = await cameraRef.current.takePictureAsync({});
+      if (signal.aborted) return;
       setShowCamera(false);
       setLoading(true);
       setError(null);
-      const result = await postOcr(photo.uri);
+      const result = await postOcr(photo.uri, signal);
+      if (signal.aborted) return;
       setRows(result.shifts.map((s) => ({ ok: true as const, shift: ocrShiftToShift(s) })));
       setExpectedPay(null);
     } catch (e) {
+      if (signal.aborted) return;
       setError(e instanceof Error ? e.message : t("import.alerts.ocrFailed"));
     } finally {
       setLoading(false);

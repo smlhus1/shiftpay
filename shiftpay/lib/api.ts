@@ -57,7 +57,19 @@ async function resizeAndStripExif(imageUri: string): Promise<string> {
   }
 }
 
-export async function postOcr(imageUri: string): Promise<OcrResponse> {
+/**
+ * Upload an image to the OCR endpoint and return the parsed response.
+ *
+ * @param imageUri  Local file URI from the camera or document picker.
+ * @param externalSignal  Optional signal from the caller (e.g. wired to a
+ *   React unmount). When it fires, the in-flight upload aborts. The
+ *   internal timeout (30 s) still applies on top of this; whichever fires
+ *   first wins.
+ */
+export async function postOcr(
+  imageUri: string,
+  externalSignal?: AbortSignal
+): Promise<OcrResponse> {
   // Always resize before upload — the re-encode strips EXIF (GPS/time
   // metadata) that can leak the user's workplace location. See the
   // research for Pass 3 §7.
@@ -72,6 +84,19 @@ export async function postOcr(imageUri: string): Promise<OcrResponse> {
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), OCR_TIMEOUT_MS);
+
+  // Propagate caller-provided aborts (e.g. component unmount) into our
+  // local controller. If the signal is already aborted before we start,
+  // bail immediately so we don't even fire the request.
+  let abortListener: (() => void) | null = null;
+  if (externalSignal) {
+    if (externalSignal.aborted) {
+      clearTimeout(timeoutId);
+      throw new Error(getTranslation("api.ocrAborted"));
+    }
+    abortListener = () => controller.abort();
+    externalSignal.addEventListener("abort", abortListener, { once: true });
+  }
 
   const headers: Record<string, string> = {};
   const apiKey = getOcrApiKey();
@@ -110,12 +135,17 @@ export async function postOcr(imageUri: string): Promise<OcrResponse> {
     return parsed.output;
   } catch (e) {
     clearTimeout(timeoutId);
-    if (e instanceof Error) {
-      if (e.name === "AbortError") {
-        throw new Error(getTranslation("api.ocrTimeout"));
-      }
-      throw e;
+    if (e instanceof Error && e.name === "AbortError") {
+      // Distinguish caller-cancelled (unmount) from local timeout —
+      // both surface as AbortError, but the message should match the
+      // actual cause.
+      const cause = externalSignal?.aborted ? "api.ocrAborted" : "api.ocrTimeout";
+      throw new Error(getTranslation(cause));
     }
     throw e;
+  } finally {
+    if (externalSignal && abortListener) {
+      externalSignal.removeEventListener("abort", abortListener);
+    }
   }
 }

@@ -178,6 +178,7 @@ const en: TranslationShape = {
   api: {
     ocrError: "OCR failed: %{status}",
     ocrTimeout: "OCR took too long. Try again or check your connection.",
+    ocrAborted: "OCR was cancelled.",
     ocrNotConfigured: "OCR endpoint is not configured.",
   },
   errorBoundary: {

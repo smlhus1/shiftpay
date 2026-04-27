@@ -1,6 +1,6 @@
-import { useState, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useRouter } from "expo-router";
 import { Icon } from "@/components/Icon";
 import {
   getDistinctMonthsWithShifts,
@@ -10,6 +10,7 @@ import {
   getShiftsInDateRange,
   getTariffRates,
   type ShiftRow,
+  type TariffRatesRow,
 } from "@/lib/db";
 import type { Href } from "expo-router";
 import { calculateExpectedPay, calculateOvertimePay, type Shift } from "@/lib/calculations";
@@ -18,7 +19,8 @@ import { ShiftCard } from "@/components/ShiftCard";
 import { PressableScale } from "@/components/PressableScale";
 import { AnimatedCard } from "@/components/AnimatedCard";
 import { useTranslation } from "@/lib/i18n";
-import { useTheme, useThemeColors } from "@/lib/theme-context";
+import { useThemeColors } from "@/lib/theme-context";
+import { useDbQuery } from "@/lib/hooks/useDbQuery";
 
 function getWeekRange(): { from: string; to: string } {
   const now = new Date();
@@ -55,92 +57,67 @@ function countdownToShift(shift: ShiftRow, t: (key: string, opts?: object) => st
   return t("dashboard.countdown.minutes", { count: mins });
 }
 
+interface DashboardData {
+  monthsList: { year: number; month: number }[];
+  nextShift: ShiftRow | null;
+  weekShifts: ShiftRow[];
+  dueConfirmation: ShiftRow[];
+  monthSummary: { plannedHours: number; actualHours: number; expectedPay: number } | null;
+  monthSummaries: Map<string, { shiftCount: number; expectedPay: number }>;
+}
+
+async function loadDashboard(): Promise<DashboardData> {
+  const [months, upcoming, due, weekRange] = await Promise.all([
+    getDistinctMonthsWithShifts(),
+    getUpcomingShifts(1),
+    getShiftsDueForConfirmation(),
+    Promise.resolve(getWeekRange()),
+  ]);
+  const week = await getShiftsInDateRange(weekRange.from, weekRange.to);
+  const rates: TariffRatesRow = await getTariffRates();
+
+  const now = new Date();
+  const sum = await getMonthSummary(now.getFullYear(), now.getMonth() + 1);
+  const completedForPay = sum.shifts.filter(
+    (s) => s.status === "completed" || s.status === "overtime"
+  );
+  const shiftsForPay: Shift[] = completedForPay.map(shiftRowToShift);
+  let pay = calculateExpectedPay(shiftsForPay, rates, rates.stacking_policy);
+  pay += calculateOvertimePay(completedForPay, rates);
+
+  const summaries = new Map<string, { shiftCount: number; expectedPay: number }>();
+  for (const { year, month } of months) {
+    const ms = await getMonthSummary(year, month);
+    const completed = ms.shifts.filter((s) => s.status === "completed" || s.status === "overtime");
+    const forPay: Shift[] = completed.map(shiftRowToShift);
+    let msPay = calculateExpectedPay(forPay, rates, rates.stacking_policy);
+    msPay += calculateOvertimePay(completed, rates);
+    summaries.set(toYearMonthKey(year, month), {
+      shiftCount: ms.shifts.length,
+      expectedPay: Math.round(msPay * 100) / 100,
+    });
+  }
+
+  return {
+    monthsList: months,
+    nextShift: upcoming[0] ?? null,
+    weekShifts: week,
+    dueConfirmation: due,
+    monthSummary: {
+      plannedHours: sum.plannedHours,
+      actualHours: sum.actualHours,
+      expectedPay: Math.round(pay * 100) / 100,
+    },
+    monthSummaries: summaries,
+  };
+}
+
 export default function DashboardScreen() {
   const router = useRouter();
   const { t, currency } = useTranslation();
-  const { theme } = useTheme();
   const colors = useThemeColors();
-  const [monthsList, setMonthsList] = useState<{ year: number; month: number }[]>([]);
-  const [monthSummaries, setMonthSummaries] = useState<
-    Map<string, { shiftCount: number; expectedPay: number }>
-  >(new Map());
-  const [nextShift, setNextShift] = useState<ShiftRow | null>(null);
-  const [weekShifts, setWeekShifts] = useState<ShiftRow[]>([]);
-  const [dueConfirmation, setDueConfirmation] = useState<ShiftRow[]>([]);
-  const [monthSummary, setMonthSummary] = useState<{
-    plannedHours: number;
-    actualHours: number;
-    expectedPay: number;
-  } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      const [months, upcoming, due, weekRange] = await Promise.all([
-        getDistinctMonthsWithShifts(),
-        getUpcomingShifts(1),
-        getShiftsDueForConfirmation(),
-        Promise.resolve(getWeekRange()),
-      ]);
-      setMonthsList(months);
-      setNextShift(upcoming[0] ?? null);
-      setDueConfirmation(due);
-
-      const week = await getShiftsInDateRange(weekRange.from, weekRange.to);
-      setWeekShifts(week);
-
-      const rates = await getTariffRates();
-
-      const now = new Date();
-      const sum = await getMonthSummary(now.getFullYear(), now.getMonth() + 1);
-      const completedForPay = sum.shifts.filter(
-        (s) => s.status === "completed" || s.status === "overtime"
-      );
-      const shiftsForPay: Shift[] = completedForPay.map(shiftRowToShift);
-      let pay = calculateExpectedPay(shiftsForPay, rates, rates.stacking_policy);
-      pay += calculateOvertimePay(completedForPay, rates);
-      setMonthSummary({
-        plannedHours: sum.plannedHours,
-        actualHours: sum.actualHours,
-        expectedPay: Math.round(pay * 100) / 100,
-      });
-
-      // History mini-summaries
-      const summaries = new Map<string, { shiftCount: number; expectedPay: number }>();
-      for (const { year, month } of months) {
-        const ms = await getMonthSummary(year, month);
-        const completed = ms.shifts.filter(
-          (s) => s.status === "completed" || s.status === "overtime"
-        );
-        const forPay: Shift[] = completed.map(shiftRowToShift);
-        let msPay = calculateExpectedPay(forPay, rates, rates.stacking_policy);
-        msPay += calculateOvertimePay(completed, rates);
-        summaries.set(toYearMonthKey(year, month), {
-          shiftCount: ms.shifts.length,
-          expectedPay: Math.round(msPay * 100) / 100,
-        });
-      }
-      setMonthSummaries(summaries);
-      setLoadError(null);
-    } catch (e) {
-      setLoadError(e instanceof Error ? e.message : t("dashboard.error.message"));
-      setMonthsList([]);
-      setNextShift(null);
-      setWeekShifts([]);
-      setDueConfirmation([]);
-      setMonthSummary(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
-
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      load();
-    }, [load])
-  );
+  const { data, status, error, refetch } = useDbQuery<DashboardData>(["dashboard"], loadDashboard);
 
   const onPressConfirm = useCallback(
     (shiftId: string) => {
@@ -155,7 +132,6 @@ export default function DashboardScreen() {
   }, [router]);
 
   // Editorial margin-note — Fraunces italic, one per screen (DESIGN.md §11.2)
-  // Must be called before any early return to satisfy rules-of-hooks.
   const marginNote = useMemo(() => {
     const h = new Date().getHours();
     if (h < 6) return "Natta er lang.";
@@ -165,7 +141,7 @@ export default function DashboardScreen() {
     return "Kveldsro.";
   }, []);
 
-  if (loading && monthsList.length === 0 && !nextShift && dueConfirmation.length === 0) {
+  if (status === "loading" && !data) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
         <ActivityIndicator
@@ -177,15 +153,14 @@ export default function DashboardScreen() {
     );
   }
 
-  if (loadError) {
+  if (status === "error" && !data) {
+    const msg = error instanceof Error ? error.message : t("dashboard.error.message");
     return (
       <View className="flex-1 items-center justify-center bg-app-bg p-6 dark:bg-dark-bg">
-        <Text className="text-center text-stone-600 dark:text-stone-400">{loadError}</Text>
+        <Text className="text-center text-stone-600 dark:text-stone-400">{msg}</Text>
         <PressableScale
           onPress={() => {
-            setLoadError(null);
-            setLoading(true);
-            load();
+            void refetch();
           }}
           accessibilityLabel={t("dashboard.error.retry")}
           className="mt-6 rounded-xl bg-accent-dark px-6 py-4 dark:bg-accent"
@@ -197,6 +172,13 @@ export default function DashboardScreen() {
       </View>
     );
   }
+
+  const monthsList = data?.monthsList ?? [];
+  const nextShift = data?.nextShift ?? null;
+  const weekShifts = data?.weekShifts ?? [];
+  const dueConfirmation = data?.dueConfirmation ?? [];
+  const monthSummary = data?.monthSummary ?? null;
+  const monthSummaries = data?.monthSummaries ?? new Map();
 
   const empty = monthsList.length === 0 && !nextShift && dueConfirmation.length === 0;
 
@@ -331,7 +313,7 @@ export default function DashboardScreen() {
                   s.date +
                   " " +
                   s.start_time +
-                  "\u2013" +
+                  "–" +
                   s.end_time +
                   ", " +
                   t("dashboard.pending.confirmBtn")
