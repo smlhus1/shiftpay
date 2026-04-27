@@ -253,6 +253,24 @@ const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 8,
+    name: "add_stacking_policy",
+    up: async (database) => {
+      // Pass 4 (business logic): user-selectable stacking policy for how
+      // weekend + holiday supplements combine on overlapping days.
+      // 'additive' is the existing behaviour (since 4a) and matches the
+      // most common NSF/KS interpretation. 'replace' / 'max' exist for
+      // tariffs that read the rules more conservatively. See
+      // research/refactor/master-plan.md decision D.
+      const cols = await database.getAllAsync<{ name: string }>("PRAGMA table_info(tariff_rates)");
+      if (!cols.some((c) => c.name === "stacking_policy")) {
+        await database.execAsync(
+          "ALTER TABLE tariff_rates ADD COLUMN stacking_policy TEXT NOT NULL DEFAULT 'additive'"
+        );
+      }
+    },
+  },
 ];
 
 async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
@@ -401,6 +419,17 @@ export async function _closeDbForTests(): Promise<void> {
   }
 }
 
+/**
+ * Stacking policy for how weekend + holiday supplements combine on
+ * overlapping days. Mirrors lib/calculations.ts StackingPolicy.
+ *  - 'additive': both stack (default, NSF/KS interpretation)
+ *  - 'replace':  holiday replaces weekend
+ *  - 'max':      only the larger of weekend/holiday applies
+ */
+export type StackingPolicyValue = "additive" | "replace" | "max";
+
+export const STACKING_POLICIES: readonly StackingPolicyValue[] = ["additive", "replace", "max"];
+
 export interface TariffRatesRow {
   id: number;
   base_rate: number;
@@ -411,6 +440,7 @@ export interface TariffRatesRow {
   overtime_supplement: number;
   regular_period_start_day: number;
   extra_period_start_day: number;
+  stacking_policy: StackingPolicyValue;
   updated_at: string;
 }
 
@@ -510,7 +540,14 @@ export async function getTariffRates(): Promise<TariffRatesRow> {
       [TARIFF_ID]
     );
     if (rows[0]) {
-      return rows[0];
+      // Defensive read: a downgrade or partial migration could leave the
+      // stacking_policy column empty/null for legacy rows. Coerce unknown
+      // values to 'additive' so the column type stays narrow at the API.
+      const raw = (rows[0] as TariffRatesRow & { stacking_policy: string }).stacking_policy;
+      const policy: StackingPolicyValue = (STACKING_POLICIES as readonly string[]).includes(raw)
+        ? (raw as StackingPolicyValue)
+        : "additive";
+      return { ...rows[0], stacking_policy: policy };
     }
     const now = new Date().toISOString();
     const defaultRates: TariffRatesRow = {
@@ -523,10 +560,11 @@ export async function getTariffRates(): Promise<TariffRatesRow> {
       overtime_supplement: 40,
       regular_period_start_day: 1,
       extra_period_start_day: 12,
+      stacking_policy: "additive",
       updated_at: now,
     };
     await database.runAsync(
-      "INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, overtime_supplement, regular_period_start_day, extra_period_start_day, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, overtime_supplement, regular_period_start_day, extra_period_start_day, stacking_policy, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         defaultRates.id,
         defaultRates.base_rate,
@@ -537,6 +575,7 @@ export async function getTariffRates(): Promise<TariffRatesRow> {
         defaultRates.overtime_supplement,
         defaultRates.regular_period_start_day,
         defaultRates.extra_period_start_day,
+        defaultRates.stacking_policy,
         defaultRates.updated_at,
       ]
     );
@@ -545,7 +584,7 @@ export async function getTariffRates(): Promise<TariffRatesRow> {
 }
 
 export async function setTariffRates(rates: TariffRatesInput): Promise<void> {
-  // Clamp all rates to non-negative values
+  // Clamp all rates to non-negative values; validate the policy enum.
   const validated = {
     base_rate: Math.max(0, rates.base_rate),
     evening_supplement: Math.max(0, rates.evening_supplement),
@@ -555,12 +594,15 @@ export async function setTariffRates(rates: TariffRatesInput): Promise<void> {
     overtime_supplement: Math.max(0, rates.overtime_supplement),
     regular_period_start_day: Math.min(28, Math.max(1, rates.regular_period_start_day)),
     extra_period_start_day: Math.min(28, Math.max(1, rates.extra_period_start_day)),
+    stacking_policy: (STACKING_POLICIES as readonly string[]).includes(rates.stacking_policy)
+      ? rates.stacking_policy
+      : ("additive" as StackingPolicyValue),
   };
   await withDb(async (database) => {
     const now = new Date().toISOString();
     await database.runAsync(
-      `INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, overtime_supplement, regular_period_start_day, extra_period_start_day, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO tariff_rates (id, base_rate, evening_supplement, night_supplement, weekend_supplement, holiday_supplement, overtime_supplement, regular_period_start_day, extra_period_start_day, stacking_policy, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          base_rate = excluded.base_rate,
          evening_supplement = excluded.evening_supplement,
@@ -570,6 +612,7 @@ export async function setTariffRates(rates: TariffRatesInput): Promise<void> {
          overtime_supplement = excluded.overtime_supplement,
          regular_period_start_day = excluded.regular_period_start_day,
          extra_period_start_day = excluded.extra_period_start_day,
+         stacking_policy = excluded.stacking_policy,
          updated_at = excluded.updated_at`,
       [
         TARIFF_ID,
@@ -581,6 +624,7 @@ export async function setTariffRates(rates: TariffRatesInput): Promise<void> {
         validated.overtime_supplement,
         validated.regular_period_start_day,
         validated.extra_period_start_day,
+        validated.stacking_policy,
         now,
       ]
     );

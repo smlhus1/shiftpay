@@ -134,6 +134,16 @@ const sv: TranslationShape = {
       extraLabel: "Extra skift startar dag",
       hint: "De flesta har 1:a för ordinarie och 12:e för extra",
     },
+    stackingPolicy: {
+      title: "Tilläggsstapling",
+      hint: "Hur helg- och helgdagstillägg kombineras när ett skift faller på båda.",
+      additive: "Båda läggs ihop",
+      additiveHint: "Standard för de flesta avtal.",
+      replace: "Helgdag ersätter helg",
+      replaceHint: "Konservativ tolkning av avtalet.",
+      max: "Endast det största",
+      maxHint: "Den minst förmånliga tolkningen.",
+    },
     save: "Spara",
     saved: "Sparat.",
     language: {

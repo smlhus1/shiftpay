@@ -12,7 +12,7 @@ import {
 import { Icon } from "@/components/Icon";
 import * as Haptics from "expo-haptics";
 import Constants from "expo-constants";
-import { getTariffRates, setTariffRates, type TariffRatesInput } from "@/lib/db";
+import { getTariffRates, setTariffRates, STACKING_POLICIES, type TariffRatesInput } from "@/lib/db";
 import { useTranslation, type Locale, type Currency } from "@/lib/i18n";
 import { PressableScale } from "@/components/PressableScale";
 import { useTheme, useThemeColors, type ThemePreference } from "@/lib/theme-context";
@@ -26,6 +26,7 @@ const defaultRates: TariffRatesInput = {
   overtime_supplement: 40,
   regular_period_start_day: 1,
   extra_period_start_day: 12,
+  stacking_policy: "additive",
 };
 
 function toStr(n: number): string {
@@ -82,6 +83,7 @@ export default function SettingsScreen() {
             overtime_supplement: row.overtime_supplement,
             regular_period_start_day: row.regular_period_start_day,
             extra_period_start_day: row.extra_period_start_day,
+            stacking_policy: row.stacking_policy,
           });
         }
       })
@@ -235,6 +237,44 @@ export default function SettingsScreen() {
               />
             </View>
           )}
+        </View>
+
+        {/* Stacking policy section */}
+        <View
+          className="mt-6"
+          accessibilityRole="radiogroup"
+          accessibilityLabel={t("settings.stackingPolicy.title")}
+        >
+          <Text
+            className="mb-3 font-inter-medium text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400"
+            accessibilityRole="header"
+          >
+            {t("settings.stackingPolicy.title")}
+          </Text>
+          <Text className="mb-3 text-xs text-stone-500 dark:text-stone-400">
+            {t("settings.stackingPolicy.hint")}
+          </Text>
+          {STACKING_POLICIES.map((opt) => (
+            <PressableScale
+              key={opt}
+              onPress={() => setRates((r) => ({ ...r, stacking_policy: opt }))}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: rates.stacking_policy === opt }}
+              className="mb-2 rounded-xl border border-app-border bg-app-surface px-4 py-3 dark:border-dark-border dark:bg-dark-surface"
+            >
+              <View className="flex-row items-center justify-between">
+                <Text className="flex-1 pr-2 font-inter-medium text-stone-900 dark:text-stone-100">
+                  {t(`settings.stackingPolicy.${opt}`)}
+                </Text>
+                {rates.stacking_policy === opt && (
+                  <Icon name="checkmark" size={20} color={colors.accent} />
+                )}
+              </View>
+              <Text className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                {t(`settings.stackingPolicy.${opt}Hint`)}
+              </Text>
+            </PressableScale>
+          ))}
         </View>
 
         <PressableScale

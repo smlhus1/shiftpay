@@ -96,7 +96,7 @@ export default function SummaryScreen() {
         (sh) => sh.status === "completed" || sh.status === "overtime"
       );
       const shiftsForPay: Shift[] = paidShifts.map(shiftRowToShift);
-      const pay = calculateExpectedPay(shiftsForPay, rates);
+      const pay = calculateExpectedPay(shiftsForPay, rates, rates.stacking_policy);
       const totalPay = pay + calculateOvertimePay(paidShifts, rates);
       setExpectedPay(totalPay);
 
@@ -107,10 +107,10 @@ export default function SummaryScreen() {
         const regularShifts = paidShifts.filter((sh) => sh.pay_type !== "extra");
         const extraShifts = paidShifts.filter((sh) => sh.pay_type === "extra");
         const regPay =
-          calculateExpectedPay(regularShifts.map(shiftRowToShift), rates) +
+          calculateExpectedPay(regularShifts.map(shiftRowToShift), rates, rates.stacking_policy) +
           calculateOvertimePay(regularShifts, rates);
         const extPay =
-          calculateExpectedPay(extraShifts.map(shiftRowToShift), rates) +
+          calculateExpectedPay(extraShifts.map(shiftRowToShift), rates, rates.stacking_policy) +
           calculateOvertimePay(extraShifts, rates);
         setRegularPay(regPay);
         setExtraPay(extPay);

@@ -155,4 +155,45 @@ describe("calculations — properties", () => {
       )
     );
   });
+
+  it("overnight bounds — any 1-shift pay is in [0, 24h × max_rate]", () => {
+    // A single shift spans at most 24h. Hourly rate is at most
+    // base + the largest single supplement that can apply (shift_type
+    // + weekend + holiday under additive — overtime is computed by a
+    // different function and not exercised here). Pay must be inside
+    // that bound for any (date, start, end) combination.
+    fc.assert(
+      fc.property(shiftArb, ratesArb, (shift, rates) => {
+        const pay = calculateExpectedPay([shift], rates);
+        const maxRate =
+          rates.base_rate +
+          Math.max(rates.evening_supplement, rates.night_supplement, 0) +
+          rates.weekend_supplement +
+          rates.holiday_supplement;
+        // Add 1 cent of slack for the single Math.round at output.
+        return pay >= 0 && pay <= 24 * maxRate + 0.01;
+      }),
+      { numRuns: 200 }
+    );
+  });
+
+  it("policy ordering — pay(max) ≤ pay(replace) ≤ pay(additive) for any shift", () => {
+    // Holiday-vs-weekend stacking: 'additive' applies both, 'replace'
+    // applies the holiday-favouring one, 'max' applies only the larger of
+    // the two. So for any shift on any day, pay(max) ≤ pay(replace) ≤
+    // pay(additive) within rounding slack. This is the "holiday-triumphs-
+    // weekend" guarantee from research/refactor/pass-4-business-logic.md
+    // §3 — the holiday supplement never decreases pay relative to a
+    // weekend-only treatment.
+    fc.assert(
+      fc.property(shiftArb, ratesArb, (shift, rates) => {
+        const additive = calculateExpectedPay([shift], rates, "additive");
+        const replace = calculateExpectedPay([shift], rates, "replace");
+        const max = calculateExpectedPay([shift], rates, "max");
+        // 1 cent rounding slack across the comparisons.
+        return max <= replace + 0.01 && replace <= additive + 0.01;
+      }),
+      { numRuns: 200 }
+    );
+  });
 });

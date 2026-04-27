@@ -98,7 +98,7 @@ export default function DashboardScreen() {
         (s) => s.status === "completed" || s.status === "overtime"
       );
       const shiftsForPay: Shift[] = completedForPay.map(shiftRowToShift);
-      let pay = calculateExpectedPay(shiftsForPay, rates);
+      let pay = calculateExpectedPay(shiftsForPay, rates, rates.stacking_policy);
       pay += calculateOvertimePay(completedForPay, rates);
       setMonthSummary({
         plannedHours: sum.plannedHours,
@@ -114,7 +114,7 @@ export default function DashboardScreen() {
           (s) => s.status === "completed" || s.status === "overtime"
         );
         const forPay: Shift[] = completed.map(shiftRowToShift);
-        let msPay = calculateExpectedPay(forPay, rates);
+        let msPay = calculateExpectedPay(forPay, rates, rates.stacking_policy);
         msPay += calculateOvertimePay(completed, rates);
         summaries.set(toYearMonthKey(year, month), {
           shiftCount: ms.shifts.length,

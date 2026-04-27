@@ -45,6 +45,10 @@ const TariffRatesSchema = v.object({
   overtime_supplement: v.number(),
   regular_period_start_day: v.number(),
   extra_period_start_day: v.number(),
+  // Added in Pass 4b. Older v1 snapshots don't carry this field — fall
+  // back to the legacy behaviour ('additive') so import stays backwards
+  // compatible without a snapshot version bump.
+  stacking_policy: v.optional(v.picklist(["additive", "replace", "max"] as const), "additive"),
   updated_at: v.string(),
 });
 
@@ -208,6 +212,7 @@ export async function applyImport(
     overtime_supplement: r.overtime_supplement,
     regular_period_start_day: r.regular_period_start_day,
     extra_period_start_day: r.extra_period_start_day,
+    stacking_policy: r.stacking_policy,
   });
 
   // Schedules + their shifts: use the public insert API to get all the

@@ -134,6 +134,16 @@ const en: TranslationShape = {
       extraLabel: "Extra shifts start day",
       hint: "Most use 1st for regular and 12th for extra",
     },
+    stackingPolicy: {
+      title: "Supplement stacking",
+      hint: "How weekend and holiday supplements combine when a shift falls on both.",
+      additive: "Both stack",
+      additiveHint: "Default for most tariffs (NSF/KS).",
+      replace: "Holiday replaces weekend",
+      replaceHint: "Conservative reading (Virke, parts of Spekter).",
+      max: "Largest only",
+      maxHint: "The least favourable reading.",
+    },
     save: "Save",
     saved: "Saved.",
     language: {
