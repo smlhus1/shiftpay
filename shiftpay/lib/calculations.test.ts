@@ -137,6 +137,40 @@ describe("calculateExpectedPay", () => {
     expect(calculateExpectedPay(shifts, baseRates)).toBe(2800);
   });
 
+  it("'replace' policy applies weekend supplement when no holiday (line 131)", () => {
+    // 02.05.2026 is a Saturday and NOT a holiday.
+    const shifts: Shift[] = [
+      { date: "02.05.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ];
+    // 8 × (250 + 35) = 2280
+    expect(calculateExpectedPay(shifts, baseRates, "replace")).toBe(2280);
+  });
+
+  it("'replace' policy adds no day-supplement on a weekday non-holiday", () => {
+    // 04.05.2026 is a Monday and NOT a holiday.
+    const shifts: Shift[] = [
+      { date: "04.05.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ];
+    // 8 × 250 = 2000
+    expect(calculateExpectedPay(shifts, baseRates, "replace")).toBe(2000);
+  });
+
+  it("'max' policy applies weekend supplement when no holiday", () => {
+    const shifts: Shift[] = [
+      { date: "02.05.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ];
+    // Max of {weekend 35} = 35. 8 × (250 + 35) = 2280.
+    expect(calculateExpectedPay(shifts, baseRates, "max")).toBe(2280);
+  });
+
+  it("'max' policy skips day-supplement on a weekday non-holiday", () => {
+    const shifts: Shift[] = [
+      { date: "04.05.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ];
+    // 8 × 250 = 2000
+    expect(calculateExpectedPay(shifts, baseRates, "max")).toBe(2000);
+  });
+
   it("rounds to 2 decimal places", () => {
     const shifts: Shift[] = [
       { date: "02.03.2026", start_time: "08:00", end_time: "08:07", shift_type: "tidlig" },
