@@ -103,14 +103,38 @@ describe("calculateExpectedPay", () => {
     expect(calculateExpectedPay(shifts, baseRates)).toBe(2000 + 1632);
   });
 
-  // BUG (Pass 4): holiday_supplement is not consumed. 17. mai = Friday, pays base only.
-  it("does NOT add holiday supplement on 17. mai (BUG — Pass 4 fixes)", () => {
+  it("adds holiday supplement on 17. mai (Grunnlovsdagen, default additive policy)", () => {
     const shifts: Shift[] = [
       { date: "17.05.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
     ];
-    // 17.05.2026 is a Sunday; only the weekend supplement kicks in, not holiday
-    // Sunday: 8 × (250 + 35) = 2280
-    expect(calculateExpectedPay(shifts, baseRates)).toBe(2280);
+    // 17.05.2026 is Sunday + Grunnlovsdagen.
+    // Additive: 8 h × (250 base + 35 weekend + 100 holiday) = 8 × 385 = 3080
+    expect(calculateExpectedPay(shifts, baseRates)).toBe(3080);
+  });
+
+  it("'replace' policy lets holiday supplement replace weekend on same day", () => {
+    const shifts: Shift[] = [
+      { date: "17.05.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ];
+    // Replace: holiday wins over weekend. 8 × (250 + 100) = 2800
+    expect(calculateExpectedPay(shifts, baseRates, "replace")).toBe(2800);
+  });
+
+  it("'max' policy picks the larger of holiday/weekend supplements", () => {
+    const shifts: Shift[] = [
+      { date: "17.05.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ];
+    // Max of {weekend 35, holiday 100} = 100. 8 × (250 + 100) = 2800.
+    expect(calculateExpectedPay(shifts, baseRates, "max")).toBe(2800);
+  });
+
+  it("applies holiday supplement on 25. desember regardless of weekday (additive)", () => {
+    // 25.12.2026 is a Friday. No weekend supplement, just holiday.
+    const shifts: Shift[] = [
+      { date: "25.12.2026", start_time: "08:00", end_time: "16:00", shift_type: "tidlig" },
+    ];
+    // 8 × (250 + 100) = 2800
+    expect(calculateExpectedPay(shifts, baseRates)).toBe(2800);
   });
 
   it("rounds to 2 decimal places", () => {
