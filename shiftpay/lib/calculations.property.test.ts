@@ -177,21 +177,27 @@ describe("calculations — properties", () => {
     );
   });
 
-  it("policy ordering — pay(max) ≤ pay(replace) ≤ pay(additive) for any shift", () => {
-    // Holiday-vs-weekend stacking: 'additive' applies both, 'replace'
-    // applies the holiday-favouring one, 'max' applies only the larger of
-    // the two. So for any shift on any day, pay(max) ≤ pay(replace) ≤
-    // pay(additive) within rounding slack. This is the "holiday-triumphs-
-    // weekend" guarantee from research/refactor/pass-4-business-logic.md
-    // §3 — the holiday supplement never decreases pay relative to a
-    // weekend-only treatment.
+  it("policy ordering — pay(replace) ≤ pay(max) ≤ pay(additive) for any shift", () => {
+    // Mathematical relation between the three stacking modes for ANY
+    // tariff (no constraints on supplement sizes):
+    //   - additive: base + holiday_sup + weekend_sup → upper bound
+    //   - max:      base + max(holiday_sup, weekend_sup) when applicable
+    //   - replace:  base + holiday_sup on holidays, base + weekend_sup
+    //               on non-holiday weekends (lets a low holiday rate
+    //               OVERRIDE a higher weekend rate — that's the user's
+    //               choice when picking 'replace')
+    //
+    // So: replace ≤ max (max never picks the smaller candidate when both
+    // apply) and max ≤ additive (additive sums both, max picks one). The
+    // "holiday triumphs weekend" intuition only holds if the user sets
+    // holiday_supplement ≥ weekend_supplement, which is not enforced.
     fc.assert(
       fc.property(shiftArb, ratesArb, (shift, rates) => {
         const additive = calculateExpectedPay([shift], rates, "additive");
         const replace = calculateExpectedPay([shift], rates, "replace");
         const max = calculateExpectedPay([shift], rates, "max");
         // 1 cent rounding slack across the comparisons.
-        return max <= replace + 0.01 && replace <= additive + 0.01;
+        return replace <= max + 0.01 && max <= additive + 0.01;
       }),
       { numRuns: 200 }
     );

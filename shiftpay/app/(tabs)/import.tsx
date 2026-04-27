@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useReducer, useRef, useEffect, useCallback, useState } from "react";
 import { View, Text, ScrollView, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
@@ -38,6 +38,12 @@ import { PressableScale } from "@/components/PressableScale";
 import { AnimatedCard } from "@/components/AnimatedCard";
 import { useTranslation } from "@/lib/i18n";
 import { useThemeColors } from "@/lib/theme-context";
+import {
+  importReducer,
+  initialImportState,
+  type ImportSource,
+  type SavedResult,
+} from "./import-state";
 
 function SkeletonCard({ delay }: { delay: number }) {
   return (
@@ -104,7 +110,7 @@ function SavedSuccessView({
   onViewSchedule,
   onImportMore,
 }: {
-  savedResult: { scheduleId: string; shiftCount: number; periodStart: string; periodEnd: string };
+  savedResult: SavedResult;
   onViewSchedule: () => void;
   onImportMore: () => void;
 }) {
@@ -204,22 +210,10 @@ function getValidShifts(rows: CsvRowResult[]): Shift[] {
 export default function ImportScreen() {
   const router = useRouter();
   const { t } = useTranslation();
-  const colors = useThemeColors();
+  const [state, dispatch] = useReducer(importReducer, initialImportState);
+  // Pure UI state that's orthogonal to the import lifecycle stays as
+  // useState — no need to muddy the reducer with overlay toggles.
   const [showCamera, setShowCamera] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [rows, setRows] = useState<CsvRowResult[]>([]);
-  const [expectedPay, setExpectedPay] = useState<number | null>(null);
-  const [savedResult, setSavedResult] = useState<{
-    scheduleId: string;
-    shiftCount: number;
-    periodStart: string;
-    periodEnd: string;
-  } | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [calculating, setCalculating] = useState(false);
-  const [source, setSource] = useState<"ocr" | "manual" | "gallery" | "csv">("ocr");
-  const [ocrProgress, setOcrProgress] = useState<string | null>(null);
   const [showMore, setShowMore] = useState(false);
   const [baseRateZero, setBaseRateZero] = useState(false);
   const cameraRef = useRef<CameraViewRef | null>(null);
@@ -244,22 +238,27 @@ export default function ImportScreen() {
   );
 
   /** Run OCR on multiple images and merge all shifts into rows. */
-  const processMultipleImages = async (uris: string[]) => {
-    // Cancel any in-flight controller from a previous batch, then arm a
-    // fresh one so this batch can be aborted on unmount.
+  const processMultipleImages = async (uris: string[], source: ImportSource) => {
     ocrAbortRef.current?.abort();
     ocrAbortRef.current = new AbortController();
     const signal = ocrAbortRef.current.signal;
 
-    setLoading(true);
-    setOcrProgress(t("import.progress", { current: 1, total: uris.length }));
+    dispatch({
+      type: "load_start",
+      source,
+      progress: t("import.progress", { current: 1, total: uris.length }),
+    });
+
     const allRows: CsvRowResult[] = [];
     const errors: string[] = [];
     for (let i = 0; i < uris.length; i++) {
       if (signal.aborted) break;
       const uri = uris[i];
       if (!uri) continue;
-      setOcrProgress(t("import.progress", { current: i + 1, total: uris.length }));
+      dispatch({
+        type: "load_progress",
+        progress: t("import.progress", { current: i + 1, total: uris.length }),
+      });
       try {
         const ocrResult = await postOcr(uri, signal);
         for (const s of ocrResult.shifts) {
@@ -273,6 +272,7 @@ export default function ImportScreen() {
       }
     }
     if (signal.aborted) return;
+
     // Deduplicate: same date + start_time + end_time = same shift
     // Checks both within the batch and against already-saved shifts in the DB
     const existingKeys = await getExistingShiftKeys();
@@ -284,18 +284,16 @@ export default function ImportScreen() {
       seen.add(key);
       return true;
     });
-    setRows(dedupedRows);
-    setExpectedPay(null);
-    setOcrProgress(null);
-    if (errors.length > 0) {
-      setError(errors.join("\n"));
-    }
-    setLoading(false);
+
+    dispatch({
+      type: "load_success",
+      source,
+      rows: dedupedRows,
+      warning: errors.length > 0 ? errors.join("\n") : null,
+    });
   };
 
   const openGallery = async () => {
-    setSource("gallery");
-    setError(null);
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
@@ -305,17 +303,17 @@ export default function ImportScreen() {
       });
       if (result.canceled || !result.assets?.length) return;
       const uris = result.assets.map((a) => a.uri);
-      await processMultipleImages(uris);
+      await processMultipleImages(uris, "gallery");
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("import.alerts.saveError"));
-      setLoading(false);
+      dispatch({
+        type: "load_error",
+        error: e instanceof Error ? e.message : t("import.alerts.saveError"),
+      });
     }
   };
 
   /** Pick images via file browser – access to DCIM, Download, and other folders. */
   const pickImageFromFiles = async () => {
-    setSource("gallery");
-    setError(null);
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ["image/png", "image/jpeg", "image/jpg"],
@@ -324,16 +322,16 @@ export default function ImportScreen() {
       });
       if (result.canceled || !result.assets?.length) return;
       const uris = result.assets.map((a) => a.uri);
-      await processMultipleImages(uris);
+      await processMultipleImages(uris, "gallery");
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("import.alerts.saveError"));
-      setLoading(false);
+      dispatch({
+        type: "load_error",
+        error: e instanceof Error ? e.message : t("import.alerts.saveError"),
+      });
     }
   };
 
   const pickCSV = async () => {
-    setSource("csv");
-    setError(null);
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: "text/csv",
@@ -342,32 +340,31 @@ export default function ImportScreen() {
       if (result.canceled) return;
       const firstAsset = result.assets[0];
       if (!firstAsset) return;
-      setLoading(true);
+      dispatch({ type: "load_start", source: "csv" });
       const { rows: parsedRows, errors: parseErrors } = await parseCSVFile(firstAsset.uri);
-      setRows(parsedRows);
-      setExpectedPay(null);
-      if (parseErrors[0]) {
-        setError(parseErrors[0]);
-      } else if (parsedRows.length === 0) {
-        setError(t("import.alerts.csvEmpty"));
-      } else {
-        setError(null);
+      if (parsedRows.length === 0) {
+        dispatch({ type: "load_error", error: parseErrors[0] ?? t("import.alerts.csvEmpty") });
+        return;
       }
+      dispatch({
+        type: "load_success",
+        source: "csv",
+        rows: parsedRows,
+        warning: parseErrors[0] ?? null,
+      });
     } catch (e) {
-      setError(e instanceof Error ? e.message : t("import.alerts.saveError"));
-      setRows([]);
-    } finally {
-      setLoading(false);
+      dispatch({
+        type: "load_error",
+        error: e instanceof Error ? e.message : t("import.alerts.saveError"),
+      });
     }
   };
 
   const openCamera = async () => {
-    setSource("ocr");
-    setError(null);
     if (!permission?.granted) {
       const { granted } = await requestPermission();
       if (!granted) {
-        setError(t("import.cameraPermissionError"));
+        dispatch({ type: "load_error", error: t("import.cameraPermissionError") });
         return;
       }
     }
@@ -383,50 +380,61 @@ export default function ImportScreen() {
       const photo = await cameraRef.current.takePictureAsync({});
       if (signal.aborted) return;
       setShowCamera(false);
-      setLoading(true);
-      setError(null);
+      dispatch({ type: "load_start", source: "ocr" });
       const result = await postOcr(photo.uri, signal);
       if (signal.aborted) return;
-      setRows(result.shifts.map((s) => ({ ok: true as const, shift: ocrShiftToShift(s) })));
-      setExpectedPay(null);
+      dispatch({
+        type: "load_success",
+        source: "ocr",
+        rows: result.shifts.map((s) => ({ ok: true as const, shift: ocrShiftToShift(s) })),
+      });
     } catch (e) {
       if (signal.aborted) return;
-      setError(e instanceof Error ? e.message : t("import.alerts.ocrFailed"));
-    } finally {
-      setLoading(false);
+      dispatch({
+        type: "load_error",
+        error: e instanceof Error ? e.message : t("import.alerts.ocrFailed"),
+      });
     }
   };
 
-  const validShifts = getValidShifts(rows);
-
   const calculate = async () => {
-    if (rows.length === 0) return;
+    if (state.phase.phase !== "review") return;
+    const validShifts = getValidShifts(state.phase.rows);
+    if (state.phase.rows.length === 0) return;
     if (validShifts.length === 0) {
       Alert.alert(t("import.alerts.missingData"), t("import.alerts.missingDataCalculate"));
       return;
     }
-    setCalculating(true);
-    setError(null);
+    dispatch({ type: "calculate_start" });
     try {
       const rates = await getTariffRates();
       const total = calculateExpectedPay(validShifts, rates, rates.stacking_policy);
-      setExpectedPay(total);
-      if (validShifts.length < rows.length) {
-        setError(t("import.alerts.csvError"));
-      }
-    } finally {
-      setCalculating(false);
+      dispatch({
+        type: "calculate_done",
+        expectedPay: total,
+        warning: validShifts.length < state.phase.rows.length ? t("import.alerts.csvError") : null,
+      });
+    } catch (e) {
+      dispatch({
+        type: "calculate_done",
+        expectedPay: 0,
+        warning: e instanceof Error ? e.message : t("import.alerts.saveError"),
+      });
     }
   };
 
   const addShiftManually = () => {
-    setError(null);
-    setSource("manual");
-    setRows([{ ok: true as const, shift: emptyShift() }]);
-    setExpectedPay(null);
+    dispatch({ type: "manual_start" });
+    dispatch({
+      type: "rows_update",
+      rows: [{ ok: true as const, shift: emptyShift() }],
+    });
   };
 
   const saveTimesheet = async () => {
+    if (state.phase.phase !== "review") return;
+    const { rows, source } = state.phase;
+    const validShifts = getValidShifts(rows);
     if (validShifts.length === 0) {
       Alert.alert(t("import.alerts.missingData"), t("import.alerts.missingDataSave"));
       return;
@@ -436,21 +444,8 @@ export default function ImportScreen() {
       dateToComparable(a) <= dateToComparable(b) ? a : b
     );
     const periodEnd = dates.reduce((a, b) => (dateToComparable(a) >= dateToComparable(b) ? a : b));
-    const sourceStr =
-      source === "gallery"
-        ? "gallery"
-        : source === "csv"
-          ? "csv"
-          : source === "ocr"
-            ? "ocr"
-            : "manual";
-    setSaving(true);
+    dispatch({ type: "save_start" });
     try {
-      // Auto-calculate expected pay before saving
-      const rates = await getTariffRates();
-      const pay = calculateExpectedPay(validShifts, rates, rates.stacking_policy);
-      setExpectedPay(pay);
-
       await requestNotificationPermission();
       if (__DEV__) {
         console.log(
@@ -465,7 +460,7 @@ export default function ImportScreen() {
       const { scheduleId, shifts: inserted } = await insertScheduleWithShifts(
         periodStart,
         periodEnd,
-        sourceStr,
+        source,
         validShifts.map((s) => ({
           date: s.date,
           start_time: s.start_time,
@@ -498,37 +493,50 @@ export default function ImportScreen() {
         // Shift data is already saved; do not fail the whole save
       }
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      setSavedResult({
-        scheduleId,
-        shiftCount: inserted.length,
-        periodStart,
-        periodEnd,
+      dispatch({
+        type: "save_success",
+        result: {
+          scheduleId,
+          shiftCount: inserted.length,
+          periodStart,
+          periodEnd,
+        },
       });
-      setRows([]);
-      setExpectedPay(null);
     } catch (e) {
       Alert.alert(t("common.error"), e instanceof Error ? e.message : t("import.alerts.saveError"));
-    } finally {
-      setSaving(false);
+      dispatch({
+        type: "save_error",
+        error: e instanceof Error ? e.message : t("import.alerts.saveError"),
+      });
     }
   };
 
   const updateRow = (index: number, field: keyof Shift, value: string | ShiftType) => {
-    setRows((prev) =>
-      prev.map((r, i) => {
-        if (i !== index) return r;
-        if (r.ok) {
-          return { ok: true as const, shift: { ...r.shift, [field]: value } };
-        }
-        return { ...r, [field]: value };
-      })
-    );
-    setExpectedPay(null);
+    if (state.phase.phase !== "review") return;
+    const next = state.phase.rows.map((r, i) => {
+      if (i !== index) return r;
+      if (r.ok) {
+        return { ok: true as const, shift: { ...r.shift, [field]: value } };
+      }
+      return { ...r, [field]: value };
+    });
+    dispatch({ type: "rows_update", rows: next });
   };
 
   const removeRow = (index: number) => {
-    setRows((prev) => prev.filter((_, i) => i !== index));
-    setExpectedPay(null);
+    if (state.phase.phase !== "review") return;
+    dispatch({
+      type: "rows_update",
+      rows: state.phase.rows.filter((_, i) => i !== index),
+    });
+  };
+
+  const addRow = () => {
+    if (state.phase.phase !== "review") return;
+    dispatch({
+      type: "rows_update",
+      rows: [...state.phase.rows, { ok: true as const, shift: emptyShift() }],
+    });
   };
 
   if (showCamera) {
@@ -540,6 +548,20 @@ export default function ImportScreen() {
       />
     );
   }
+
+  const { phase, error } = state;
+  const isLoading = phase.phase === "loading";
+  const ocrProgress = phase.phase === "loading" ? phase.progress : null;
+  const reviewRows = phase.phase === "review" || phase.phase === "saving" ? phase.rows : [];
+  const reviewSource =
+    phase.phase === "review" || phase.phase === "saving" ? phase.source : "manual";
+  const expectedPay =
+    phase.phase === "review" || phase.phase === "saving" ? phase.expectedPay : null;
+  const calculating = phase.phase === "review" ? phase.calculating : false;
+  const saving = phase.phase === "saving";
+  const savedResult = phase.phase === "saved" ? phase.result : null;
+  const showInitialOptions = phase.phase === "initial";
+  const showReview = reviewRows.length > 0 || phase.phase === "saving";
 
   return (
     <ScrollView
@@ -556,7 +578,7 @@ export default function ImportScreen() {
         </View>
       )}
 
-      {rows.length === 0 && !loading && !savedResult && (
+      {showInitialOptions && (
         <>
           {baseRateZero && (
             <PressableScale
@@ -647,39 +669,33 @@ export default function ImportScreen() {
         </>
       )}
 
-      {loading && <OcrLoadingState progress={ocrProgress} />}
+      {isLoading && <OcrLoadingState progress={ocrProgress} />}
 
-      {savedResult && !loading && (
+      {savedResult && (
         <SavedSuccessView
           savedResult={savedResult}
           onViewSchedule={() => {
-            setSavedResult(null);
-            router.push({
-              pathname: "/period/[id]",
-              params: { id: savedResult.scheduleId },
-            });
+            const id = savedResult.scheduleId;
+            dispatch({ type: "reset_to_initial" });
+            router.push({ pathname: "/period/[id]", params: { id } });
           }}
-          onImportMore={() => setSavedResult(null)}
+          onImportMore={() => dispatch({ type: "reset_to_initial" })}
         />
       )}
 
-      {rows.length > 0 && !loading && !savedResult && (
+      {showReview && !savedResult && !isLoading && (
         <ShiftEditor
-          rows={rows}
-          source={source}
+          rows={reviewRows}
+          source={reviewSource}
           expectedPay={expectedPay}
           saving={saving}
           calculating={calculating}
           onUpdateRow={updateRow}
           onRemoveRow={removeRow}
-          onAddRow={() => setRows((prev) => [...prev, { ok: true as const, shift: emptyShift() }])}
+          onAddRow={addRow}
           onCalculate={calculate}
           onSave={saveTimesheet}
-          onReset={() => {
-            setRows([]);
-            setExpectedPay(null);
-            setError(null);
-          }}
+          onReset={() => dispatch({ type: "reset_to_initial" })}
         />
       )}
     </ScrollView>
