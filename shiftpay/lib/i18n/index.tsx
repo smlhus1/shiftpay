@@ -1,7 +1,7 @@
 import { I18n } from "i18n-js";
 import * as Localization from "expo-localization";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { getString, migrateAsyncStorageKey, setString } from "../storage";
 import nb from "./nb";
 import en from "./en";
 import sv from "./sv";
@@ -34,59 +34,87 @@ const i18n = new I18n({
 i18n.defaultLocale = "nb";
 i18n.enableFallback = true;
 
-const STORAGE_KEY = "shiftpay_locale";
+const LOCALE_STORAGE_KEY = "shiftpay_locale";
 const CURRENCY_STORAGE_KEY = "shiftpay_currency";
 
 interface LocaleCtx {
   locale: Locale;
-  setLocale: (l: Locale) => Promise<void>;
+  setLocale: (l: Locale) => void;
   currency: Currency;
-  setCurrency: (c: Currency) => Promise<void>;
+  setCurrency: (c: Currency) => void;
 }
 
 const LocaleContext = createContext<LocaleCtx>({
   locale: "nb",
-  setLocale: async () => {},
+  setLocale: () => {},
   currency: "NOK",
-  setCurrency: async () => {},
+  setCurrency: () => {},
 });
 
+function isLocale(v: string): v is Locale {
+  return (SUPPORTED_LOCALES as readonly string[]).includes(v);
+}
+
+function isCurrency(v: string): v is Currency {
+  return (SUPPORTED_CURRENCIES as readonly string[]).includes(v);
+}
+
+/**
+ * Read the persisted locale synchronously from MMKV. On a miss (first
+ * boot, or pre-migration), fall back to device language → 'nb' default.
+ */
+function readInitialLocale(): Locale {
+  const stored = getString(LOCALE_STORAGE_KEY);
+  if (stored && isLocale(stored)) return stored;
+  const device = Localization.getLocales()[0]?.languageCode ?? "nb";
+  return isLocale(device) ? device : "nb";
+}
+
+function readInitialCurrency(locale: Locale): Currency {
+  const stored = getString(CURRENCY_STORAGE_KEY);
+  if (stored && isCurrency(stored)) return stored;
+  return LOCALE_DEFAULT_CURRENCY[locale];
+}
+
+// Sync the singleton at module load so non-React translation calls get
+// the right locale on first read, before any provider mounts.
+const initialLocale = readInitialLocale();
+i18n.locale = initialLocale;
+
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("nb");
-  const [currency, setCurrencyState] = useState<Currency>("NOK");
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
+  const [currency, setCurrencyState] = useState<Currency>(() => readInitialCurrency(initialLocale));
 
   useEffect(() => {
-    Promise.all([
-      AsyncStorage.getItem(STORAGE_KEY),
-      AsyncStorage.getItem(CURRENCY_STORAGE_KEY),
-    ]).then(([savedLocale, savedCurrency]) => {
-      let detectedLocale: Locale = "nb";
-      if (savedLocale && SUPPORTED_LOCALES.includes(savedLocale as Locale)) {
-        detectedLocale = savedLocale as Locale;
-      } else {
-        const device = Localization.getLocales()[0]?.languageCode ?? "nb";
-        detectedLocale = SUPPORTED_LOCALES.includes(device as Locale) ? (device as Locale) : "nb";
+    let cancelled = false;
+    void (async () => {
+      const migratedLocale = await migrateAsyncStorageKey<Locale>(LOCALE_STORAGE_KEY, (raw) =>
+        isLocale(raw) ? raw : null
+      );
+      if (!cancelled && migratedLocale) {
+        i18n.locale = migratedLocale;
+        setLocaleState(migratedLocale);
       }
-      i18n.locale = detectedLocale;
-      setLocaleState(detectedLocale);
-
-      if (savedCurrency && SUPPORTED_CURRENCIES.includes(savedCurrency as Currency)) {
-        setCurrencyState(savedCurrency as Currency);
-      } else {
-        setCurrencyState(LOCALE_DEFAULT_CURRENCY[detectedLocale]);
-      }
-    });
+      const migratedCurrency = await migrateAsyncStorageKey<Currency>(
+        CURRENCY_STORAGE_KEY,
+        (raw) => (isCurrency(raw) ? raw : null)
+      );
+      if (!cancelled && migratedCurrency) setCurrencyState(migratedCurrency);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const setLocale = useCallback(async (l: Locale) => {
+  const setLocale = useCallback((l: Locale) => {
     i18n.locale = l;
     setLocaleState(l);
-    await AsyncStorage.setItem(STORAGE_KEY, l);
+    setString(LOCALE_STORAGE_KEY, l);
   }, []);
 
-  const setCurrency = useCallback(async (c: Currency) => {
+  const setCurrency = useCallback((c: Currency) => {
     setCurrencyState(c);
-    await AsyncStorage.setItem(CURRENCY_STORAGE_KEY, c);
+    setString(CURRENCY_STORAGE_KEY, c);
   }, []);
 
   return (

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { useColorScheme as useSystemColorScheme } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { colorScheme } from "nativewind";
+import { getString, migrateAsyncStorageKey, setString } from "./storage";
 import { lightColors, darkColors, type ThemeColors } from "./theme";
 
 export type ThemePreference = "system" | "light" | "dark";
@@ -18,41 +18,55 @@ const STORAGE_KEY = "shiftpay_theme";
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+function isThemePref(v: string): v is ThemePreference {
+  return v === "system" || v === "light" || v === "dark";
+}
+
+/**
+ * Read the persisted preference synchronously from MMKV. Returns
+ * "system" if MMKV is empty (first boot, or pre-migration before the
+ * effect-triggered AsyncStorage drain has run).
+ */
+function readInitialPreference(): ThemePreference {
+  const v = getString(STORAGE_KEY);
+  return v && isThemePref(v) ? v : "system";
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemScheme = useSystemColorScheme();
-  const [preference, setPreferenceState] = useState<ThemePreference>("system");
-  const [loaded, setLoaded] = useState(false);
+  // Sync MMKV read at component init — no `loaded` flag, no null first
+  // render, no theme flash on subsequent boots. The first boot AFTER
+  // upgrading from AsyncStorage may briefly render "system" before the
+  // migration effect below pulls in the persisted value.
+  const [preference, setPreferenceState] = useState<ThemePreference>(readInitialPreference);
 
-  // Load persisted preference
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((val) => {
-        if (val === "light" || val === "dark" || val === "system") {
-          setPreferenceState(val);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoaded(true));
+    let cancelled = false;
+    void migrateAsyncStorageKey<ThemePreference>(STORAGE_KEY, (raw) =>
+      isThemePref(raw) ? raw : null
+    ).then((migrated) => {
+      if (!cancelled && migrated) setPreferenceState(migrated);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const setPreference = useCallback((p: ThemePreference) => {
     setPreferenceState(p);
-    AsyncStorage.setItem(STORAGE_KEY, p).catch(() => {});
+    setString(STORAGE_KEY, p);
   }, []);
 
   // Resolve theme
   const resolved: ResolvedTheme =
     preference === "system" ? (systemScheme === "light" ? "light" : "dark") : preference;
 
-  // Sync NativeWind
+  // Sync NativeWind whenever the resolved theme changes.
   useEffect(() => {
-    if (!loaded) return;
     colorScheme.set(resolved);
-  }, [resolved, loaded]);
+  }, [resolved]);
 
   const themeColors = resolved === "dark" ? darkColors : lightColors;
-
-  if (!loaded) return null;
 
   return (
     <ThemeContext.Provider
