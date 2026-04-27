@@ -1,5 +1,6 @@
-import { useReducer, useRef, useEffect, useCallback, useState } from "react";
+import { useReducer, useRef, useEffect, useMemo, useCallback, useState } from "react";
 import { View, Text, ScrollView, Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
@@ -222,6 +223,8 @@ function getValidShifts(rows: CsvRowResult[]): Shift[] {
 export default function ImportScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
   const [state, dispatch] = useReducer(importReducer, initialImportState);
   // Pure UI state that's orthogonal to the import lifecycle stays as
   // useState — no need to muddy the reducer with overlay toggles.
@@ -230,6 +233,10 @@ export default function ImportScreen() {
   const [baseRateZero, setBaseRateZero] = useState(false);
   const cameraRef = useRef<CameraViewRef | null>(null);
   const [permission, requestPermission] = useCameraPermissions();
+
+  // Editorial margin-note — Fraunces italic, one per screen (DESIGN.md §11.2)
+  // Same pattern as the dashboard. Locale-aware copy lives in i18n.
+  const marginNote = useMemo(() => t("import.marginNote"), [t]);
 
   // Aborts any in-flight OCR uploads when the screen unmounts (or when a
   // new batch starts and previous calls are still pending). Spinning up a
@@ -583,7 +590,7 @@ export default function ImportScreen() {
   return (
     <ScrollView
       className="flex-1 bg-app-bg dark:bg-dark-bg"
-      contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      contentContainerStyle={{ padding: 16, paddingBottom: 32 + insets.bottom }}
     >
       {error && (
         <View
@@ -596,6 +603,14 @@ export default function ImportScreen() {
 
       {showInitialOptions && (
         <>
+          {/* Editorial margin-note — Fraunces italic, matches dashboard intro. */}
+          <Text
+            className="mb-4 text-[13px] italic text-stone-500 dark:text-stone-400"
+            style={{ fontFamily: "Fraunces_400Regular_Italic" }}
+          >
+            {marginNote}
+          </Text>
+
           {baseRateZero && (
             <PressableScale
               onPress={() => router.push("/(tabs)/settings")}
@@ -611,28 +626,36 @@ export default function ImportScreen() {
               </Text>
             </PressableScale>
           )}
-          <AnimatedCard
-            index={0}
-            className="mb-4 rounded-xl bg-app-surface p-3 dark:bg-dark-surface"
+
+          {/* Section header — same uppercase tracking-wider rhythm as the dashboard. */}
+          <Text
+            className="mb-3 font-inter-medium text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400"
+            accessibilityRole="header"
           >
-            <Text className="text-sm text-stone-600 dark:text-stone-400">
-              {t("import.disclaimer")}
-            </Text>
-          </AnimatedCard>
-          {/* Primary: camera */}
-          <AnimatedCard index={1}>
+            {t("import.sectionHeader")}
+          </Text>
+
+          {/* Primary: camera — full-width filled accent card with icon + label + hint. */}
+          <AnimatedCard index={0} className="mb-3">
             <PressableScale
               onPress={openCamera}
               accessibilityLabel={t("import.cameraBtn")}
-              className="rounded-xl bg-accent-dark py-4 dark:bg-accent"
+              className="flex-row items-center gap-3 rounded-xl bg-accent-dark p-5 dark:bg-accent"
             >
-              <Text className="text-center font-inter-semibold text-base text-white dark:text-stone-900">
-                {t("import.cameraBtn")}
-              </Text>
+              <Icon name="camera-outline" size={24} color="#F5EFE4" />
+              <View className="flex-1">
+                <Text className="font-inter-semibold text-base text-white dark:text-stone-900">
+                  {t("import.cameraBtn")}
+                </Text>
+                <Text className="mt-0.5 text-xs text-white/80 dark:text-stone-900/80">
+                  {t("import.cameraBtnHint")}
+                </Text>
+              </View>
             </PressableScale>
           </AnimatedCard>
-          {/* Secondary: gallery/files */}
-          <AnimatedCard index={2}>
+
+          {/* Secondary: gallery/files — surface card with icon + label + chevron. */}
+          <AnimatedCard index={1} className="mb-4">
             <PressableScale
               onPress={() =>
                 Alert.alert(t("import.fileAlert.title"), "", [
@@ -642,45 +665,72 @@ export default function ImportScreen() {
                 ])
               }
               accessibilityLabel={t("import.fileBtn")}
-              className="mt-3 rounded-xl border-2 border-app-border bg-app-surface py-4 dark:border-dark-border dark:bg-dark-surface"
+              className="flex-row items-center gap-3 rounded-xl border border-app-border bg-app-surface p-5 dark:border-dark-border dark:bg-dark-surface"
             >
-              <Text className="text-center font-inter-medium text-base text-stone-700 dark:text-stone-300">
-                {t("import.fileBtn")}
-              </Text>
+              <Icon name="image-outline" size={24} color={colors.accent} />
+              <View className="flex-1">
+                <Text className="font-inter-semibold text-base text-stone-900 dark:text-stone-100">
+                  {t("import.fileBtn")}
+                </Text>
+                <Text className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+                  {t("import.fileBtnHint")}
+                </Text>
+              </View>
+              <Icon name="chevron-forward" size={18} color={colors.textMuted} />
             </PressableScale>
           </AnimatedCard>
-          {/* Tertiary: more options toggle */}
+
+          {/* Disclaimer — small advisory card with subtle icon. */}
+          <AnimatedCard
+            index={2}
+            className="mb-4 flex-row items-start gap-3 rounded-xl border border-app-border bg-app-surface p-4 dark:border-dark-border dark:bg-dark-surface"
+          >
+            <Icon name="information-circle-outline" size={18} color={colors.textMuted} />
+            <Text className="flex-1 text-sm text-stone-600 dark:text-stone-400">
+              {t("import.disclaimer")}
+            </Text>
+          </AnimatedCard>
+
+          {/* Tertiary: more options toggle — Icon chevron, no unicode glyphs. */}
           <PressableScale
             onPress={() => setShowMore((v) => !v)}
             accessibilityLabel={t("import.moreOptions")}
-            className="mt-3 py-2"
+            accessibilityState={{ expanded: showMore }}
+            className="mt-2 flex-row items-center justify-center gap-2 py-3"
             haptic="none"
           >
-            <Text className="text-center text-sm text-stone-500">
-              {t("import.moreOptions")} {showMore ? "▲" : "▼"}
+            <Text className="font-inter-medium text-sm text-stone-500 dark:text-stone-400">
+              {t("import.moreOptions")}
             </Text>
+            <Icon
+              name={showMore ? "chevron-up" : "chevron-down"}
+              size={16}
+              color={colors.textMuted}
+            />
           </PressableScale>
           {showMore && (
-            <>
+            <View className="mt-1 gap-2">
               <PressableScale
                 onPress={pickCSV}
                 accessibilityLabel={t("import.csvBtn")}
-                className="mt-1 py-2"
+                className="flex-row items-center gap-3 rounded-xl border border-app-border bg-app-surface p-4 dark:border-dark-border dark:bg-dark-surface"
               >
-                <Text className="text-center font-inter-medium text-sm text-accent-dark dark:text-accent-soft">
+                <Icon name="document-text-outline" size={20} color={colors.accent} />
+                <Text className="flex-1 font-inter-medium text-sm text-stone-900 dark:text-stone-100">
                   {t("import.csvBtn")}
                 </Text>
               </PressableScale>
               <PressableScale
                 onPress={addShiftManually}
                 accessibilityLabel={t("import.manualBtn")}
-                className="mt-2 py-2"
+                className="flex-row items-center gap-3 rounded-xl border border-app-border bg-app-surface p-4 dark:border-dark-border dark:bg-dark-surface"
               >
-                <Text className="text-center font-inter-medium text-sm text-accent-dark dark:text-accent-soft">
+                <Icon name="create-outline" size={20} color={colors.accent} />
+                <Text className="flex-1 font-inter-medium text-sm text-stone-900 dark:text-stone-100">
                   {t("import.manualBtn")}
                 </Text>
               </PressableScale>
-            </>
+            </View>
           )}
         </>
       )}

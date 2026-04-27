@@ -76,10 +76,14 @@ const sv: TranslationShape = {
   import: {
     disclaimer:
       "Beräkningen är vägledande och baseras på dina egna taxor. OCR kan innehålla fel — kontrollera alltid mot originaltidlistan.",
+    marginNote: "Dags för en ny tidlista.",
+    sectionHeader: "Importera från",
     rateZero: "Taxor ej inställda — beräkningen visar 0",
     rateZeroCta: "Gå till taxor →",
-    cameraBtn: "📷 Ta foto av tidlistan",
+    cameraBtn: "Ta foto av tidlistan",
+    cameraBtnHint: "Använd kameran för att läsa tidlistan direkt",
     fileBtn: "Välj från telefonen",
+    fileBtnHint: "Galleri eller filer",
     fileAlert: {
       title: "Välj källa",
       gallery: "Galleri",

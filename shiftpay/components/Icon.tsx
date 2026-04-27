@@ -27,9 +27,13 @@ import { ClockIcon } from "phosphor-react-native/src/icons/Clock";
 import { DeviceMobileIcon } from "phosphor-react-native/src/icons/DeviceMobile";
 import { DownloadSimpleIcon } from "phosphor-react-native/src/icons/DownloadSimple";
 import { EnvelopeIcon } from "phosphor-react-native/src/icons/Envelope";
+import { FileTextIcon } from "phosphor-react-native/src/icons/FileText";
 import { GithubLogoIcon } from "phosphor-react-native/src/icons/GithubLogo";
 import { GearIcon } from "phosphor-react-native/src/icons/Gear";
+import { ImageIcon } from "phosphor-react-native/src/icons/Image";
+import { InfoIcon } from "phosphor-react-native/src/icons/Info";
 import { MoonIcon } from "phosphor-react-native/src/icons/Moon";
+import { NotePencilIcon } from "phosphor-react-native/src/icons/NotePencil";
 import { PlusIcon } from "phosphor-react-native/src/icons/Plus";
 import { PlusCircleIcon } from "phosphor-react-native/src/icons/PlusCircle";
 import { ScanIcon } from "phosphor-react-native/src/icons/Scan";
@@ -51,7 +55,11 @@ const MAP: Record<string, ComponentType<PhosphorProps>> = {
   "chevron-forward": CaretRightIcon,
   "chevron-up": CaretUpIcon,
   "chevron-down": CaretDownIcon,
+  "create-outline": NotePencilIcon,
+  "document-text-outline": FileTextIcon,
   "download-outline": DownloadSimpleIcon,
+  "image-outline": ImageIcon,
+  "information-circle-outline": InfoIcon,
   "logo-github": GithubLogoIcon,
   "mail-outline": EnvelopeIcon,
   "scan-outline": ScanIcon,

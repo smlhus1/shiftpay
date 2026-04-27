@@ -76,10 +76,14 @@ const en: TranslationShape = {
   import: {
     disclaimer:
       "This calculation is indicative and based on your own rates. OCR may contain errors — always verify against the original timesheet.",
+    marginNote: "Time for a new timesheet.",
+    sectionHeader: "Import from",
     rateZero: "Rates not set up — calculation shows 0",
     rateZeroCta: "Go to rates →",
-    cameraBtn: "📷 Take photo of timesheet",
+    cameraBtn: "Take photo of timesheet",
+    cameraBtnHint: "Use the camera to read the timesheet directly",
     fileBtn: "Choose from phone",
+    fileBtnHint: "Gallery or files",
     fileAlert: {
       title: "Choose source",
       gallery: "Gallery",

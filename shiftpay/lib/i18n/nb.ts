@@ -74,10 +74,14 @@ const nb = {
   import: {
     disclaimer:
       "Beregningen er veiledende og basert på dine egne satser. OCR kan inneholde feil — kontroller alltid mot original timeliste.",
+    marginNote: "Tid for ny vaktliste.",
+    sectionHeader: "Importer fra",
     rateZero: "Satser ikke satt opp — beregningen viser 0 kr",
     rateZeroCta: "Gå til satser →",
-    cameraBtn: "📷 Ta bilde av timeliste",
+    cameraBtn: "Ta bilde av timeliste",
+    cameraBtnHint: "Bruk kameraet til å lese vaktlista direkte",
     fileBtn: "Velg fra telefonen",
+    fileBtnHint: "Galleri eller filer",
     fileAlert: {
       title: "Velg kilde",
       gallery: "Galleri",
