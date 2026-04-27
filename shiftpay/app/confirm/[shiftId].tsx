@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   ActivityIndicator,
-  TextInput,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -16,8 +15,10 @@ import { getShiftById, confirmShift, updateShift, updateShiftPayType } from "@/l
 import type { ShiftRow, PayType } from "@/lib/db";
 import { useTranslation } from "@/lib/i18n";
 import { PressableScale } from "@/components/PressableScale";
+import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { AnimatedCard } from "@/components/AnimatedCard";
 import { useThemeColors } from "@/lib/theme-context";
+import { useAnnounceWhen } from "@/lib/ui/announce";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -168,6 +169,10 @@ export default function ConfirmShiftScreen() {
     [shiftId, payType]
   );
 
+  // Announce success state imperatively. Must be called before any
+  // conditional return to satisfy rules-of-hooks.
+  useAnnounceWhen(confirmed ? t("confirm.success") : null);
+
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-app-bg dark:bg-dark-bg">
@@ -220,7 +225,6 @@ export default function ConfirmShiftScreen() {
     return (
       <View
         className="flex-1 items-center justify-center bg-app-bg p-8 dark:bg-dark-bg"
-        accessibilityLiveRegion="polite"
         accessibilityRole="alert"
       >
         <AnimatedCard index={0}>
@@ -287,6 +291,7 @@ export default function ConfirmShiftScreen() {
               <PressableScale
                 key={type}
                 onPress={() => handlePayTypeChange(type)}
+                haptic="selection"
                 accessibilityRole="radio"
                 accessibilityState={{ checked: payType === type }}
                 className={`flex-1 items-center rounded-xl py-3 ${payType === type ? "bg-accent-dark dark:bg-accent" : "border border-app-border bg-app-surface dark:border-dark-border dark:bg-dark-surface"}`}
@@ -322,7 +327,7 @@ export default function ConfirmShiftScreen() {
             <View className="mt-2 rounded-xl border border-app-border bg-app-surface p-4 dark:border-dark-border dark:bg-dark-surface">
               <View className="mb-2">
                 <Text className="mb-1 text-xs text-stone-500">{t("confirm.editFields.date")}</Text>
-                <TextInput
+                <ThemedTextInput
                   value={editDate}
                   onChangeText={(v) => {
                     setEditDate(v);
@@ -339,7 +344,7 @@ export default function ConfirmShiftScreen() {
                   <Text className="mb-1 text-xs text-stone-500">
                     {t("confirm.editFields.start")}
                   </Text>
-                  <TextInput
+                  <ThemedTextInput
                     value={editStart}
                     onChangeText={(v) => {
                       setEditStart(v);
@@ -353,7 +358,7 @@ export default function ConfirmShiftScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="mb-1 text-xs text-stone-500">{t("confirm.editFields.end")}</Text>
-                  <TextInput
+                  <ThemedTextInput
                     value={editEnd}
                     onChangeText={(v) => {
                       setEditEnd(v);
@@ -435,7 +440,7 @@ export default function ConfirmShiftScreen() {
                 <Text className="mb-1 text-xs text-stone-500">
                   {t("confirm.overtimeHoursLabel")}
                 </Text>
-                <TextInput
+                <ThemedTextInput
                   value={overtimeHours}
                   onChangeText={setOvertimeHours}
                   placeholder="0"
@@ -449,7 +454,7 @@ export default function ConfirmShiftScreen() {
                 <Text className="mb-1 text-xs text-stone-500">
                   {t("confirm.overtimeMinsLabel")}
                 </Text>
-                <TextInput
+                <ThemedTextInput
                   value={overtimeMins}
                   onChangeText={setOvertimeMins}
                   placeholder="0"

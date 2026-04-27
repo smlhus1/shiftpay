@@ -5,6 +5,16 @@ import * as Haptics from "expo-haptics";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+/**
+ * Haptic intent for a press.
+ *  - "none"      no haptic (default — most buttons should not buzz)
+ *  - "selection" toggles, radio groups, segmented controls
+ *  - "success"   save / commit confirmations
+ *  - "light"     opt-in subtle feedback (rare — pull-to-refresh, etc.)
+ *  - "medium"    bigger commit, emphasis on completion
+ */
+export type HapticKind = "none" | "selection" | "success" | "light" | "medium";
+
 interface PressableScaleProps {
   onPress?: () => void;
   onLongPress?: () => void;
@@ -12,12 +22,30 @@ interface PressableScaleProps {
   className?: string;
   style?: ViewStyle | ViewStyle[];
   disabled?: boolean;
-  haptic?: boolean;
-  hapticStyle?: Haptics.ImpactFeedbackStyle;
+  haptic?: HapticKind;
   accessibilityRole?: AccessibilityRole;
   accessibilityLabel?: string;
   accessibilityState?: Record<string, unknown>;
   hitSlop?: number;
+}
+
+function fireHaptic(kind: HapticKind): void {
+  switch (kind) {
+    case "selection":
+      void Haptics.selectionAsync().catch(() => {});
+      return;
+    case "success":
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      return;
+    case "light":
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      return;
+    case "medium":
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      return;
+    case "none":
+      return;
+  }
 }
 
 export function PressableScale({
@@ -27,8 +55,7 @@ export function PressableScale({
   className,
   style,
   disabled,
-  haptic = true,
-  hapticStyle = Haptics.ImpactFeedbackStyle.Light,
+  haptic = "none",
   accessibilityRole = "button",
   accessibilityLabel,
   accessibilityState,
@@ -49,7 +76,7 @@ export function PressableScale({
   };
 
   const handlePress = () => {
-    if (haptic) Haptics.impactAsync(hapticStyle);
+    if (haptic !== "none") fireHaptic(haptic);
     onPress?.();
   };
 
