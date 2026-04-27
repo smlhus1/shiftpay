@@ -178,6 +178,7 @@ const da: TranslationShape = {
   api: {
     ocrError: "OCR fejlede: %{status}",
     ocrTimeout: "OCR tog for lang tid. Prøv igen eller tjek forbindelsen.",
+    ocrAborted: "OCR blev afbrudt.",
     ocrNotConfigured: "OCR-endpoint er ikke konfigureret.",
   },
   errorBoundary: {

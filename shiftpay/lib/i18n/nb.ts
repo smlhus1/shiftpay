@@ -176,6 +176,7 @@ const nb = {
   api: {
     ocrError: "OCR feilet: %{status}",
     ocrTimeout: "OCR tok for lang tid. Prøv igjen eller sjekk tilkoblingen.",
+    ocrAborted: "OCR ble avbrutt.",
     ocrNotConfigured: "OCR-endepunkt er ikke konfigurert.",
   },
   errorBoundary: {
