@@ -51,14 +51,84 @@ export type CurrencyCode = "NOK" | "SEK" | "DKK" | "EUR" | "GBP";
 export type LocaleCode = "nb" | "en" | "sv" | "da";
 
 // ─── Constructors ────────────────────────────────────────────────────
-// Pass 4 lands the full validating makeShiftDate/makeShiftTime/makeOre
-// helpers. Keeping scaffolding here so the types are importable from
-// passes 2/3 without bike-shedding the validator API before Pass 4.
+// Each constructor validates its input and brands the value. They throw
+// on invalid input — callers that want a non-throwing variant wrap the
+// call in try/catch or use the matching `try*` helper.
+//
+// Round-trip philosophy: if the JS `Date` constructor would silently
+// fix up the input (e.g. 31.02.2026 → 03.03.2026), the constructor
+// rejects it. Mirrors lib/dates.ts parseDateSafe.
 
-// Example (implemented in Pass 4):
-//   export function makeShiftDate(raw: string): ShiftDate {
-//     if (!/^\d{2}\.\d{2}\.\d{4}$/.test(raw.trim())) {
-//       throw new Error(`Invalid ShiftDate: ${raw}`);
-//     }
-//     return raw.trim() as ShiftDate;
-//   }
+const SHIFT_DATE_REGEX = /^\d{2}\.\d{2}\.\d{4}$/;
+const SHIFT_TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
+const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/**
+ * `DD.MM.YYYY` → `ShiftDate`. Round-trip validates against `new Date(...)`
+ * so 31.02.2026 / 30.02.2026 / 29.02.2025 are rejected, not silently
+ * rolled forward into the next month.
+ */
+export function makeShiftDate(raw: string): ShiftDate {
+  const trimmed = raw.trim();
+  if (!SHIFT_DATE_REGEX.test(trimmed)) {
+    throw new Error(`Invalid ShiftDate: ${raw}`);
+  }
+  const [d, m, y] = trimmed.split(".").map(Number);
+  if (d === undefined || m === undefined || y === undefined) {
+    throw new Error(`Invalid ShiftDate: ${raw}`);
+  }
+  if (y < 2000 || y > 2100) {
+    throw new Error(`ShiftDate year out of range: ${raw}`);
+  }
+  const date = new Date(y, m - 1, d);
+  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
+    throw new Error(`ShiftDate is not a real date: ${raw}`);
+  }
+  return trimmed as ShiftDate;
+}
+
+/** `HH:MM` (24h) → `ShiftTime`. Rejects 24:00, 25:00, 12:60, etc. */
+export function makeShiftTime(raw: string): ShiftTime {
+  const trimmed = raw.trim();
+  if (!SHIFT_TIME_REGEX.test(trimmed)) {
+    throw new Error(`Invalid ShiftTime: ${raw}`);
+  }
+  return trimmed as ShiftTime;
+}
+
+/**
+ * Integer minutes — finite and free of fractional parts. Both signs are
+ * permitted because internal arithmetic (DST corrections, overnight
+ * adjustments) can legitimately produce a negative offset.
+ */
+export function makeMinutes(value: number): Minutes {
+  if (!Number.isFinite(value) || !Number.isInteger(value)) {
+    throw new Error(`Minutes must be a finite integer: ${value}`);
+  }
+  return value as Minutes;
+}
+
+/**
+ * Integer øre. Must be a finite integer; negative values are rejected
+ * because pay arithmetic should never produce a negative amount under
+ * the current rules. If we ever need signed money (refunds, deductions),
+ * relax this constructor or introduce a `SignedOre` brand.
+ */
+export function makeOre(value: number): Ore {
+  if (!Number.isFinite(value) || !Number.isInteger(value)) {
+    throw new Error(`Ore must be a finite integer: ${value}`);
+  }
+  if (value < 0) {
+    throw new Error(`Ore must be non-negative: ${value}`);
+  }
+  return value as Ore;
+}
+
+/** UUID v4 → `Uuid`. Strict regex; case-insensitive. */
+export function makeUuid(raw: string): Uuid {
+  const trimmed = raw.trim();
+  if (!UUID_V4_REGEX.test(trimmed)) {
+    throw new Error(`Invalid Uuid (v4 expected): ${raw}`);
+  }
+  return trimmed as Uuid;
+}
