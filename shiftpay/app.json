@@ -66,11 +66,15 @@
           "android": {
             "enableBundleCompression": true,
             "buildArchs": ["arm64-v8a"],
-            "usesCleartextTraffic": false
+            "usesCleartextTraffic": false,
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "# ─── React Native + Hermes ─────────────────────────────────────────\n-keep class com.facebook.react.** { *; }\n-keep class com.facebook.hermes.** { *; }\n-keep class com.facebook.jni.** { *; }\n-dontwarn com.facebook.react.**\n-dontwarn com.facebook.hermes.**\n\n# ─── Reanimated + Worklets (Pass 6 dropped moti, kept reanimated) ──\n-keep class com.swmansion.reanimated.** { *; }\n-keep class com.swmansion.worklets.** { *; }\n-dontwarn com.swmansion.**\n\n# ─── MMKV + Nitro Modules (Pass 5b storage layer) ─────────────────\n-keep class com.mrousavy.mmkv.** { *; }\n-keep class com.margelo.nitro.** { *; }\n-dontwarn com.mrousavy.**\n-dontwarn com.margelo.**\n\n# ─── Expo modules (autolinked, reflection-driven) ─────────────────\n-keep class expo.modules.** { *; }\n-keep class versioned.host.exp.exponent.** { *; }\n-dontwarn expo.modules.**\n\n# ─── Native SQLite bindings (expo-sqlite uses JNI) ────────────────\n-keep class io.expo.sqlite.** { *; }\n\n# ─── Anthropic SDK / OCR client (lib/api.ts) ──────────────────────\n# Pure JS, no Java keep rules needed.\n\n# ─── Drop debug-only logging from release ─────────────────────────\n-assumenosideeffects class android.util.Log {\n    public static *** v(...);\n    public static *** d(...);\n}\n"
           }
         }
       ],
-      "./plugins/with-release-signing.js"
+      "./plugins/with-release-signing.js",
+      "./plugins/with-res-configs.js"
     ]
   }
 }

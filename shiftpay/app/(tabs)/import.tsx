@@ -30,8 +30,7 @@ import {
   requestNotificationPermission,
 } from "@/lib/notifications";
 import { calculateExpectedPay, type Shift, type ShiftType } from "@/lib/calculations";
-import { useRouter } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
+import { useRouter, useFocusEffect } from "expo-router";
 import { CameraCapture, type CameraViewRef } from "@/components/CameraCapture";
 import { ShiftEditor } from "@/components/ShiftEditor";
 import { PressableScale } from "@/components/PressableScale";
