@@ -76,10 +76,14 @@ const da: TranslationShape = {
   import: {
     disclaimer:
       "Beregningen er vejledende og baseret på dine egne satser. OCR kan indeholde fejl — kontroller altid mod den originale timeseddel.",
+    marginNote: "Tid til en ny timeseddel.",
+    sectionHeader: "Importer fra",
     rateZero: "Satser ikke konfigureret — beregningen viser 0",
     rateZeroCta: "Gå til satser →",
-    cameraBtn: "📷 Tag foto af timeseddel",
+    cameraBtn: "Tag foto af timeseddel",
+    cameraBtnHint: "Brug kameraet til at læse timesedlen direkte",
     fileBtn: "Vælg fra telefonen",
+    fileBtnHint: "Galleri eller filer",
     fileAlert: {
       title: "Vælg kilde",
       gallery: "Galleri",
