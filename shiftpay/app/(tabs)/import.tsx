@@ -256,6 +256,27 @@ export default function ImportScreen() {
     }, [])
   );
 
+  /**
+   * Nudge the user with progress text while a single OCR call is in flight.
+   * Claude Vision can take 20–40 s on hard images (glare, perspective,
+   * small text), so a static spinner reads as "stuck" long before the
+   * 60 s client timeout fires.
+   */
+  const scheduleProgressNudges = useCallback(() => {
+    const stillWorkingTimer = setTimeout(() => {
+      dispatch({ type: "load_progress", progress: t("import.stillWorking") });
+    }, 5000);
+    const takingLongTimer = setTimeout(() => {
+      dispatch({ type: "load_progress", progress: t("import.takingLong") });
+    }, 20000);
+    return {
+      cancel: () => {
+        clearTimeout(stillWorkingTimer);
+        clearTimeout(takingLongTimer);
+      },
+    };
+  }, [t]);
+
   /** Run OCR on multiple images and merge all shifts into rows. */
   const processMultipleImages = async (uris: string[], source: ImportSource) => {
     ocrAbortRef.current?.abort();
@@ -278,6 +299,7 @@ export default function ImportScreen() {
         type: "load_progress",
         progress: t("import.progress", { current: i + 1, total: uris.length }),
       });
+      const nudges = scheduleProgressNudges();
       try {
         const ocrResult = await postOcr(uri, signal);
         for (const s of ocrResult.shifts) {
@@ -288,6 +310,8 @@ export default function ImportScreen() {
         errors.push(
           `Image ${i + 1}: ${e instanceof Error ? e.message : t("import.alerts.ocrFailed")}`
         );
+      } finally {
+        nudges.cancel();
       }
     }
     if (signal.aborted) return;
@@ -395,6 +419,7 @@ export default function ImportScreen() {
     ocrAbortRef.current?.abort();
     ocrAbortRef.current = new AbortController();
     const signal = ocrAbortRef.current.signal;
+    const nudges = scheduleProgressNudges();
     try {
       const photo = await cameraRef.current.takePictureAsync({});
       if (signal.aborted) return;
@@ -413,6 +438,8 @@ export default function ImportScreen() {
         type: "load_error",
         error: e instanceof Error ? e.message : t("import.alerts.ocrFailed"),
       });
+    } finally {
+      nudges.cancel();
     }
   };
 

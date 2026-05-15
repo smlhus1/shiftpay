@@ -114,7 +114,7 @@ Supabase Edge Function at `supabase/functions/ocr/index.ts` (Deno). Uses Claude 
 
 **Error handling:** Internal error details are never exposed to clients in production. Generic messages are returned instead.
 
-Client-side: `lib/api.ts` sends FormData to `EXPO_PUBLIC_API_URL` with `X-API-Key` header and 30s timeout. In production, throws if `EXPO_PUBLIC_API_URL` is not configured (no silent fallback to localhost).
+Client-side: `lib/api.ts` sends FormData to `EXPO_PUBLIC_API_URL` with `X-API-Key` header and 60s timeout. In production, throws if `EXPO_PUBLIC_API_URL` is not configured (no silent fallback to localhost).
 
 ## Env
 

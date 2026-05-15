@@ -93,6 +93,8 @@ const nb = {
     manualBtn: "Legg til skift manuelt",
     loading: "Behandler...",
     progress: "Behandler %{current} av %{total} bilder...",
+    stillWorking: "Jobber fortsatt — store eller skarpe bilder tar litt tid.",
+    takingLong: "Tar lenger enn vanlig. Hvis dette skjer ofte: ta bildet rett ovenfra uten refleksjon, eller bruk skjermbilde fra PC i stedet for foto av skjerm.",
     cameraPermissionError: "Kameratilgang kreves for å ta bilde.",
     alerts: {
       ocrFailed: "OCR feilet",

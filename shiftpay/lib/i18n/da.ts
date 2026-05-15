@@ -95,6 +95,8 @@ const da: TranslationShape = {
     manualBtn: "Tilføj vagt manuelt",
     loading: "Behandler...",
     progress: "Behandler %{current} af %{total} billeder...",
+    stillWorking: "Arbejder stadig — store eller skarpe billeder tager et øjeblik.",
+    takingLong: "Tager længere tid end normalt. Hvis det sker ofte: tag billedet lige forfra uden refleksioner, eller brug et skærmbillede fra PC i stedet for foto af skærm.",
     cameraPermissionError: "Kameratilladelse kræves for at tage foto.",
     alerts: {
       ocrFailed: "OCR fejlede",

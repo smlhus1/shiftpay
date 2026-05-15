@@ -95,6 +95,8 @@ const sv: TranslationShape = {
     manualBtn: "Lägg till skift manuellt",
     loading: "Bearbetar...",
     progress: "Bearbetar %{current} av %{total} bilder...",
+    stillWorking: "Arbetar fortfarande — stora eller skarpa bilder tar en stund.",
+    takingLong: "Tar längre tid än vanligt. Om detta händer ofta: fotografera rakt framifrån utan reflex, eller använd skärmdump från datorn istället för foto av skärm.",
     cameraPermissionError: "Kamerabehörighet krävs för att ta foto.",
     alerts: {
       ocrFailed: "OCR misslyckades",

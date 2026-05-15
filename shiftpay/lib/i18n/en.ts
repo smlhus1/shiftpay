@@ -95,6 +95,8 @@ const en: TranslationShape = {
     manualBtn: "Add shift manually",
     loading: "Processing...",
     progress: "Processing %{current} of %{total} images...",
+    stillWorking: "Still working — large or sharp images take a moment.",
+    takingLong: "Taking longer than usual. If this happens often: shoot straight on without glare, or use a screenshot from your PC instead of a photo of a screen.",
     cameraPermissionError: "Camera permission required to take a photo.",
     alerts: {
       ocrFailed: "OCR failed",

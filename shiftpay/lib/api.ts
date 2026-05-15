@@ -27,7 +27,11 @@ const getOcrApiKey = (): string | undefined => {
   return process.env.EXPO_PUBLIC_OCR_API_KEY || undefined;
 };
 
-const OCR_TIMEOUT_MS = 30_000;
+// Headroom for Claude Vision on hard images (glare, perspective, dense
+// tables) + Edge Function cold start + mobile-network upload variance.
+// 30 s was hitting the edge for a beta tester on cellular against a
+// laptop-screen photo of Visma MinGat; 60 s leaves a defensive margin.
+const OCR_TIMEOUT_MS = 60_000;
 
 // Resize cap chosen so Claude Haiku Vision still sees timesheet cell text
 // clearly but we cut common phone photos (12-48 MP) down to ~2 MB and,
@@ -63,7 +67,7 @@ async function resizeAndStripExif(imageUri: string): Promise<string> {
  * @param imageUri  Local file URI from the camera or document picker.
  * @param externalSignal  Optional signal from the caller (e.g. wired to a
  *   React unmount). When it fires, the in-flight upload aborts. The
- *   internal timeout (30 s) still applies on top of this; whichever fires
+ *   internal timeout (60 s) still applies on top of this; whichever fires
  *   first wins.
  */
 export async function postOcr(
