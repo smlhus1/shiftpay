@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.smlhus.shiftpay-inbox</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/stianmelhus/projects/personal/shiftpay/shiftpay/scripts/triage-shiftpay-inbox.sh</string>
+  </array>
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>20</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/Users/stianmelhus/projects/personal/shiftpay/shiftpay/scripts/launchd/launchd-stdout.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/stianmelhus/projects/personal/shiftpay/shiftpay/scripts/launchd/launchd-stderr.log</string>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/stianmelhus/projects/personal/shiftpay</string>
+
+  <key>RunAtLoad</key>
+  <false/>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Users/stianmelhus/.nvm/versions/node/v20.19.4/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>HOME</key>
+    <string>/Users/stianmelhus</string>
+  </dict>
+</dict>
+</plist>

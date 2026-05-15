@@ -1,7 +1,14 @@
 import { google } from "googleapis";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
-process.env.GOOGLE_APPLICATION_CREDENTIALS =
-  "C:\\Users\\StianMelhus\\.secrets\\play-console-mcp.json";
+// Honour an already-set env var (e.g. from the MCP registration); otherwise
+// fall back to the conventional location under the user's home directory.
+process.env.GOOGLE_APPLICATION_CREDENTIALS ??= join(
+  homedir(),
+  ".secrets",
+  "play-console-mcp.json"
+);
 
 const auth = new google.auth.GoogleAuth({
   scopes: ["https://www.googleapis.com/auth/androidpublisher"],

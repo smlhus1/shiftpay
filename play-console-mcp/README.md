@@ -14,14 +14,28 @@ MCP server for Google Play Console via the official Android Publisher API v3. Sk
 - **Store listings** — `list_listings`, `get_listing`, `update_listing`
 - **App info** — `get_app_details`
 
-## Oppsett (éngangsjobb — allerede gjort)
+## Oppsett
+
+GCP-siden er gjort én gang:
 
 1. GCP-prosjekt: `android-console-mcp`
 2. API aktivert: Google Play Android Developer API
 3. Service account: `play-console-mcp@android-console-mcp.iam.gserviceaccount.com`
-4. JSON-nøkkel: `C:\Users\StianMelhus\.secrets\play-console-mcp.json`
-5. Invitert i Play Console med **Admin (alle tillatelser)** — kontonivå
-6. Registrert som MCP: `claude mcp list` viser `play-console: ✓ Connected`
+4. Invitert i Play Console med **Admin (alle tillatelser)** — kontonivå
+
+Per-maskin (må gjøres på hver maskin du kjører MCP-en fra):
+
+5. JSON-nøkkel lagres på: `~/.secrets/play-console-mcp.json` (mode 0600, `~/.secrets` mode 0700)
+6. `npm install && npm run build` i denne mappa
+7. Registrer som MCP (user scope):
+   ```bash
+   claude mcp add play-console --scope user \
+     -e GOOGLE_APPLICATION_CREDENTIALS=$HOME/.secrets/play-console-mcp.json \
+     -- node $HOME/projects/personal/shiftpay/play-console-mcp/dist/server.js
+   ```
+8. Verifiser: `claude mcp get play-console` viser `✓ Connected`, og `npm run smoke` autentiserer mot Play Console.
+
+> **Mac-status pr. 2026-05-14:** steg 6–7 er gjort. Steg 5 (nøkkelen) gjenstår — legg JSON-fila på `~/.secrets/play-console-mcp.json`, så er MCP-en operativ.
 
 ## Bruk
 
@@ -53,7 +67,7 @@ npm run smoke        # auth sanity check against com.rack.app
 ## Sikkerhet
 
 - JSON-nøkkelen gir **Admin** på Play Console-kontoen. Behandle som en master-nøkkel.
-- Ligger i `~\.secrets\` utenfor repo
+- Ligger i `~/.secrets/` utenfor repo
 - Roter nøkkelen hver 90. dag (Cloud Console → Service Accounts → play-console-mcp → Keys)
 
 ## Filstruktur
