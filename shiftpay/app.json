@@ -8,7 +8,6 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "scheme": "shiftpay",
-    "main": "expo-router/entry",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -65,7 +64,9 @@
         {
           "android": {
             "enableBundleCompression": true,
-            "buildArchs": ["arm64-v8a"],
+            "buildArchs": [
+              "arm64-v8a"
+            ],
             "usesCleartextTraffic": false,
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
@@ -74,7 +75,8 @@
         }
       ],
       "./plugins/with-release-signing.js",
-      "./plugins/with-res-configs.js"
+      "./plugins/with-res-configs.js",
+      "expo-asset"
     ]
   }
 }

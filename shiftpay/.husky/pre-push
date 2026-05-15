@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+# Pre-push hook — runs expo-doctor to catch SDK version mismatches before
+# they reach a release build. Major-version mismatches (especially of
+# expo-* packages) cause NoSuchMethodError at runtime — see research/
+# android-startup-hang-hypotheses-2026-05-14.md for the v1.1.0-build6
+# incident this is meant to prevent.
+#
+# Exits non-zero on ANY doctor failure. To bypass for an emergency push:
+#   git push --no-verify
+# But please don't make that a habit — every "skip the check" turned out
+# to be the bug we were skipping.
+
+cd "$(dirname "$0")/.." || exit 1
+
+echo "→ Running expo-doctor (pre-push) ..."
+if ! npx expo-doctor; then
+  echo ""
+  echo "✖ expo-doctor reported issues. Fix them or use 'git push --no-verify' if you understand the risk."
+  echo "  Common fix: npx expo install --fix"
+  exit 1
+fi

@@ -51,7 +51,7 @@ function RootLayoutInner() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
 
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontsError] = useFonts({
     // Inter (body) — kept during migration, still referenced by existing components
     Inter_400Regular,
     Inter_500Medium,
@@ -72,6 +72,27 @@ function RootLayoutInner() {
     JetBrainsMono_400Regular,
     JetBrainsMono_500Medium,
   });
+
+  // If a font asset fails to load (e.g. an expo-asset native API mismatch
+  // like the one that froze the splash in v1.1.0-build6), surface it to
+  // logcat — `console.warn` survives Hermes release-mode stripping, unlike
+  // `if (__DEV__) console.log(...)`.
+  useEffect(() => {
+    if (fontsError) {
+      console.warn("[ShiftPay] font load failed, continuing with system font:", fontsError.message);
+    }
+  }, [fontsError]);
+
+  // Splash safety net: if SplashScreen.hideAsync hasn't fired in 8s, force
+  // it. Better an imperfectly-rendered app (system font, partial state)
+  // than a silent eternal splash. The earlier expo-asset hang would have
+  // been recoverable from the user's side if this watchdog had been here.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      SplashScreen.hideAsync().catch(() => {});
+    }, 8000);
+    return () => clearTimeout(handle);
+  }, []);
 
   const runInit = useCallback(async () => {
     if (Platform.OS === "web") return;
@@ -100,8 +121,11 @@ function RootLayoutInner() {
   }, [t]);
 
   useEffect(() => {
-    if (fontsLoaded) runInit();
-  }, [fontsLoaded, runInit]);
+    // Don't hold the app hostage to a missing font — render on either
+    // loaded OR error. The font fallback to system font is acceptable;
+    // an eternal splash is not.
+    if (fontsLoaded || fontsError) runInit();
+  }, [fontsLoaded, fontsError, runInit]);
 
   useEffect(() => {
     if (Platform.OS === "web") return;
@@ -119,7 +143,9 @@ function RootLayoutInner() {
     router.replace("/(tabs)/settings");
   };
 
-  if (!fontsLoaded) return null;
+  // Render once fonts are either loaded OR errored — never block on the
+  // typography path. See the fontsError useEffect above.
+  if (!fontsLoaded && !fontsError) return null;
 
   return (
     <>
